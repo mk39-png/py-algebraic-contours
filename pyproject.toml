@@ -1,0 +1,21 @@
+[project]
+name = "pyalgcon"
+version = "0.0.1"
+description = "Python port of Algebraic Contours code"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "cholespy >= 2.1.0",
+    "libigl >= 2.6.1",
+    "svg.py >= 1.9.2",
+    "polyscope >= 2.5.0",
+    "scipy >= 1.16.3",
+    "numpy >= 1.26.4",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+log_cli_level = "DEBUG"

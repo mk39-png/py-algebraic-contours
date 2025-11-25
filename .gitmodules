@@ -1,0 +1,3 @@
+[submodule "external/cholespy"]
+	path = external/cholespy
+	url = https://github.com/mk39-png/cholespy.git

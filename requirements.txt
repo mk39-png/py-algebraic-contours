@@ -1,0 +1,11 @@
+libigl
+matplotlib
+mpmath
+tqdm
+multipledispatch
+scipy
+polyscope
+svg.py
+pytest
+external/cholespy
+bpy==4.5.3
