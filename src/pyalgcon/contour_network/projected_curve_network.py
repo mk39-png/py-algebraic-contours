@@ -746,7 +746,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
 
     def write(self,
               output_path: str,
-              color_mode: Literal,
+              color_mode: SVGOutputMode,
               show_nodes: bool = False) -> None:
         """
         Output visible planar curves as an SVG file, with visibility determined by
