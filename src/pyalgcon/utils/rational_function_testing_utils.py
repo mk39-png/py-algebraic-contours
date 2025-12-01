@@ -4,6 +4,7 @@ rational_function_utils.py
 Methods used to serialize, deserialize, and compare rational functions for testing.
 """
 
+import pathlib
 from typing import Any
 
 import numpy as np
@@ -18,12 +19,12 @@ from pyalgcon.core.rational_function import RationalFunction
 # rational_function.py itself.
 
 
-def compare_rational_functions_from_file(filename: str,
+def compare_rational_functions_from_file(filepath: pathlib.Path,
                                          rational_functions_test: list[RationalFunction]) -> None:
     """
     Reads from file to compare rational functions
     """
-    rational_functions_control: list[RationalFunction] = deserialize_rational_functions(filename)
+    rational_functions_control: list[RationalFunction] = deserialize_rational_functions(filepath)
     compare_rational_functions(rational_functions_control, rational_functions_test)
 
 
@@ -107,7 +108,7 @@ def deserialize_rational_function(rational_function_intermediate: dict[str, Any]
     return rational_function_final
 
 
-def deserialize_rational_functions(filepath: str) -> list[RationalFunction]:
+def deserialize_rational_functions(filepath: pathlib.Path) -> list[RationalFunction]:
     """
     Takes in a JSON file and deserializes it to list of RationalFunction objects.
     """

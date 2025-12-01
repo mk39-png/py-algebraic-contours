@@ -4,6 +4,7 @@ aim to shorten the length of the original file.
 """
 
 import logging
+import pathlib
 from enum import Enum
 from typing import Any
 
@@ -913,14 +914,14 @@ def _deserialize_node_geometry(node_geometry_intermediate: dict[str, int | str])
                         qi_set)
 
 
-def _deserialize_list_node_geometry(filename: str) -> list[NodeGeometry]:
+def _deserialize_list_node_geometry(filepath: pathlib.Path) -> list[NodeGeometry]:
     """
     Helper method.
     Reads in JSON representation of vector NodeGeometry and deserializes it to
     list[NodeGeometry] object.
     """
     # TODO: fix type hint
-    list_node_geometry_intermediate: list[dict[str, int]] = load_json(filename)
+    list_node_geometry_intermediate: list[dict[str, int]] = load_json(filepath)
     list_node_geometry_final: list[NodeGeometry] = []
 
     for node_geometry_intermediate in list_node_geometry_intermediate:
@@ -947,11 +948,11 @@ def _compare_node_geometry(node_test: NodeGeometry,
             node_control.quantitative_invisibility_is_set())
 
 
-def compare_list_node_geometry(filename: str, nodes_test: list[NodeGeometry]) -> None:
+def compare_list_node_geometry(filepath: pathlib.Path, nodes_test: list[NodeGeometry]) -> None:
     """
     Primary method.
     """
-    nodes_control: list[NodeGeometry] = _deserialize_list_node_geometry(filename)
+    nodes_control: list[NodeGeometry] = _deserialize_list_node_geometry(filepath)
     assert len(nodes_control) == len(nodes_test)
     num_nodes: NodeIndex = len(nodes_control)
 
@@ -992,13 +993,13 @@ def _deserialize_segment_geometry(segment_geometry_intermediate: dict[str, Any]
     return segment_geometry_final
 
 
-def _deserialize_list_segment_geometry(filename: str) -> list[SegmentGeometry]:
+def _deserialize_list_segment_geometry(filepath: pathlib.Path) -> list[SegmentGeometry]:
     """
     Reads in JSON representation of SegmentGeometry and deserializes it to
     SegmentGeometry object.
     """
     # TODO: fix type hint
-    list_segment_geometry_intermediate: list[dict[str, int]] = load_json(filename)
+    list_segment_geometry_intermediate: list[dict[str, int]] = load_json(filepath)
     list_segment_geometry_final: list[SegmentGeometry] = []
 
     for segment_geometry_intermediate in list_segment_geometry_intermediate:
@@ -1013,13 +1014,13 @@ def _deserialize_list_segment_geometry(filename: str) -> list[SegmentGeometry]:
 # Segment Geometry -- Comaprison Methods
 #
 
-def compare_list_segment_geometry(filename: str,
+def compare_list_segment_geometry(filepath: pathlib.Path,
                                   segments_test: list[SegmentGeometry]) -> None:
     """
     Deserializes list of SegmentGeometry from provided filename and 
     compares two lists of segment geometry.
     """
-    segments_control: list[SegmentGeometry] = _deserialize_list_segment_geometry(filename)
+    segments_control: list[SegmentGeometry] = _deserialize_list_segment_geometry(filepath)
     assert len(segments_control) == len(segments_test)
     num_segments: int = len(segments_control)
     for i in range(num_segments):
@@ -1047,11 +1048,11 @@ def compare_segment_geometry(segment_test: SegmentGeometry,
 #
 # Segment Labels -- Deserialization Methods
 #
-def compare_segment_labels(filename: str, segment_labels_test: list[dict[str, int]]) -> None:
+def compare_segment_labels(filepath: pathlib.Path, segment_labels_test: list[dict[str, int]]) -> None:
     """
 
     """
-    segment_labels_control: list[dict[str, int]] = deserialize_segment_labels(filename)
+    segment_labels_control: list[dict[str, int]] = deserialize_segment_labels(filepath)
     assert len(segment_labels_control) == len(segment_labels_test)
 
     # Compare element by element
@@ -1059,11 +1060,11 @@ def compare_segment_labels(filename: str, segment_labels_test: list[dict[str, in
         assert control == test
 
 
-def deserialize_segment_labels(filename: str) -> list[dict[str, int]]:
+def deserialize_segment_labels(filepath: pathlib.Path) -> list[dict[str, int]]:
     """
     Simple deserialization of segment_labels.json.
     Since segment_labels used to be a vector<map<string, int>>
     """
     # TODO: fix type hint
-    segment_labels_intermediate: list[dict[str, int]] = load_json(filename)
+    segment_labels_intermediate: list[dict[str, int]] = load_json(filepath)
     return segment_labels_intermediate

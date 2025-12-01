@@ -10,28 +10,28 @@ Utility methods for testing compute_intersections.
 # **************
 
 
+import pathlib
+
 import numpy.testing as npt
 
-from pyalgcon.contour_network.intersection_data import \
-    IntersectionData
-from pyalgcon.contour_network.intersection_heuristics import \
-    IntersectionStats
+from pyalgcon.contour_network.intersection_data import IntersectionData
+from pyalgcon.contour_network.intersection_heuristics import IntersectionStats
 from pyalgcon.core.common import float_equal, load_json
 
 
-def compare_intersection_stats(filename: str, intersection_stats_test: IntersectionStats) -> None:
+def compare_intersection_stats(filepath: pathlib.Path, intersection_stats_test: IntersectionStats) -> None:
     """
     Compares IntersectionStats from file
     """
-    intersection_stats_control: IntersectionStats = deserialize_intersection_stats(filename)
+    intersection_stats_control: IntersectionStats = deserialize_intersection_stats(filepath)
     assert intersection_stats_control == intersection_stats_test
 
 
-def deserialize_intersection_stats(filename: str) -> IntersectionStats:
+def deserialize_intersection_stats(filepath: pathlib.Path) -> IntersectionStats:
     """
     Deserializes IntersectionStats json file
     """
-    intersection_stats_intermediate: dict = load_json(filename)
+    intersection_stats_intermediate: dict = load_json(filepath)
     return IntersectionStats(intersection_stats_intermediate.get("num_intersection_tests"),
                              intersection_stats_intermediate.get("num_bezier_nonoverlaps"),
                              intersection_stats_intermediate.get("bounding_box_call"),
@@ -39,13 +39,13 @@ def deserialize_intersection_stats(filename: str) -> IntersectionStats:
 
 
 def compare_list_list_intersection_data_from_file(
-        filename: str,
+        filepath: pathlib.Path,
         contour_intersections_test: list[list[IntersectionData]]) -> None:
     """
     Reads in contour intersections file to compare to.
     """
     contour_intersections_control: list[list[IntersectionData]] = (
-        deserialize_list_list_intersection_data(filename)
+        deserialize_list_list_intersection_data(filepath)
     )
     compare_list_list_intersection_data(contour_intersections_test,
                                         contour_intersections_control)
@@ -57,6 +57,7 @@ def compare_list_list_intersection_data(contour_intersections_test: list[list[In
     """
     Compares list[list[IntersectionData]]
     """
+    # FIXME: accept the control as the first parameter and the test as the second parameter
     assert len(contour_intersections_control) == len(contour_intersections_test)
     num_outer_list: int = len(contour_intersections_control)
 
@@ -79,12 +80,12 @@ def compare_list_list_intersection_data(contour_intersections_test: list[list[In
             assert data_control.is_redundant == data_test.is_redundant
 
 
-def deserialize_list_list_intersection_data(filename: str) -> list[list[IntersectionData]]:
+def deserialize_list_list_intersection_data(filepath: pathlib.Path) -> list[list[IntersectionData]]:
     """
     Deserializes contour_intersections.json into list[list[IntersectionData]]
     """
 
-    intersection_data_intermediate: list[list[dict]] = load_json(filename)
+    intersection_data_intermediate: list[list[dict]] = load_json(filepath)
     intersection_data_final: list[list[IntersectionData]] = []
 
     for inner_list in intersection_data_intermediate:
