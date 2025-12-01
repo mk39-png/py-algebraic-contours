@@ -6,7 +6,6 @@ used throughout various tests (e.g. Spot Control .obj file)
 """
 
 import logging
-import os
 import pathlib
 
 import igl
@@ -19,9 +18,8 @@ from pyalgcon.contour_network.compute_intersections import \
 from pyalgcon.contour_network.contour_network import (ContourNetwork,
                                                       InvisibilityParameters)
 from pyalgcon.core.affine_manifold import AffineManifold
-from pyalgcon.core.apply_transformation import (
-    apply_camera_frame_transformation_to_vertices,
-    apply_transformation_to_vertices)
+from pyalgcon.core.apply_transformation import \
+    apply_camera_frame_transformation_to_vertices
 from pyalgcon.core.common import Matrix3x3f, MatrixNx3f
 from pyalgcon.quadratic_spline_surface.optimize_spline_surface import \
     OptimizationParameters
@@ -41,25 +39,29 @@ FILE_BASE = "algebraic_contours"
 @pytest.fixture(scope="session", params=[
     ("spot_control", "spot_control_mesh-cleaned_conf_simplified_with_uv.obj")
 ])
-def obj_fileinfo(request) -> tuple[pathlib.Path, pathlib.Path]:
+def testing_fileinfo(request) -> tuple[pathlib.Path, pathlib.Path]:
     """ Flexible method to resolve filepath of test data.
 
-    :returns: tuple of folder path and filepath to a given obj file
+    :returns: tuple of folderpath and filepath to a given obj file
     """
-    folder_name: str
-    file_name: str
-    folder_name, file_name = request.param
-    base_directory: pathlib.Path = pathlib.Path(__file__).parent / "data"
+    # Setup
+    foldername: str
+    obj_filename: str
+    foldername, obj_filename = request.param
+    base_folderpath: pathlib.Path = pathlib.Path(__file__).parent / "data"
 
-    return (base_directory / folder_name), (base_directory / folder_name / file_name)
+    # Return values
+    base_data_folderpath: pathlib.Path = base_folderpath / foldername
+    obj_filepath: pathlib.Path = base_folderpath / foldername / obj_filename
+    return base_data_folderpath, obj_filepath
 
 
 @pytest.fixture(scope="session")
-def parsed_control_mesh(obj_fileinfo) -> tuple[pathlib.Path,
-                                               tuple[np.ndarray,
-                                                     np.ndarray,
-                                                     np.ndarray,
-                                                     np.ndarray]]:
+def parsed_control_mesh(testing_fileinfo: tuple[pathlib.Path, pathlib.Path]
+                        ) -> tuple[np.ndarray,
+                                   np.ndarray,
+                                   np.ndarray,
+                                   np.ndarray]:
     """ 
     Used for testing control mesh in generating 
     the TwelveSplitSplineSurface.
@@ -70,9 +72,8 @@ def parsed_control_mesh(obj_fileinfo) -> tuple[pathlib.Path,
     :return: folder path and tuple V, uv, F, FT
     :rtype: pathlib.Path, tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
     """
-    folder_path: pathlib.Path
-    file_path: pathlib.Path
-    folder_path, file_path = obj_fileinfo
+    obj_filepath: pathlib.Path
+    _, obj_filepath = testing_fileinfo
 
     # Get input mesh
     V_temp: npty.ArrayLike
@@ -81,7 +82,7 @@ def parsed_control_mesh(obj_fileinfo) -> tuple[pathlib.Path,
     F_temp: npty.ArrayLike  # int
     FT_temp: npty.ArrayLike  # int
     FN_temp: npty.ArrayLike  # int
-    V_temp, uv_temp, N_temp, F_temp, FT_temp, FN_temp = igl.readOBJ(file_path)
+    V_temp, uv_temp, N_temp, F_temp, FT_temp, FN_temp = igl.readOBJ(obj_filepath)
 
     # Wrapping inside np.array for typing
     V: np.ndarray = np.array(V_temp)
@@ -89,7 +90,7 @@ def parsed_control_mesh(obj_fileinfo) -> tuple[pathlib.Path,
     F: np.ndarray = np.array(F_temp)
     FT: np.ndarray = np.array(FT_temp)
 
-    return folder_path, (V, uv, F, FT)
+    return V, uv, F, FT
 
 
 @pytest.fixture(scope="session")
@@ -97,7 +98,11 @@ def initialize_affine_manifold(parsed_control_mesh) -> AffineManifold:
     """
     Fixture to calculate the AffineManifold from the load_mesh_testing fixture.
     """
-    folder_path, (V, uv, F, FT) = parsed_control_mesh
+    V: np.ndarray
+    uv: np.ndarray
+    F: np.ndarray
+    FT: np.ndarray
+    V, uv, F, FT = parsed_control_mesh
     affine_manifold: AffineManifold = AffineManifold(F, uv, FT)
     return affine_manifold
 
@@ -134,7 +139,11 @@ def projection_frame_on_vertices(parsed_control_mesh) -> np.ndarray:
     """
     Returns vertices projected onto camera default camera.
     """
-    folder_path, (V_raw, uv, F, FT) = parsed_control_mesh
+    V_raw: np.ndarray
+    uv: np.ndarray
+    F: np.ndarray
+    FT: np.ndarray
+    V_raw, uv, F, FT = parsed_control_mesh
 
     # TODO: have ability to test with various projection matrices
     frame: Matrix3x3f = np.array([[1, 0, 0],
@@ -169,22 +178,54 @@ def twelve_split_spline_transformed(initialize_affine_manifold,
 
 
 @pytest.fixture(scope="session")
-def initialize_contour_network(
-        parsed_control_mesh,
-        twelve_split_spline_transformed) -> tuple[pathlib.Path, ContourNetwork]:
+def initialize_patch_boundary_edges(parsed_control_mesh: tuple[np.ndarray,
+                                                               np.ndarray,
+                                                               np.ndarray,
+                                                               np.ndarray],
+                                    twelve_split_spline_transformed: TwelveSplitSplineSurface
+                                    ) -> list[tuple[int, int]]:
+    """ Calculates patch boundary edges
+
+    :param parsed_control_mesh: mesh information
+    :type parsed_control_mesh: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
+    :param twelve_split_spline_transformed: twelve split splined from projected vertices
+    :type twelve_split_spline_transformed: TwelveSplitSplineSurface
+    :return: patch boundary edges
+    :rtype: list[tuple[int, int]]
     """
-    Used for testing of contour network generat
-    """
+
     # Retrieve parameters
-    folder_path, (V_raw, uv, F, FT) = parsed_control_mesh
+    V: np.ndarray
+    uv: np.ndarray
+    F: np.ndarray
+    FT: np.ndarray
+    V, uv, F, FT = parsed_control_mesh
     spline_surface: TwelveSplitSplineSurface = twelve_split_spline_transformed
-    intersect_params = IntersectionParameters()
-    invisibility_params = InvisibilityParameters()
 
     # Get the boundary edges
     patch_boundary_edges: list[tuple[int, int]] = (
         compute_twelve_split_spline_patch_boundary_edges(F, spline_surface.face_to_patch_indices)
     )
+
+    return patch_boundary_edges
+
+
+@pytest.fixture(scope="session")
+def initialize_contour_network(
+        testing_fileinfo,
+        twelve_split_spline_transformed,
+        initialize_patch_boundary_edges) -> tuple[pathlib.Path,
+                                                  ContourNetwork]:
+    """
+    Used for testing of contour network generation
+    """
+    # Retrieve parameters
+    base_data_folderpath: pathlib.Path
+    base_data_folderpath, _ = testing_fileinfo
+    spline_surface: TwelveSplitSplineSurface = twelve_split_spline_transformed
+    patch_boundary_edges: list[tuple[int, int]] = initialize_patch_boundary_edges
+    intersect_params = IntersectionParameters()
+    invisibility_params = InvisibilityParameters()
 
     # Build the contours
     logger.info("Computing contours")
@@ -195,5 +236,5 @@ def initialize_contour_network(
         patch_boundary_edges
     )
 
-    output_filepath: pathlib.Path = folder_path / "contour_network" / "output.svg"
-    return output_filepath, contour_network
+    output_contour_filepath: pathlib.Path = base_data_folderpath / "contour_network" / "output.svg"
+    return output_contour_filepath, contour_network
