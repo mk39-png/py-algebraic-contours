@@ -4,7 +4,8 @@ import json  # for testing
 import logging
 import math
 import os
-from io import StringIO  # used for testing
+import pathlib  # used for testing
+from io import StringIO
 
 import igl
 import numpy as np
@@ -184,7 +185,7 @@ def initialize_spot_control_mesh() -> tuple[npty.ArrayLike, npty.ArrayLike, npty
     """
     # Get input mesh
     filename: str = "spot_control_mesh-cleaned_conf_simplified_with_uv.obj"
-    filepath: str = os.path.abspath(f"spot_control\\{filename}")
+    filepath: str = os.path.abspath(f"tests\\data\\spot_control\\{filename}")
 
     V_temp: npty.ArrayLike
     uv_temp: npty.ArrayLike
@@ -203,14 +204,15 @@ def initialize_spot_control_mesh() -> tuple[npty.ArrayLike, npty.ArrayLike, npty
     return V, uv, F, FT
 
 
-def load_json(filename: str) -> list[dict] | list[list[dict]] | list[list[list]]:
+def load_json(filepath: pathlib.Path) -> list[dict] | list[list[dict]] | list[list[list]]:
     """
     Used by affine_manifold tests.
     Parses a list of dataclasses.
     """
     obj: list[list[dict]] | list[dict] | list[list[list]] | None = None
 
-    filepath: str = os.path.abspath(f"src\\tests\\{filename}")
+    # filepath: str = os.path.abspath(f"tests\\data\\{filename}")
+
     with open(filepath, 'r', encoding='utf-8') as file:
         try:
             obj = json.load(file)
@@ -223,7 +225,7 @@ def load_json(filename: str) -> list[dict] | list[list[dict]] | list[list[list]]
     return obj
 
 
-def deserialize_list_list_varying_lengths_float(filename: str) -> list[list[float]]:
+def deserialize_list_list_varying_lengths_float(filepath: pathlib.Path) -> list[list[float]]:
     """
     Used when the csv list contains list with varying list lengths.
     e.g. 
@@ -235,7 +237,6 @@ def deserialize_list_list_varying_lengths_float(filename: str) -> list[list[floa
 
     # TODO: change to be list of list of any datatype
     """
-    filepath: str = os.path.abspath(f"src\\tests\\{filename}")
     rows_control: list[list[float]] = []
 
     with open(filepath, 'r', encoding='utf-8') as file:
@@ -247,7 +248,7 @@ def deserialize_list_list_varying_lengths_float(filename: str) -> list[list[floa
     return rows_control
 
 
-def deserialize_list_list_varying_lengths(filename: str) -> list[list[int]]:
+def deserialize_list_list_varying_lengths(filepath: pathlib.Path) -> list[list[int]]:
     """
     Used when the csv list contains list with varying list lengths.
     e.g. 
@@ -259,7 +260,6 @@ def deserialize_list_list_varying_lengths(filename: str) -> list[list[int]]:
 
     # TODO: change to be list of list of any datatype
     """
-    filepath: str = os.path.abspath(f"src\\tests\\{filename}")
     rows_control: list[list[int]] = []
 
     with open(filepath, 'r', encoding='utf-8') as file:
@@ -271,7 +271,9 @@ def deserialize_list_list_varying_lengths(filename: str) -> list[list[int]]:
     return rows_control
 
 
-def compare_list_list_varying_lengths_float(filename: str, rows_test: list[list[float]], precision=0.0) -> None:
+def compare_list_list_varying_lengths_float(filepath: pathlib.Path,
+                                            rows_test: list[list[float]],
+                                            precision=0.0) -> None:
     """
     Used when the csv list contains list with varying list lengths.
     e.g. 
@@ -281,7 +283,6 @@ def compare_list_list_varying_lengths_float(filename: str, rows_test: list[list[
     [5, 7, 8, 8, 19, 1],
     ]
     """
-    filepath: str = os.path.abspath(f"src\\tests\\{filename}")
     rows_control: list[list[float]] = []
 
     with open(filepath, 'r', encoding='utf-8') as file:
@@ -299,7 +300,7 @@ def compare_list_list_varying_lengths_float(filename: str, rows_test: list[list[
                             atol=precision)
 
 
-def compare_list_list_varying_lengths(filename: str, rows_test: list[list[int]]) -> None:
+def compare_list_list_varying_lengths(filepath: pathlib.Path, rows_test: list[list[int]]) -> None:
     """
     Used when the csv list contains list with varying list lengths.
     e.g. 
@@ -311,7 +312,6 @@ def compare_list_list_varying_lengths(filename: str, rows_test: list[list[int]])
 
     Used for integer datatypes.
     """
-    filepath: str = os.path.abspath(f"src\\tests\\{filename}")
     rows_control: list[list[int]] = []
 
     with open(filepath, 'r', encoding='utf-8') as file:
@@ -328,7 +328,7 @@ def compare_list_list_varying_lengths(filename: str, rows_test: list[list[int]])
                                np.array(rows_control[i]))
 
 
-def compare_eigen_numpy_matrix(filename: str,
+def compare_eigen_numpy_matrix(filepath: pathlib.Path,
                                numpy_array: np.ndarray,
                                make_3d: bool = False) -> None:
     """ 
@@ -336,11 +336,11 @@ def compare_eigen_numpy_matrix(filename: str,
     Takes a filename and creates an absolute filepath to src/tests/
     """
     eigen_array: np.ndarray = deserialize_eigen_matrix_csv_to_numpy(
-        filename, make_3d)
+        filepath, make_3d)
     npt.assert_allclose(numpy_array, eigen_array)
 
 
-def compare_intersection_points(filename: str,
+def compare_intersection_points(filepath: pathlib.Path,
                                 numpy_array: np.ndarray,
                                 num_intersections: int) -> None:
     """
@@ -358,12 +358,12 @@ def compare_intersection_points(filename: str,
           [0.000000e+000, 1.976263e-323]])
     But we only care about the first row since this only has 1 intersection.
     """
-    eigen_array: np.ndarray = deserialize_eigen_matrix_csv_to_numpy(filename)
+    eigen_array: np.ndarray = deserialize_eigen_matrix_csv_to_numpy(filepath)
     npt.assert_allclose(
         numpy_array[:num_intersections], eigen_array[:num_intersections], atol=1e-5)
 
 
-def deserialize_eigen_matrix_csv_to_numpy(filename: str, make_3d: bool = False) -> np.ndarray:
+def deserialize_eigen_matrix_csv_to_numpy(filepath: pathlib.Path, make_3d: bool = False) -> np.ndarray:
     """
     Turns Eigen matrix .csv into NumPy array
     Used for testing.
@@ -371,8 +371,6 @@ def deserialize_eigen_matrix_csv_to_numpy(filename: str, make_3d: bool = False) 
     :param make_3d: parses a 3D csv into a 3D nnumpy array. 
     usually equivalent structure is a list of matrices.
     """
-    filepath: str = os.path.abspath(f"src\\tests\\{filename}")
-
     arr: np.ndarray
 
     if make_3d:

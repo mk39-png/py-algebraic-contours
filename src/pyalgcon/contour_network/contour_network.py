@@ -17,42 +17,44 @@ from pyalgcon.contour_network.compute_closed_contours import \
     compute_closed_contours
 from pyalgcon.contour_network.compute_contours import (
     compute_spline_surface_contours_and_boundaries, pad_contours)
-from pyalgcon.contour_network.compute_cusps import \
-    compute_spline_surface_cusps
+from pyalgcon.contour_network.compute_cusps import compute_spline_surface_cusps
 from pyalgcon.contour_network.compute_intersections import (
     IntersectionParameters, compute_intersections)
 from pyalgcon.contour_network.compute_ray_intersections import (
     compute_spline_surface_ray_intersections, partition_ray_intersections)
-from pyalgcon.contour_network.intersection_data import \
-    IntersectionData
-from pyalgcon.contour_network.project_curves import \
-    project_curves
+from pyalgcon.contour_network.intersection_data import IntersectionData
+from pyalgcon.contour_network.project_curves import project_curves
 from pyalgcon.contour_network.projected_curve_network import (
     ProjectedCurveNetwork, SegmentChainIterator)
 from pyalgcon.contour_network.write_output import \
     write_contours_with_annotations
-from pyalgcon.core.common import (
-    DISCRETIZATION_LEVEL, INLINE_TESTING_ENABLED_CONTOUR_NETWORK,
-    INLINE_TESTING_ENABLED_QI, OFF_WHITE, TESTING_FOLDER_SOURCE,
-    USE_DESERIALIZED_VALUES, Matrix2x3f, Matrix3x3f, MatrixNx3f, NodeIndex,
-    PatchIndex, PlanarPoint1d, SegmentIndex, SpatialVector1d, Vector3f,
-    Vector3i, compare_eigen_numpy_matrix, compare_list_list_varying_lengths,
-    compare_list_list_varying_lengths_float,
-    deserialize_eigen_matrix_csv_to_numpy,
-    deserialize_list_list_varying_lengths,
-    deserialize_list_list_varying_lengths_float, dot_product,
-    nested_vector_size, vector_contains)
+from pyalgcon.core.common import (DISCRETIZATION_LEVEL,
+                                  INLINE_TESTING_ENABLED_CONTOUR_NETWORK,
+                                  INLINE_TESTING_ENABLED_QI, OFF_WHITE,
+                                  TESTING_FOLDER_SOURCE,
+                                  USE_DESERIALIZED_VALUES, Matrix2x3f,
+                                  Matrix3x3f, MatrixNx3f, NodeIndex,
+                                  PatchIndex, PlanarPoint1d, SegmentIndex,
+                                  SpatialVector1d, Vector3f, Vector3i,
+                                  compare_eigen_numpy_matrix,
+                                  compare_list_list_varying_lengths,
+                                  compare_list_list_varying_lengths_float,
+                                  deserialize_eigen_matrix_csv_to_numpy,
+                                  deserialize_list_list_varying_lengths,
+                                  deserialize_list_list_varying_lengths_float,
+                                  dot_product, nested_vector_size,
+                                  vector_contains)
 from pyalgcon.core.conic import Conic
-from pyalgcon.core.rational_function import (
-    CurveDiscretizationParameters, RationalFunction)
+from pyalgcon.core.rational_function import (CurveDiscretizationParameters,
+                                             RationalFunction)
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface import \
     QuadraticSplineSurface
-
 from pyalgcon.utils.compute_intersections_testing_utils import \
     deserialize_list_list_intersection_data
 from pyalgcon.utils.conic_testing_utils import (compare_conics_from_file,
                                                 deserialize_conics)
-from pyalgcon.utils.projected_curve_networks_utils import deserialize_segment_labels
+from pyalgcon.utils.projected_curve_networks_utils import \
+    deserialize_segment_labels
 from pyalgcon.utils.rational_function_testing_utils import (
     compare_rational_functions_from_file, deserialize_rational_functions)
 
