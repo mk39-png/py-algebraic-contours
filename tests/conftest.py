@@ -69,7 +69,8 @@ def parsed_control_mesh(testing_fileinfo: tuple[pathlib.Path, pathlib.Path]
     Returns the root folder of the mesh and its associated parsed
     data.
 
-    :return: folder path and tuple V, uv, F, FT
+    :return: folder path and tuple of vertices, uv coordinates, face indices, 
+             and face indices into texture coordinates
     :rtype: pathlib.Path, tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
     """
     obj_filepath: pathlib.Path
