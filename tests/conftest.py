@@ -29,13 +29,6 @@ from pyalgcon.quadratic_spline_surface.twelve_split_spline import (
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-FILE_BASE = "algebraic_contours"
-
-#
-# UTILITY METHODS
-#
-
-
 @pytest.fixture(scope="session", params=[
     ("spot_control", "spot_control_mesh-cleaned_conf_simplified_with_uv.obj")
 ])
