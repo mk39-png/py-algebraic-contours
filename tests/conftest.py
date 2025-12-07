@@ -23,6 +23,8 @@ from pyalgcon.core.apply_transformation import \
 from pyalgcon.core.common import Matrix3x3f, MatrixNx3f
 from pyalgcon.quadratic_spline_surface.optimize_spline_surface import \
     OptimizationParameters
+from pyalgcon.quadratic_spline_surface.quadratic_spline_surface import \
+    QuadraticSplineSurface
 from pyalgcon.quadratic_spline_surface.twelve_split_spline import (
     TwelveSplitSplineSurface, compute_twelve_split_spline_patch_boundary_edges)
 
@@ -145,6 +147,49 @@ def projection_frame_on_vertices(parsed_control_mesh) -> np.ndarray:
                                   [0, 0, 1]])
     V_transformed: MatrixNx3f = apply_camera_frame_transformation_to_vertices(V_raw, frame)
     return V_transformed
+
+
+@pytest.fixture(scope="session")
+def quadratic_spline_surface_control_from_file(testing_fileinfo) -> QuadraticSplineSurface:
+    """
+    Utilizes the .from_file() class method to create a QuadraticSplineSurface from file.
+    This follows the format of QuadraticSplineSurface serialization that the original C++ code
+    uses
+    """
+    obj_filepath: pathlib.Path
+    _, obj_filepath = testing_fileinfo
+
+    # Need to initialize QuadraticSplineSurface with our test file
+    # simply gets the original .obj filename and appends to it "_CONTROL.txt"
+    surface_filepath: pathlib.Path = obj_filepath.with_name(obj_filepath.stem + "_CONTROL.txt")
+    spline_surface: QuadraticSplineSurface = QuadraticSplineSurface.from_file(surface_filepath)
+
+    return spline_surface
+
+
+@pytest.fixture(scope="session")
+def twelve_split_spline_raw(parsed_control_mesh,
+                            initialize_affine_manifold) -> TwelveSplitSplineSurface:
+    """
+    Creates a TwelveSplitSpline surface WITHOUT transformed vertices
+    NOTE: initializes 12-split spline for use in quadratic surface tests.
+    """
+    # Retrieve parameters
+    V_raw: np.ndarray
+    uv: np.ndarray
+    F: np.ndarray
+    FT: np.ndarray
+    V_raw, uv, F, FT = parsed_control_mesh
+    affine_manifold: AffineManifold = initialize_affine_manifold
+    optimization_params: OptimizationParameters = OptimizationParameters()
+
+    # Generate quadratic spline
+    spline_surface: TwelveSplitSplineSurface = TwelveSplitSplineSurface(
+        V_raw,
+        affine_manifold,
+        optimization_params)
+
+    return spline_surface
 
 
 @pytest.fixture(scope="session")
