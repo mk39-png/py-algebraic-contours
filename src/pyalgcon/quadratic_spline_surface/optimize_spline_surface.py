@@ -11,30 +11,21 @@ import numpy.testing as npt
 from cholespy import CholeskySolverD, MatrixType
 from scipy.sparse import csr_matrix
 
-from pyalgcon.core.affine_manifold import (AffineManifold,
-                                           EdgeManifoldChart)
-from pyalgcon.core.common import (COLS, ROWS, Index,
-                                  Matrix2x2f, Matrix2x3r,
-                                  Matrix3x2r, Matrix12x3f,
-                                  Matrix12x12r, Matrix36x36f,
-                                  MatrixNx3, MatrixNx3f,
-                                  MatrixXf, MatrixXi,
-                                  PlanarPoint, PlanarPoint1d,
-                                  SpatialVector,
-                                  SpatialVector1d,
-                                  TwelveSplitGradient,
-                                  TwelveSplitHessian,
-                                  Vector1D, Vector2D,
-                                  Vector12f, Vector36f,
-                                  VectorX,
+from pyalgcon.core.affine_manifold import AffineManifold, EdgeManifoldChart
+from pyalgcon.core.common import (COLS, ROWS, Index, Matrix2x2f, Matrix2x3r,
+                                  Matrix3x2r, Matrix12x3f, Matrix12x12r,
+                                  Matrix36x36f, MatrixNx3, MatrixNx3f,
+                                  MatrixXf, MatrixXi, PlanarPoint,
+                                  PlanarPoint1d, SpatialVector,
+                                  SpatialVector1d, TwelveSplitGradient,
+                                  TwelveSplitHessian, Vector1D, Vector2D,
+                                  Vector12f, Vector36f, VectorX,
                                   find_face_vertex_index,
-                                  index_vector_complement,
-                                  unimplemented)
+                                  index_vector_complement, unimplemented)
 from pyalgcon.core.halfedge import Halfedge
 from pyalgcon.quadratic_spline_surface.compute_local_twelve_split_hessian import (
     build_local_smoothness_hessian, get_C_gl)
-from pyalgcon.quadratic_spline_surface.planarH import \
-    planarHfun
+from pyalgcon.quadratic_spline_surface.planarH import planarHfun
 from pyalgcon.quadratic_spline_surface.position_data import (
     TriangleCornerData, TriangleMidpointData,
     compute_edge_midpoint_with_gradient, generate_affine_manifold_corner_data,
@@ -771,24 +762,36 @@ def build_planar_constraint_hessian(uv: np.ndarray,
     return H_p
 
 
-def build_twelve_split_spline_energy_system(initial_V: MatrixNx3f,
-                                            initial_face_normals: np.ndarray,
-                                            affine_manifold: AffineManifold,
-                                            optimization_params: OptimizationParameters
-                                            ) -> tuple[float, VectorX, csr_matrix, CholeskySolverD]:
-    """
-    Build the quadratic energy system for the twelve-split spline with thin
-    plate, fitting, and planarity energies.
+def build_twelve_split_energy_quadratic_params(
+    initial_V: MatrixNx3f,
+        initial_face_normals: np.ndarray,
+        affine_manifold: AffineManifold,
+        optimization_params: OptimizationParameters
+) -> tuple[list[SpatialVector1d],
+           list[Matrix2x3r],
+           list[list[SpatialVector1d]],  # list[SpatialVector1d] of length 3
+           list[int],
+           list[list[int]],  # list[int] of length 3
+           list[SpatialVector],
+           np.ndarray,  # matrix
+           AffineManifold,
+           OptimizationParameters,
+           int,
+           int]:
+    """ Creates parameters for compute_twelve_split_energy_quadratic() within 
+    build_twelve_split_spline_energy_system() for the sake of testability.
 
-    @param[in] initial_V: initial vertex positions
-    @param[in] initial_face_normals: initial vertex normals
-    @param[in] affine_manifold: mesh topology and affine manifold structure
-    @param[in] optimization_params: parameters for the spline optimization
-
-    @param[out] energy: energy value (i.e., constant term)
-    @param[out] derivatives: energy gradient (i.e., linear term)
-    @param[out] hessian: energy Hessian (i.e., quadratic term)
-    @param[out] hessian_inverse: solver for inverting the Hessian
+    :return vertex_positions:         /
+    :return vertex_gradients:         /
+    :return edge_gradients:           /
+    :return global_vertex_indices:    /
+    :return global_edge_indices:      /
+    :return initial_vertex_positions: /
+    :return initial_face_normals:     /
+    :return manifold:                 /
+    :return optimization_params:      /
+    :return num_variable_vertices:    /
+    :return num_variable_edges:       /
     """
     num_vertices: int = initial_V.shape[ROWS]
     num_faces: int = affine_manifold.num_faces
@@ -830,6 +833,60 @@ def build_twelve_split_spline_energy_system(initial_V: MatrixNx3f,
     global_edge_indices: list[list[int]] = build_variable_edge_indices_map(
         num_faces, variable_edges, halfedge, he_to_corner)
     assert len(global_edge_indices[0]) == 3  # this asserts that the list[array[int, 3]]
+
+    return (vertex_positions,
+            vertex_gradients,
+            edge_gradients,
+            global_vertex_indices,
+            global_edge_indices,
+            initial_vertex_positions,
+            initial_face_normals,
+            affine_manifold,
+            optimization_params,
+            num_variable_vertices,
+            num_variable_edges)
+
+
+def build_twelve_split_spline_energy_system(initial_V: MatrixNx3f,
+                                            initial_face_normals: np.ndarray,
+                                            affine_manifold: AffineManifold,
+                                            optimization_params: OptimizationParameters
+                                            ) -> tuple[float, VectorX, csr_matrix, CholeskySolverD]:
+    """
+    Build the quadratic energy system for the twelve-split spline with thin
+    plate, fitting, and planarity energies.
+
+    :param[in] initial_V: initial vertex positions
+    :param[in] initial_face_normals: initial vertex normals
+    :param[in] affine_manifold: mesh topology and affine manifold structure
+    :param[in] optimization_params: parameters for the spline optimization
+
+    :param[out] energy: energy value (i.e., constant term)
+    :param[out] derivatives: energy gradient (i.e., linear term)
+    :param[out] hessian: energy Hessian (i.e., quadratic term)
+    :param[out] hessian_inverse: solver for inverting the Hessian
+    """
+    # Builds parameters for compute_twelve_split_energy_quadratic
+    vertex_positions:     list[SpatialVector1d]
+    vertex_gradients:    list[Matrix2x3r]
+    edge_gradients:    list[list[SpatialVector1d]]  # list[SpatialVector1d] of length 3
+    global_vertex_indices:    list[int]
+    global_edge_indices:    list[list[int]]  # list[int] of length 3
+    initial_vertex_positions:    list[SpatialVector]
+    num_variable_vertices:    int
+    num_variable_edges:    int
+    (vertex_positions,
+        vertex_gradients,
+        edge_gradients,
+        global_vertex_indices,
+        global_edge_indices,
+        initial_vertex_positions,
+        initial_face_normals,
+        affine_manifold,
+        optimization_params,
+        num_variable_vertices,
+        num_variable_edges) = build_twelve_split_energy_quadratic_params(
+            initial_V, initial_face_normals, affine_manifold, optimization_params)
 
     # Build energy for the affine manifold (all below)
     energy: float
