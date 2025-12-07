@@ -29,7 +29,7 @@ def test_compute_cone_corners(testing_fileinfo,
     # Retrieve parameters
     base_data_folderpath: pathlib.Path
     base_data_folderpath, _ = testing_fileinfo
-    filepath: pathlib.Path = base_data_folderpath / "core" / "12_split_spline"
+    filepath: pathlib.Path = base_data_folderpath / "quadratic_spline_surface" / "12_split_spline"
     affine_manifold: AffineManifold = initialize_affine_manifold
 
     # Execute method

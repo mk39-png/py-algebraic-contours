@@ -1,33 +1,32 @@
 """
 This is the user-facing interface to input a mesh and generate the algebraic contours.
 """
-import os
+import logging
+import pathlib
 
 import igl
-import numpy as np
-from mathutils import Matrix
 from numpy.typing import ArrayLike
-
 from pyalgcon.contour_network.compute_intersections import \
     IntersectionParameters
-from pyalgcon.contour_network.contour_network import (
-    ContourNetwork, InvisibilityParameters)
+from pyalgcon.contour_network.contour_network import (ContourNetwork,
+                                                      InvisibilityParameters)
 from pyalgcon.core.affine_manifold import AffineManifold
-from pyalgcon.core.apply_transformation import \
-    apply_transformation_to_vertices
-from pyalgcon.core.common import MatrixNx3f
+from pyalgcon.core.apply_transformation import apply_transformation_to_vertices
+from pyalgcon.core.common import Matrix4x4f, MatrixNx3f
 from pyalgcon.quadratic_spline_surface.optimize_spline_surface import \
     OptimizationParameters
 from pyalgcon.quadratic_spline_surface.twelve_split_spline import (
     TwelveSplitSplineSurface, compute_twelve_split_spline_patch_boundary_edges)
-
-from ...common import DIRECTORY_TEMP
 from pyalgcon.utils.projected_curve_networks_utils import SVGOutputMode
 
+logger: logging.Logger = logging.getLogger(__name__)
 
 # NOTE: this should also take some file...
 # To preserve state or something?
-def generate_algebraic_contours(projection_matrix: Matrix) -> None:
+
+
+def generate_algebraic_contours(projection_matrix: Matrix4x4f,
+                                directory_temp: pathlib.Path) -> None:
     """
     Testing contour network creation with control spot mesh.
     Reads from the temporary file.
@@ -48,7 +47,7 @@ def generate_algebraic_contours(projection_matrix: Matrix) -> None:
     F: ArrayLike
     FT: ArrayLike
     FN: ArrayLike
-    V, uv, N, F, FT, FN = igl.readOBJ(os.path.join(DIRECTORY_TEMP, "temp_out.obj"))
+    V, uv, N, F, FT, FN = igl.readOBJ(directory_temp / "temp_out.obj")
     print(projection_matrix)
 
     # Set up the camera
@@ -64,7 +63,7 @@ def generate_algebraic_contours(projection_matrix: Matrix) -> None:
     # Preparing mesh data for use in contours calculation
     # TODO: will this work? The whole conversion of the MathUtils matrix to NumPy matrix?
     # TODO: maybe filter out non-numbers like 8.22e-16 and set to 0
-    V_transformed: MatrixNx3f = apply_transformation_to_vertices(V, np.array(projection_matrix))
+    V_transformed: MatrixNx3f = apply_transformation_to_vertices(V, projection_matrix)
     # print(V_transformed)
     # print(V_transformed.shape)
 
@@ -90,8 +89,10 @@ def generate_algebraic_contours(projection_matrix: Matrix) -> None:
     )
 
     # Save the contours to file
-    # logger.info("Saving contours")
+    logger.info("Saving contours")
     contour_network_filename: str = "contours.svg"
-    contour_network_filepath: str = os.path.join(DIRECTORY_TEMP, f"{contour_network_filename}")
-    print(contour_network_filepath)
-    contour_network.write(contour_network_filepath, svg_output_mode, show_nodes)
+    contour_network_filepath: pathlib.Path = directory_temp / f"{contour_network_filename}"
+    try:
+        contour_network.write(contour_network_filepath, svg_output_mode, show_nodes)
+    except (IOError):
+        logger.error("FAILED TO WRITE TO FILE %s", contour_network_filepath)
