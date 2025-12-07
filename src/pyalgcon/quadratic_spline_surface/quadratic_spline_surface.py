@@ -1,5 +1,6 @@
 import logging
 import os
+import pathlib
 from dataclasses import dataclass
 from typing import TextIO
 
@@ -7,14 +8,16 @@ import igl
 import numpy as np
 import polyscope
 
-from ..core.common import (
-    COLS, DISCRETIZATION_LEVEL, HASH_TABLE_SIZE, ROWS, SKY_BLUE, Matrix3x2f,
-    Matrix6x3f, MatrixNx3f, MatrixNx3i, MatrixXf, PatchIndex, PlanarPoint,
-    PlanarPoint1d, SpatialVector, SpatialVector1d, Vector1D,
-    convert_nested_vector_to_matrix, convert_polylines_to_edges)
-from ..core.convex_polygon import ConvexPolygon
-from ..core.line_segment import LineSegment
-from ..quadratic_spline_surface.quadratic_spline_surface_patch import \
+from pyalgcon.core.common import (COLS, DISCRETIZATION_LEVEL, HASH_TABLE_SIZE,
+                                  ROWS, SKY_BLUE, Matrix3x2f, Matrix6x3f,
+                                  MatrixNx3f, MatrixNx3i, MatrixXf, PatchIndex,
+                                  PlanarPoint, PlanarPoint1d, SpatialVector,
+                                  SpatialVector1d, Vector1D,
+                                  convert_nested_vector_to_matrix,
+                                  convert_polylines_to_edges)
+from pyalgcon.core.convex_polygon import ConvexPolygon
+from pyalgcon.core.line_segment import LineSegment
+from pyalgcon.quadratic_spline_surface.quadratic_spline_surface_patch import \
     QuadraticSplineSurfacePatch
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -74,7 +77,7 @@ class QuadraticSplineSurface:
         # self.reverse_hash_table: list[list[tuple[int, int]]]
 
     @classmethod
-    def from_file(cls, filepath: str) -> "QuadraticSplineSurface":
+    def from_file(cls, filepath: str | pathlib.Path) -> "QuadraticSplineSurface":
         """
         Read a surface serialization from file.\n
         NOTE: method used for testing with ASOC code and to make sure that
@@ -515,9 +518,12 @@ class QuadraticSplineSurface:
             assert surface_mapping_coeffs.shape == (6, 3)
 
             # TODO: use regex to verify p1, p2, p3 pattern
-            p1 = np.array(list(map(float, patch_info_lines[i + 4].split()[1:])), dtype=np.float64)
-            p2 = np.array(list(map(float, patch_info_lines[i + 5].split()[1:])), dtype=np.float64)
-            p3 = np.array(list(map(float, patch_info_lines[i + 6].split()[1:])), dtype=np.float64)
+            p1: Vector1D = np.array(
+                list(map(float, patch_info_lines[i + 4].split()[1:])), dtype=np.float64)
+            p2: Vector1D = np.array(
+                list(map(float, patch_info_lines[i + 5].split()[1:])), dtype=np.float64)
+            p3: Vector1D = np.array(
+                list(map(float, patch_info_lines[i + 6].split()[1:])), dtype=np.float64)
             vertices: Matrix3x2f = np.array([p1, p2, p3], dtype=np.float64)
             assert vertices.shape == (3, 2)
 

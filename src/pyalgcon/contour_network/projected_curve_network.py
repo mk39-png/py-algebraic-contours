@@ -3,6 +3,7 @@ Methods to compute a simple planar curve network from annotated plane curve
 soup.
 """
 import logging
+import pathlib
 from typing import Literal
 
 import numpy as np
@@ -745,7 +746,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         return SegmentChainIterator(self, segment_index)
 
     def write(self,
-              output_path: str,
+              output_path: str | pathlib.Path,
               color_mode: SVGOutputMode,
               show_nodes: bool = False) -> None:
         """

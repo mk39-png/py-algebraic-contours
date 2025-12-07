@@ -11,10 +11,10 @@ But anyways, could convert to MathUtils and back...
 import logging
 
 import numpy as np
-
-from pyalgcon.core.common import (
-    ROWS, Matrix3x3f, Matrix4x4f, MatrixNx3f, SpatialVector1d, Vector4f,
-    compute_point_cloud_bounding_box, float_equal, logger, todo, unimplemented)
+from pyalgcon.core.common import (ROWS, Matrix3x3f, Matrix4x4f, MatrixNx3f,
+                                  SpatialVector1d, Vector4f,
+                                  compute_point_cloud_bounding_box,
+                                  float_equal, logger, todo, unimplemented)
 from pyalgcon.core.generate_transformation import (
     origin_to_infinity_projective_matrix, rotate_frame_projective_matrix,
     translation_projective_matrix)
@@ -96,7 +96,8 @@ def apply_transformation_to_control_points_in_place():
     unimplemented("Not used")
 
 
-def apply_transformation_to_vertices(input_V: MatrixNx3f, projective_transformation: Matrix4x4f
+def apply_transformation_to_vertices(input_V: MatrixNx3f,
+                                     projective_transformation: Matrix4x4f
                                      ) -> MatrixNx3f:
     """
     Used in generate_algebraic_contours.py
