@@ -24,7 +24,8 @@ def compare_rational_functions_from_file(filepath: pathlib.Path,
     """
     Reads from file to compare rational functions
     """
-    rational_functions_control: list[RationalFunction] = deserialize_rational_functions(filepath)
+    rational_functions_control: list[RationalFunction] = deserialize_rational_functions_from_file(
+        filepath)
     compare_rational_functions(rational_functions_control, rational_functions_test)
 
 
@@ -108,7 +109,7 @@ def deserialize_rational_function(rational_function_intermediate: dict[str, Any]
     return rational_function_final
 
 
-def deserialize_rational_functions(filepath: pathlib.Path) -> list[RationalFunction]:
+def deserialize_rational_functions_from_file(filepath: pathlib.Path) -> list[RationalFunction]:
     """
     Takes in a JSON file and deserializes it to list of RationalFunction objects.
     """

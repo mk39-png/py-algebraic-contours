@@ -14,7 +14,7 @@ from pyalgcon.core.common import (compare_eigen_numpy_matrix,
                                   compare_list_list_varying_lengths)
 from pyalgcon.core.rational_function import RationalFunction
 from pyalgcon.utils.rational_function_testing_utils import \
-    deserialize_rational_functions
+    deserialize_rational_functions_from_file
 
 
 def test_compute_closed_contours(testing_fileinfo) -> None:
@@ -26,7 +26,7 @@ def test_compute_closed_contours(testing_fileinfo) -> None:
     folder_path, _ = testing_fileinfo
     filepath: pathlib.Path = (folder_path / "contour_network" /
                               "compute_closed_contours" / "compute_closed_contours")
-    contour_segments: list[RationalFunction] = deserialize_rational_functions(
+    contour_segments: list[RationalFunction] = deserialize_rational_functions_from_file(
         filepath / "contour_segments.json")
     contours: list[list[int]]
     contour_labels: list[int]

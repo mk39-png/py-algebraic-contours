@@ -18,10 +18,10 @@ from pyalgcon.core.common import (Matrix5x3f, PlanarPoint1d,
                                   load_json)
 from pyalgcon.core.rational_function import RationalFunction
 from pyalgcon.utils.rational_function_testing_utils import \
-    deserialize_rational_functions
+    deserialize_rational_functions_from_file
 
 
-def test_compute_homogeneous_bezier_points_over_interval_spot_control(testing_fileinfo) -> None:
+def test_compute_homogeneous_bezier_points_over_interval(testing_fileinfo) -> None:
     """
     Tests compute_homogeneous_bezier_points_over_interval() method according to its usage in 
     compute_intersections()
@@ -31,7 +31,7 @@ def test_compute_homogeneous_bezier_points_over_interval_spot_control(testing_fi
     base_data_folderpath, _ = testing_fileinfo
     filepath: pathlib.Path = base_data_folderpath / "contour_network" / \
         "intersection_heuristics" / "compute_homogeneous_bezier_points_over_interval"
-    image_segments: list[RationalFunction] = deserialize_rational_functions(
+    image_segments: list[RationalFunction] = deserialize_rational_functions_from_file(
         filepath / "image_segments.json")
 
     # Compute all rational bezier control points
@@ -50,7 +50,7 @@ def test_compute_homogeneous_bezier_points_over_interval_spot_control(testing_fi
                                make_3d=True)
 
 
-def test_compute_bezier_bounding_box_spot_control(testing_fileinfo) -> None:
+def test_compute_bezier_bounding_box(testing_fileinfo) -> None:
     """ 
     Tests compute_bezier_bounding_box() according to its usage in compute_intersections.
     """
@@ -59,7 +59,7 @@ def test_compute_bezier_bounding_box_spot_control(testing_fileinfo) -> None:
     base_data_folderpath, _ = testing_fileinfo
     filepath: pathlib.Path = base_data_folderpath / "contour_network" / \
         "intersection_heuristics" / "compute_bezier_bounding_box"
-    image_segments: list[RationalFunction] = deserialize_rational_functions(
+    image_segments: list[RationalFunction] = deserialize_rational_functions_from_file(
         filepath / "image_segments.json")
 
     # Compute all bounding boxes
@@ -76,7 +76,7 @@ def test_compute_bezier_bounding_box_spot_control(testing_fileinfo) -> None:
                                make_3d=True)
 
 
-def test_compute_bounding_box_hash_table_spot_control(testing_fileinfo) -> None:
+def test_compute_bounding_box_hash_table(testing_fileinfo) -> None:
     """
     Tests compute_bounding_box_hash_table() according to its usage in compute_intersections.
     """

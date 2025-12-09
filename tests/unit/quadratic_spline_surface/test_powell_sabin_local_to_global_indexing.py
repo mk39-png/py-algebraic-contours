@@ -19,9 +19,9 @@ from pyalgcon.quadratic_spline_surface.powell_sabin_local_to_global_indexing imp
     generate_twelve_split_variable_value_vector)
 
 
-def test_generate_twelve_split_variable_value_vector_spot_mesh(testing_fileinfo,
-                                                               parsed_control_mesh,
-                                                               initialize_affine_manifold) -> None:
+def test_generate_twelve_split_variable_value_vector(testing_fileinfo,
+                                                     parsed_control_mesh,
+                                                     initialize_affine_manifold) -> None:
     """
     Tests generate_twelve_split_variable_value_vector from spot_control
     to make initial_variable_values inside optimize_twelve_split_spline_surface()

@@ -52,11 +52,12 @@ from pyalgcon.quadratic_spline_surface.quadratic_spline_surface import \
 from pyalgcon.utils.compute_intersections_testing_utils import \
     deserialize_list_list_intersection_data
 from pyalgcon.utils.conic_testing_utils import (compare_conics_from_file,
-                                                deserialize_conics)
+                                                deserialize_conics_from_file)
 from pyalgcon.utils.projected_curve_networks_utils import \
     deserialize_segment_labels
 from pyalgcon.utils.rational_function_testing_utils import (
-    compare_rational_functions_from_file, deserialize_rational_functions)
+    compare_rational_functions_from_file,
+    deserialize_rational_functions_from_file)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -160,9 +161,11 @@ class ContourNetwork(ProjectedCurveNetwork):
             # Skips the whole building contour calculation process, saving time when testing.
             filepath: str = (
                 f"{TESTING_FOLDER_SOURCE}\\contour_network\\projected_curve_network\\init_projected_curve_network\\")
-            super().__init__(deserialize_conics(filepath+"parameter_segments.json"),
-                             deserialize_rational_functions(filepath+"spatial_segments.json"),
-                             deserialize_rational_functions(filepath+"planar_segments.json"),
+            super().__init__(deserialize_conics_from_file(filepath+"parameter_segments.json"),
+                             deserialize_rational_functions_from_file(
+                                 filepath+"spatial_segments.json"),
+                             deserialize_rational_functions_from_file(
+                                 filepath+"planar_segments.json"),
                              deserialize_segment_labels(filepath+"segment_labels.json"),
                              deserialize_list_list_varying_lengths(filepath+"chains.csv"),
                              deserialize_eigen_matrix_csv_to_numpy(

@@ -21,9 +21,9 @@ from pyalgcon.debug.debug import (
     deserialize_list_list_varying_lengths_from_file)
 from pyalgcon.quadratic_spline_surface.twelve_split_spline import \
     TwelveSplitSplineSurface
-from pyalgcon.utils.conic_testing_utils import deserialize_conics
+from pyalgcon.utils.conic_testing_utils import deserialize_conics_from_file
 from pyalgcon.utils.rational_function_testing_utils import \
-    deserialize_rational_functions
+    deserialize_rational_functions_from_file
 
 
 def test_compute_spline_surface_cusps(
@@ -38,9 +38,9 @@ def test_compute_spline_surface_cusps(
     filepath: pathlib.Path = base_data_folderpath / "contour_network" / \
         "compute_cusps" / "compute_spline_surface_cusps"
 
-    contour_domain_curve_segments: list[Conic] = deserialize_conics(
+    contour_domain_curve_segments: list[Conic] = deserialize_conics_from_file(
         filepath / "contour_domain_curve_segments.json")
-    contour_segments: list[RationalFunction] = deserialize_rational_functions(
+    contour_segments: list[RationalFunction] = deserialize_rational_functions_from_file(
         filepath / "contour_segments.json")
     patch_indices: list[int] = np.array(deserialize_eigen_matrix_csv_to_numpy(
         filepath / "patch_indices.csv"), dtype=np.int64).tolist()  # aka contour_patch_indices
@@ -84,7 +84,7 @@ def test_compute_cusp_by_one_patch(testing_fileinfo,
         "compute_cusps" / "compute_cusp_by_one_patch"
 
     # Retrieving parameters from file
-    contour_domain_curve_segments: list[Conic] = deserialize_conics(
+    contour_domain_curve_segments: list[Conic] = deserialize_conics_from_file(
         filepath / "contour_domain_curve_segments.json")
     patch_indices: Vector1D = np.array(
         deserialize_eigen_matrix_csv_to_numpy(filepath / "patch_indices.csv"),
@@ -115,7 +115,7 @@ def test_compute_cusp_start_end_points(testing_fileinfo,
     filepath: pathlib.Path = base_data_folderpath / "contour_network" / \
         "compute_cusps" / "compute_cusp_start_end_points"
 
-    contour_domain_curve_segments: list[Conic] = deserialize_conics(
+    contour_domain_curve_segments: list[Conic] = deserialize_conics_from_file(
         filepath / "contour_domain_curve_segments.json")
     patch_indices: list[int] = np.array(deserialize_eigen_matrix_csv_to_numpy(
         filepath / "patch_indices.csv"), dtype=np.int64).tolist()  # aka contour_patch_indices

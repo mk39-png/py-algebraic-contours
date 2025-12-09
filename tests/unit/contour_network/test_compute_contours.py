@@ -23,9 +23,10 @@ from pyalgcon.quadratic_spline_surface.twelve_split_spline import \
 from pyalgcon.utils.compute_intersections_testing_utils import \
     compare_list_list_intersection_data_from_file
 from pyalgcon.utils.conic_testing_utils import (compare_conics_from_file,
-                                                deserialize_conics)
+                                                deserialize_conics_from_file)
 from pyalgcon.utils.rational_function_testing_utils import (
-    compare_rational_functions_from_file, deserialize_rational_functions)
+    compare_rational_functions_from_file,
+    deserialize_rational_functions_from_file)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -43,11 +44,11 @@ def test_pad_contours(testing_fileinfo: tuple[pathlib.Path, pathlib.Path]) -> No
     folder_path, _ = testing_fileinfo
 
     filepath: pathlib.Path = folder_path / "contour_network" / "compute_contours" / "pad_contours"
-    contour_domain_curve_segments: list[Conic] = deserialize_conics(
+    contour_domain_curve_segments: list[Conic] = deserialize_conics_from_file(
         filepath / "contour_domain_curve_segments.json")
-    contour_segments: list[RationalFunction] = deserialize_rational_functions(
+    contour_segments: list[RationalFunction] = deserialize_rational_functions_from_file(
         filepath / "contour_segments.json")
-    planar_contour_segments: list[RationalFunction] = deserialize_rational_functions(
+    planar_contour_segments: list[RationalFunction] = deserialize_rational_functions_from_file(
         filepath / "planar_contour_segments.json")
     invisibility_params = InvisibilityParameters()
 
@@ -156,7 +157,7 @@ def test_compute_spline_surface_boundaries(testing_fileinfo,
                                np.array(boundary_patch_indices))
 
 
-def test_compute_spline_surface_boundary_intersections_spot_control(
+def test_compute_spline_surface_boundary_intersections(
         testing_fileinfo,
         twelve_split_spline_transformed,
         initialize_patch_boundary_edges) -> None:
@@ -173,7 +174,7 @@ def test_compute_spline_surface_boundary_intersections_spot_control(
         "compute_contours" / "compute_spline_surface_boundary_intersections"
 
     # Reading parameters from file
-    contour_domain_curve_segments: list[Conic] = deserialize_conics(
+    contour_domain_curve_segments: list[Conic] = deserialize_conics_from_file(
         filepath / "contour_domain_curve_segments.json")
     contour_patch_indices: list[PatchIndex] = np.array(
         deserialize_eigen_matrix_csv_to_numpy(filepath / "contour_patch_indices.csv"),
@@ -181,7 +182,7 @@ def test_compute_spline_surface_boundary_intersections_spot_control(
     line_intersection_indices: list[tuple[int, int]] = np.array(
         deserialize_eigen_matrix_csv_to_numpy(filepath / "line_intersection_indices.csv"),
         dtype=np.int64).tolist()
-    boundary_domain_curve_segments: list[Conic] = deserialize_conics(
+    boundary_domain_curve_segments: list[Conic] = deserialize_conics_from_file(
         filepath / "boundary_domain_curve_segments.json")
 
     # Execute method
@@ -201,7 +202,7 @@ def test_compute_spline_surface_boundary_intersections_spot_control(
     assert num_intersections == 0
 
 
-def test_compute_spline_surface_contours_and_boundaries_spot_mesh(
+def test_compute_spline_surface_contours_and_boundaries(
         testing_fileinfo: tuple[pathlib.Path, pathlib.Path],
         twelve_split_spline_transformed: TwelveSplitSplineSurface) -> None:
     """

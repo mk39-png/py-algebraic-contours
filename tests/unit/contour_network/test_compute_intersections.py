@@ -25,7 +25,7 @@ from pyalgcon.utils.compute_intersections_testing_utils import (
     compare_intersection_stats, compare_list_list_intersection_data_from_file,
     deserialize_intersection_stats, deserialize_list_list_intersection_data)
 from pyalgcon.utils.rational_function_testing_utils import \
-    deserialize_rational_functions
+    deserialize_rational_functions_from_file
 
 # ********************
 # Main Testing Methods
@@ -43,7 +43,7 @@ def test_compute_intersections(testing_fileinfo: tuple[pathlib.Path, pathlib.Pat
     base_data_folderpath, _ = testing_fileinfo
     filepath: pathlib.Path = base_data_folderpath / \
         "contour_network" / "compute_intersections" / "compute_intersections"
-    planar_contour_segments: list[RationalFunction] = deserialize_rational_functions(
+    planar_contour_segments: list[RationalFunction] = deserialize_rational_functions_from_file(
         filepath / "image_segments.json")
     intersect_params: IntersectionParameters = IntersectionParameters()
     contour_intersections: list[list[IntersectionData]] = deserialize_list_list_intersection_data(
@@ -91,9 +91,9 @@ def test_prune_intersection_points(testing_fileinfo: tuple[pathlib.Path, pathlib
 
     for i in range(378):
         # Initialize parameters
-        first_planar_curve: RationalFunction = deserialize_rational_functions(
+        first_planar_curve: RationalFunction = deserialize_rational_functions_from_file(
             filepath / "first_planar_curve" / f"{i}.json")[0]
-        second_planar_curve: RationalFunction = deserialize_rational_functions(
+        second_planar_curve: RationalFunction = deserialize_rational_functions_from_file(
             filepath / "second_planar_curve" / f"{i}.json")[0]
         intersection_points:  np.ndarray = deserialize_eigen_matrix_csv_to_numpy(
             filepath / "intersection_points" / f"{i}.csv")
@@ -135,9 +135,9 @@ def test_compute_bezier_clipping_planar_curve_intersections(
 
     for i in range(378):
         # Deserialize parameters
-        first_planar_curve: RationalFunction = deserialize_rational_functions(
+        first_planar_curve: RationalFunction = deserialize_rational_functions_from_file(
             filepath / "first_planar_curve" / f"{i}.json")[0]
-        second_planar_curve: RationalFunction = deserialize_rational_functions(
+        second_planar_curve: RationalFunction = deserialize_rational_functions_from_file(
             filepath / "second_planar_curve" / f"{i}.json")[0]
         first_bezier_control_points: Matrix5x3f = deserialize_eigen_matrix_csv_to_numpy(
             filepath / "first_bezier_control_points" / f"{i}.csv")
@@ -178,9 +178,9 @@ def test_compute_planar_curve_intersections(
 
     for i in range(2773):
         # Deserialize parameters
-        first_planar_curve: RationalFunction = deserialize_rational_functions(
+        first_planar_curve: RationalFunction = deserialize_rational_functions_from_file(
             filepath / "first_planar_curve" / f"{i}.json")[0]
-        second_planar_curve: RationalFunction = deserialize_rational_functions(
+        second_planar_curve: RationalFunction = deserialize_rational_functions_from_file(
             filepath / "second_planar_curve" / f"{i}.json")[0]
         intersect_params = IntersectionParameters()
         first_curve_intersections: list[float] = []

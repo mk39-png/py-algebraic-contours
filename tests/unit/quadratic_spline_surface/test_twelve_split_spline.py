@@ -107,8 +107,8 @@ def test_position_data(testing_fileinfo, parsed_control_mesh) -> None:
                                np.array(midpoint_data_test))
 
 
-def test_face_patch_indices_spot_mesh(testing_fileinfo,
-                                      parsed_control_mesh) -> None:
+def test_face_patch_indices(testing_fileinfo,
+                            parsed_control_mesh) -> None:
     """
     Tests init_twelve_split_patches using spot_control mesh.
     NOTE: relies on generate_twelve_split_spline_patch_patch_boundaries,

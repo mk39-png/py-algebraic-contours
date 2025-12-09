@@ -47,13 +47,13 @@ def compare_list_list_intersection_data_from_file(
     contour_intersections_control: list[list[IntersectionData]] = (
         deserialize_list_list_intersection_data(filepath)
     )
-    compare_list_list_intersection_data(contour_intersections_test,
-                                        contour_intersections_control)
+    __compare_list_list_intersection_data(contour_intersections_test,
+                                          contour_intersections_control)
 
 
-def compare_list_list_intersection_data(contour_intersections_test: list[list[IntersectionData]],
-                                        contour_intersections_control: list[list[IntersectionData]],
-                                        ) -> None:
+def __compare_list_list_intersection_data(contour_intersections_test: list[list[IntersectionData]],
+                                          contour_intersections_control: list[list[IntersectionData]],
+                                          ) -> None:
     """
     Compares list[list[IntersectionData]]
     """

@@ -48,7 +48,7 @@ def compare_conics_from_file(filepath: pathlib.Path,
     """
     Reads Conics from file to compare to.
     """
-    conics_control: list[Conic] = deserialize_conics(filepath)
+    conics_control: list[Conic] = deserialize_conics_from_file(filepath)
     compare_conics(conics_control, conics_test)
 
 
@@ -131,7 +131,7 @@ def deserialize_conic(conic_intermediate: dict[str, Any]) -> Conic:
     return conic_final
 
 
-def deserialize_conics(filepath: pathlib.Path) -> list[Conic]:
+def deserialize_conics_from_file(filepath: pathlib.Path) -> list[Conic]:
     """
     Takes in a JSON file and deserializes it to list of Conic objects.
     """
