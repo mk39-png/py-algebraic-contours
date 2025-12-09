@@ -19,10 +19,9 @@ from pyalgcon.core.common import (NodeIndex, SegmentIndex,
 from pyalgcon.core.conic import Conic
 from pyalgcon.core.rational_function import RationalFunction
 from pyalgcon.utils.compute_intersections_testing_utils import (
-    compare_list_list_intersection_data,
     compare_list_list_intersection_data_from_file,
     deserialize_list_list_intersection_data)
-from pyalgcon.utils.conic_testing_utils import deserialize_conics
+from pyalgcon.utils.conic_testing_utils import deserialize_conics_from_file
 from pyalgcon.utils.projected_curve_networks_utils import (
     NodeGeometry, SegmentGeometry, _deserialize_list_node_geometry,
     _deserialize_list_segment_geometry,
@@ -32,7 +31,7 @@ from pyalgcon.utils.projected_curve_networks_utils import (
     remove_redundant_intersections, split_segments_at_cusps,
     split_segments_at_intersections)
 from pyalgcon.utils.rational_function_testing_utils import \
-    deserialize_rational_functions
+    deserialize_rational_functions_from_file
 
 # ************************
 # Main Test Cases
@@ -52,11 +51,11 @@ def test_init_chain_start_nodes(testing_fileinfo) -> None:
 
     # Deserialize arguments (and executes init_chain_start_nodes)
     projected_curve_network_test = ProjectedCurveNetwork(
-        deserialize_conics(
+        deserialize_conics_from_file(
             param_filepath / "parameter_segments.json"),
-        deserialize_rational_functions(
+        deserialize_rational_functions_from_file(
             param_filepath / "spatial_segments.json"),
-        deserialize_rational_functions(
+        deserialize_rational_functions_from_file(
             param_filepath / "planar_segments.json"),
         deserialize_segment_labels(
             param_filepath / "segment_labels.json"),
@@ -293,11 +292,11 @@ def test_build_projected_curve_network_without_intersections(testing_fileinfo) -
     filepath: pathlib.Path = base_data_folderpath / "contour_network" / \
         "projected_curve_network" / "build_projected_curve_network_without_intersections"
 
-    parameter_segments: list[Conic] = deserialize_conics(
+    parameter_segments: list[Conic] = deserialize_conics_from_file(
         filepath / "parameter_segments.json")
-    spatial_segments: list[RationalFunction] = deserialize_rational_functions(
+    spatial_segments: list[RationalFunction] = deserialize_rational_functions_from_file(
         filepath / "spatial_segments.json")
-    planar_segments: list[RationalFunction] = deserialize_rational_functions(
+    planar_segments: list[RationalFunction] = deserialize_rational_functions_from_file(
         filepath / "planar_segments.json")
     segment_labels: list[dict[str, int]] = deserialize_segment_labels(
         filepath / "segment_labels.json")
