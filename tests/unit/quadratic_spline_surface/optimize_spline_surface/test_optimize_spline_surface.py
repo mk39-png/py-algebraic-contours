@@ -59,21 +59,7 @@ from pyalgcon.quadratic_spline_surface.twelve_split_spline import \
 
 #         # TODO: below is checked.
 #         # TODO: this logic and if it could be checked
-#         initial_vertex_positions_T: list[SpatialVector] = build_face_variable_vector(
-#             initial_vertex_positions, __i, __j, __k)
-#         vertex_positions_T: list[SpatialVector] = build_face_variable_vector(vertex_positions,
-#                                                                              __i,
-#                                                                              __j,
-#                                                                              __k)
-#         edge_gradients_T: list[SpatialVector] = edge_gradients[face_index]
-#         vertex_gradients_T: list[Matrix2x3r] = build_face_variable_vector(vertex_gradients,
-#                                                                           __i,
-#                                                                           __j,
-#                                                                           __k)
-#         assert len(initial_vertex_positions_T) == 3
-#         assert len(vertex_positions_T) == 3
-#         assert len(edge_gradients_T) == 3
-#         assert len(vertex_gradients_T) == 3
+
 
 #         # Get the global uv values for the face vertices
 #         # XXX: DO NOT MODIFY BELOW BY REFERNCE.
@@ -124,19 +110,6 @@ from pyalgcon.quadratic_spline_surface.twelve_split_spline import \
 #         # ULTIMATE TESTER BELOW
 #         # ---------------------------------
 #         # TODO: below works for fit and non-fit cases. Move to separate testing case
-#         compare_eigen_numpy_matrix(
-#             f"{filepath}initial_vertex_positions_T\\_{face_index}.csv",
-#             np.array(initial_vertex_positions_T).squeeze())
-#         compare_eigen_numpy_matrix(
-#             f"{filepath}vertex_positions_T\\_{face_index}.csv",
-#             np.array(vertex_positions_T).squeeze())
-#         compare_eigen_numpy_matrix(
-#             f"{filepath}vertex_gradients_T\\_{face_index}.csv",
-#             np.array(vertex_gradients_T),
-#             make_3d=True)
-#         compare_eigen_numpy_matrix(
-#             f"{filepath}edge_gradients_T\\_{face_index}.csv",
-#             np.array(edge_gradients_T).squeeze())
 
 #         # TESTING OF THESE AS WELL
 #         compare_eigen_numpy_matrix(
@@ -631,7 +604,8 @@ def test_shift_array() -> None:
     npt.assert_array_equal(numpy_list[2], np.full(shape=(2, 2), fill_value=0))
 
 
-def test_build_twelve_split_spline_energy_system_full(testing_fileinfo, parsed_control_mesh) -> None:
+def test_build_twelve_split_spline_energy_system_full(testing_fileinfo,
+                                                      parsed_control_mesh) -> None:
     """
     This tests build_twelve_split_spline_energy(). 
     Used in TwelveSplitSplineSurface generation.

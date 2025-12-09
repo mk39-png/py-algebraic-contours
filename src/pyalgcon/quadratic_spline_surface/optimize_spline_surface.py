@@ -762,22 +762,17 @@ def build_planar_constraint_hessian(uv: np.ndarray,
     return H_p
 
 
-def build_twelve_split_energy_quadratic_params(
-    initial_V: MatrixNx3f,
-        initial_face_normals: np.ndarray,
-        affine_manifold: AffineManifold,
-        optimization_params: OptimizationParameters
-) -> tuple[list[SpatialVector1d],
-           list[Matrix2x3r],
-           list[list[SpatialVector1d]],  # list[SpatialVector1d] of length 3
-           list[int],
-           list[list[int]],  # list[int] of length 3
-           list[SpatialVector],
-           np.ndarray,  # matrix
-           AffineManifold,
-           OptimizationParameters,
-           int,
-           int]:
+def build_twelve_split_energy_quadratic_params(initial_V: MatrixNx3f,
+                                               affine_manifold_ref: AffineManifold,
+                                               ) -> tuple[list[SpatialVector1d],
+                                                          list[Matrix2x3r],
+                                                          # list[SpatialVector1d] of length 3
+                                                          list[list[SpatialVector1d]],
+                                                          list[int],
+                                                          list[list[int]],  # list[int] of length 3
+                                                          list[SpatialVector],
+                                                          int,
+                                                          int]:
     """ Creates parameters for compute_twelve_split_energy_quadratic() within 
     build_twelve_split_spline_energy_system() for the sake of testability.
 
@@ -787,18 +782,15 @@ def build_twelve_split_energy_quadratic_params(
     :return global_vertex_indices:    /
     :return global_edge_indices:      /
     :return initial_vertex_positions: /
-    :return initial_face_normals:     /
-    :return manifold:                 /
-    :return optimization_params:      /
     :return num_variable_vertices:    /
     :return num_variable_edges:       /
     """
     num_vertices: int = initial_V.shape[ROWS]
-    num_faces: int = affine_manifold.num_faces
+    num_faces: int = affine_manifold_ref.num_faces
 
     # Build halfedge
-    he_to_corner: list[tuple[Index, Index]] = affine_manifold.he_to_corner
-    halfedge: Halfedge = affine_manifold.halfedge
+    he_to_corner: list[tuple[Index, Index]] = affine_manifold_ref.he_to_corner
+    halfedge: Halfedge = affine_manifold_ref.halfedge
     num_edges: int = halfedge.num_edges
 
     # Assume all vertices and edges are variable
@@ -840,9 +832,6 @@ def build_twelve_split_energy_quadratic_params(
             global_vertex_indices,
             global_edge_indices,
             initial_vertex_positions,
-            initial_face_normals,
-            affine_manifold,
-            optimization_params,
             num_variable_vertices,
             num_variable_edges)
 
@@ -881,12 +870,9 @@ def build_twelve_split_spline_energy_system(initial_V: MatrixNx3f,
         global_vertex_indices,
         global_edge_indices,
         initial_vertex_positions,
-        initial_face_normals,
-        affine_manifold,
-        optimization_params,
         num_variable_vertices,
         num_variable_edges) = build_twelve_split_energy_quadratic_params(
-            initial_V, initial_face_normals, affine_manifold, optimization_params)
+            initial_V, affine_manifold)
 
     # Build energy for the affine manifold (all below)
     energy: float
