@@ -9,11 +9,36 @@ import numpy as np
 
 from pyalgcon.contour_network.contour_network import (ContourNetwork,
                                                       _build_contour_labels)
-from pyalgcon.core.common import deserialize_eigen_matrix_csv_to_numpy
+from pyalgcon.core.common import (compare_eigen_numpy_matrix,
+                                  deserialize_eigen_matrix_csv_to_numpy)
 from pyalgcon.utils.projected_curve_networks_utils import (
     SVGOutputMode, compare_segment_labels)
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+def test_quantitative_invisibility(testing_fileinfo: tuple[pathlib.Path, pathlib.Path],
+                                   initialize_contour_network
+                                   ) -> None:
+    """
+    Tests to see if the quantitative invisibility of PYAC is the same as ASOC. 
+    If not, then the visibility of the contours will not be identical in PYAC to that of ASOC.
+    """
+
+    # Initialize parameters
+    base_data_folderpath: pathlib.Path
+    base_data_folderpath, _ = testing_fileinfo
+    filepath: pathlib.Path = (base_data_folderpath / "contour_network" /
+                              "compute_quantitative_invisibility")
+    contour_network: ContourNetwork
+    _, contour_network = initialize_contour_network
+
+    # Execute method
+    quantitative_invisibility: list[int] = contour_network.enumerate_quantitative_invisibility()
+
+    # Compare results
+    compare_eigen_numpy_matrix(filepath / "quantitative_invisibility.csv",
+                               np.array(quantitative_invisibility))
 
 
 # TODO: the deserialization of rational functions and then printing of rational

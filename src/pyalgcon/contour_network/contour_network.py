@@ -1443,12 +1443,6 @@ class ContourNetwork(ProjectedCurveNetwork):
         #
         quantitative_invisibility: list[int] = self.enumerate_quantitative_invisibility()
 
-        if INLINE_TESTING_ENABLED_QI:
-            # TODO: test the QI values that have been enumerated.
-            filepath: str = f"{TESTING_FOLDER_SOURCE}\\contour_network\\compute_quantitative_invisibility\\"
-            # compare_eigen_numpy_matrix(filepath+"quantitative_invisibility.csv",
-            #                            np.array(quantitative_invisibility))
-
         logger.info(quantitative_invisibility)
         if vector_contains(quantitative_invisibility, -1):
             logger.error("Negative QI present in final values")
