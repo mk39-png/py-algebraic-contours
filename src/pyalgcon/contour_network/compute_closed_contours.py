@@ -4,11 +4,15 @@ Methods to chain contour segments into closed contours.
 """
 
 import logging
+
 import numpy as np
-from pyalgcon.core.common import (
-    INLINE_TESTING_ENABLED_CONTOUR_NETWORK, PLACEHOLDER_VALUE, SpatialVector1d,
-    compare_eigen_numpy_matrix, float_equal_zero, todo)
+
+from pyalgcon.core.common import (INLINE_TESTING_ENABLED_CONTOUR_NETWORK,
+                                  PLACEHOLDER_VALUE, SpatialVector1d,
+                                  compare_eigen_numpy_matrix, float_equal_zero,
+                                  todo)
 from pyalgcon.core.rational_function import RationalFunction
+from pyalgcon.debug.debug import SPOT_FILEPATH
 
 logger: logging.Logger = logging.getLogger(__name__)
 # *******
@@ -282,11 +286,14 @@ def compute_closed_contours(contour_segments: list[RationalFunction]) -> tuple[l
 
     # TESTING
     if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
+
         compare_eigen_numpy_matrix(
-            "spot_control\\contour_network\\compute_closed_contours\\compute_closed_contours\\contour_start_points.csv",
+            SPOT_FILEPATH / "contour_network" / "compute_closed_contours" /
+            "compute_closed_contours" / "contour_start_points.csv",
             np.array(contour_start_points))
         compare_eigen_numpy_matrix(
-            "spot_control\\contour_network\\compute_closed_contours\\compute_closed_contours\\contour_end_points.csv",
+            SPOT_FILEPATH / "contour_network" / "compute_closed_contours" /
+            "compute_closed_contours" / "contour_end_points.csv",
             np.array(contour_end_points))
 
     while True:

@@ -4,7 +4,6 @@ soup.
 """
 import logging
 import pathlib
-from typing import Literal
 
 import numpy as np
 import polyscope
@@ -18,9 +17,9 @@ from pyalgcon.contour_network.write_output import (add_curve_to_svg,
 from pyalgcon.core.abstract_curve_network import AbstractCurveNetwork
 from pyalgcon.core.common import (CHECK_VALIDITY,
                                   INLINE_TESTING_ENABLED_CONTOUR_NETWORK,
-                                  PLACEHOLDER_VALUE, TESTING_FOLDER_SOURCE,
-                                  Color, MatrixXf, NodeIndex, PlanarPoint1d,
-                                  SegmentIndex, SpatialVector1d, Vector3f,
+                                  PLACEHOLDER_VALUE, Color, MatrixXf,
+                                  NodeIndex, PlanarPoint1d, SegmentIndex,
+                                  SpatialVector1d, Vector3f,
                                   compare_eigen_numpy_matrix,
                                   convert_nested_vector_to_matrix,
                                   convert_polylines_to_edges, todo,
@@ -29,6 +28,7 @@ from pyalgcon.core.conic import Conic
 from pyalgcon.core.generate_colormap import generate_random_category_colormap
 from pyalgcon.core.rational_function import (CurveDiscretizationParameters,
                                              RationalFunction)
+from pyalgcon.debug.debug import SPOT_FILEPATH
 from pyalgcon.utils.projected_curve_networks_utils import (
     NodeGeometry, SegmentGeometry, SVGOutputMode,
     build_projected_curve_network_without_intersections,
@@ -201,10 +201,10 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         # TODO: testing with chain start nodes
 
         if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-            filepath: str = (
-                f"{TESTING_FOLDER_SOURCE}\\contour_network\\projected_curve_network\\init_chain_start_nodes\\")
-            compare_list_node_geometry(filepath+"nodes_out.json", self.__nodes)
-            compare_eigen_numpy_matrix(filepath+"chain_start_nodes.csv",
+            filepath: pathlib.Path = SPOT_FILEPATH / "contour_network" / \
+                "projected_curve_network" / "init_chain_start_nodes"
+            compare_list_node_geometry(filepath / "nodes_out.json", self.__nodes)
+            compare_eigen_numpy_matrix(filepath / "chain_start_nodes.csv",
                                        np.array(self.__chain_start_nodes, dtype=int))
 
         # Check the validity of the topological graph structure

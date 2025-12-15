@@ -29,6 +29,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 # Debug/Helper Methods (keep here for now, especially when comparing later contours code)
 # **********************
 
+base_folder = pathlib.Path(__file__).parents[3]
+SPOT_FILEPATH: pathlib.Path = base_folder / "tests" / "data" / "spot_control"
 
 # def compare_intersection_points(filename: str,
 #                                 numpy_array: np.ndarray,

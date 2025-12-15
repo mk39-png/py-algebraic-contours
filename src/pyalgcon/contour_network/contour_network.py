@@ -5,6 +5,7 @@ frame.
 """
 
 import logging
+import pathlib
 import time
 from dataclasses import dataclass
 from enum import Enum
@@ -47,6 +48,7 @@ from pyalgcon.core.common import (DISCRETIZATION_LEVEL,
 from pyalgcon.core.conic import Conic
 from pyalgcon.core.rational_function import (CurveDiscretizationParameters,
                                              RationalFunction)
+from pyalgcon.debug.debug import SPOT_FILEPATH
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface import \
     QuadraticSplineSurface
 from pyalgcon.utils.compute_intersections_testing_utils import \
@@ -291,9 +293,9 @@ class ContourNetwork(ProjectedCurveNetwork):
         assert (planar_contour_segments[0].degree, planar_contour_segments[0].dimension) == (4, 2)
 
         if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-            filepath: str = "spot_control\\contour_network\\project_curves\\"
+            filepath: pathlib.Path = SPOT_FILEPATH / "contour_network" / "project_curves"
             compare_rational_functions_from_file(
-                filepath+"planar_curves.json", planar_contour_segments)
+                filepath / "planar_curves.json", planar_contour_segments)
 
         # Chain the contour segments into closed contours
         # FIXME: compute_closed_contours looks good
@@ -302,9 +304,10 @@ class ContourNetwork(ProjectedCurveNetwork):
         contours, contour_labels = compute_closed_contours(contour_segments)
 
         if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-            filepath: str = "spot_control\\contour_network\\compute_closed_contours\\compute_closed_contours\\"
-            compare_list_list_varying_lengths(filepath+"contours.csv", contours)
-            compare_eigen_numpy_matrix(filepath+"contour_labels.csv", np.array(contour_labels))
+            filepath: pathlib.Path = SPOT_FILEPATH / "contour_network" / \
+                "compute_closed_contours" / "compute_closed_contours"
+            compare_list_list_varying_lengths(filepath / "contours.csv", contours)
+            compare_eigen_numpy_matrix(filepath / "contour_labels.csv", np.array(contour_labels))
 
         # Pad contour domains by an epsilon
         # FIXME: pad_contours looks good
@@ -314,13 +317,13 @@ class ContourNetwork(ProjectedCurveNetwork):
                      invisibility_params.pad_amount)
 
         if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-            filepath: str = "spot_control\\contour/_network\\compute_contours\\pad_contours\\"
-            compare_conics_from_file(filepath+"contour_domain_curve_segments_PADDED.json",
+            filepath: pathlib.Path = SPOT_FILEPATH / "contour_network" / "compute_contours" / "pad_contours"
+            compare_conics_from_file(filepath / "contour_domain_curve_segments_PADDED.json",
                                      contour_domain_curve_segments)
             compare_rational_functions_from_file(
-                filepath+"contour_segments_PADDED.json", contour_segments)
+                filepath / "contour_segments_PADDED.json", contour_segments)
             compare_rational_functions_from_file(
-                filepath+"planar_contour_segments_PADDED.json", planar_contour_segments)
+                filepath / "planar_contour_segments_PADDED.json", planar_contour_segments)
 
         compute_contour_time: float = time.perf_counter() - time_start
 
@@ -346,11 +349,13 @@ class ContourNetwork(ProjectedCurveNetwork):
                                                          contours)
 
         if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-            filepath: str = f"{TESTING_FOLDER_SOURCE}\\contour_network\\compute_cusps\\compute_spline_surface_cusps\\"
-            compare_list_list_varying_lengths_float(filepath+"interior_cusps.csv", interior_cusps)
-            compare_list_list_varying_lengths_float(filepath+"boundary_cusps.csv", boundary_cusps)
-            compare_eigen_numpy_matrix(filepath+"has_cusp_at_base.csv", np.array(has_cusp_at_base))
-            compare_eigen_numpy_matrix(filepath+"has_cusp_at_tip.csv", np.array(has_cusp_at_tip))
+            filepath: pathlib.Path = SPOT_FILEPATH / "contour_network" / \
+                "compute_cusps" / "compute_spline_surface_cusps"
+            compare_list_list_varying_lengths_float(filepath / "interior_cusps.csv", interior_cusps)
+            compare_list_list_varying_lengths_float(filepath / "boundary_cusps.csv", boundary_cusps)
+            compare_eigen_numpy_matrix(filepath / "has_cusp_at_base.csv",
+                                       np.array(has_cusp_at_base))
+            compare_eigen_numpy_matrix(filepath / "has_cusp_at_tip.csv", np.array(has_cusp_at_tip))
 
         compute_cusp_time: float = time.perf_counter() - time_start
         logger.debug("Found %s interior cusps", nested_vector_size(interior_cusps))
