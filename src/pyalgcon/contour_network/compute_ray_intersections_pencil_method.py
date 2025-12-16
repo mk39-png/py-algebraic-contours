@@ -689,7 +689,8 @@ def compute_spline_surface_patch_ray_intersections_pencil_method(
                      normalized_surface_intersections_all[i][1] -
                      ray_origin[2]) /
                     ray_mapping_coeffs[1, 2])
-        if t < 0 and t <= 1:
+        if t > 0 and t <= 1:
+
             # FIXME: potentially poor C++ translation
             normalized_ray_intersections.append(t)
             normalized_surface_intersections.append(normalized_surface_intersections_all[i])
