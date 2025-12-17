@@ -799,11 +799,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
 
         # Write SVG
         svg_writer = svg.SVG(viewBox=viewport, elements=svg_elements)
-        # file_path: str = os.path.relpath(output_path)
-
-        # FIXME: remove isfile below because invalid checker of filepath
-        # if not os.path.isfile(output_path):
-        #     raise OSError(f"Output path is invalid: {output_path}")
         with open(output_path, 'w', encoding='utf-8') as output_file:
             output_file.write(svg_writer.as_str())
             output_file.close()

@@ -32,17 +32,19 @@ def test_find_intersections_bezier_clipping(testing_fileinfo) -> None:
     for i in range(378):
         A: list[SpatialVector1d] = [
             np.array(point)
-            for point in deserialize_eigen_matrix_csv_to_numpy(filepath / f"A\\{i}.csv").tolist()]
+            for point in deserialize_eigen_matrix_csv_to_numpy(filepath / "A" / f"{i}.csv").tolist()
+        ]
         B: list[SpatialVector1d] = [
             np.array(point)
-            for point in deserialize_eigen_matrix_csv_to_numpy(filepath / f"B\\{i}.csv").tolist()]
+            for point in deserialize_eigen_matrix_csv_to_numpy(filepath / "B" / f"{i}.csv").tolist()
+        ]
 
         # Execute method
         xs: list[tuple[float, float]] = find_intersections_bezier_clipping(
             A, B, FIND_INTERSECTIONS_BEZIER_CLIPPING_PRECISION)
 
         # Compare results
-        compare_eigen_numpy_matrix(filepath / f"xs\\{i}.csv", np.array(xs).squeeze())
+        compare_eigen_numpy_matrix(filepath / "xs" / f"{i}.csv", np.array(xs).squeeze())
 
 
 @pytest.mark.filterwarnings("ignore:loadtxt")
@@ -59,12 +61,12 @@ def test_clipfatline(testing_fileinfo) -> None:
     # Number of files
     # precision: float = 1e-7
     for i in range(3634):
-        P: Matrix5x3f = deserialize_eigen_matrix_csv_to_numpy(filepath / f"P\\{i}.csv")
-        Q: Matrix5x3f = deserialize_eigen_matrix_csv_to_numpy(filepath / f"Q\\{i}.csv")
+        P: Matrix5x3f = deserialize_eigen_matrix_csv_to_numpy(filepath / "P" / f"{i}.csv")
+        Q: Matrix5x3f = deserialize_eigen_matrix_csv_to_numpy(filepath / "Q" / f"{i}.csv")
         clip_range_test: Vector2f = np.zeros(shape=(2, ), dtype=np.float64)
 
         # Execute method
         _clipfatline(P, Q, clip_range_test, FIND_INTERSECTIONS_BEZIER_CLIPPING_PRECISION)
 
         # Compare results
-        compare_eigen_numpy_matrix(filepath / f"clip_range\\{i}.csv", clip_range_test)
+        compare_eigen_numpy_matrix(filepath / "clip_range" / f"{i}.csv", clip_range_test)

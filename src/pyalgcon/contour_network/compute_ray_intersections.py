@@ -11,10 +11,8 @@ import numpy as np
 
 from pyalgcon.contour_network.compute_ray_intersections_pencil_method import \
     compute_spline_surface_patch_ray_intersections_pencil_method
-from pyalgcon.core.common import (MAX_PATCH_RAY_INTERSECTIONS,
-                                  Matrix2x3f, PatchIndex,
-                                  PlanarPoint1d,
-                                  SpatialVector1d,
+from pyalgcon.core.common import (MAX_PATCH_RAY_INTERSECTIONS, Matrix2x3f,
+                                  PatchIndex, PlanarPoint1d, SpatialVector1d,
                                   float_equal)
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface import \
     QuadraticSplineSurface
@@ -24,7 +22,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 def compute_spline_surface_ray_intersections(spline_surface: QuadraticSplineSurface,
                                              ray_mapping_coeffs: Matrix2x3f,
-                                             ray_int_call: int,
+                                             ray_intersections_call: int,
                                              ray_bbox_call: int,
                                              ) -> tuple[list[PatchIndex],
                                                         list[PlanarPoint1d],
@@ -59,7 +57,6 @@ def compute_spline_surface_ray_intersections(spline_surface: QuadraticSplineSurf
     ray_plane_point: PlanarPoint1d = ray_mapping_coeffs[0:1, 0:2].flatten()
     assert ray_plane_point.shape == (2, )
     hash_indices: tuple[int, int] = spline_surface.compute_hash_indices(ray_plane_point)
-
     # TODO: CHECK HASH TABLE AND SEE IF THEYRE THE SAME
 
     for i in spline_surface.hash_table[hash_indices[0]][hash_indices[1]]:
@@ -74,12 +71,12 @@ def compute_spline_surface_ray_intersections(spline_surface: QuadraticSplineSurf
         (num_intersections,
          patch_surface_intersections,
          patch_ray_intersections,
-         ray_int_call,
+         ray_intersections_call,
          ray_bbox_call
          ) = compute_spline_surface_patch_ray_intersections_pencil_method(
             spline_surface.get_patch(i),
             ray_mapping_coeffs,
-            ray_int_call,
+            ray_intersections_call,
             ray_bbox_call)
 
         # Add patch intersections to surface intersections arrays
@@ -103,7 +100,7 @@ def compute_spline_surface_ray_intersections(spline_surface: QuadraticSplineSurf
     return (patch_indices,
             surface_intersections,
             ray_intersections,
-            ray_int_call,
+            ray_intersections_call,
             ray_bbox_call)
 
 

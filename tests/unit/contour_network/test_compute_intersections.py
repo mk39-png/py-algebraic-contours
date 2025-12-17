@@ -37,6 +37,8 @@ def test_compute_intersections(testing_fileinfo: tuple[pathlib.Path, pathlib.Pat
     """
     Test compute_intersections() as it appears in init_contour_network() where 
     planar_contour_segments is another name for image_segments
+    NOTE: this is currently designed to fail since py-alg-con has some weird numerical differences
+    from ASOC.
     """
     # Retrieve parameters
     base_data_folderpath: pathlib.Path

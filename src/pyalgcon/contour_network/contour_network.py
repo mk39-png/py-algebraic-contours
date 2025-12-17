@@ -184,6 +184,7 @@ class ContourNetwork(ProjectedCurveNetwork):
                                  filepath+"intersection_data.json"),
                              num_intersections=176)
         else:
+            # Standard constructor.
             super().__init__(*self.__build_projected_curve_network_params(spline_surface,
                                                                           intersect_params,
                                                                           invisibility_params,

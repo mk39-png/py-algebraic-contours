@@ -58,7 +58,8 @@ def __compare_list_list_intersection_data(contour_intersections_test: list[list[
     Compares list[list[IntersectionData]]
     """
     # FIXME: accept the control as the first parameter and the test as the second parameter
-    assert len(contour_intersections_control) == len(contour_intersections_test)
+    assert len(contour_intersections_control) == len(contour_intersections_test), \
+        f"Expected {len(contour_intersections_control)}, got {len(contour_intersections_test)}"
     num_outer_list: int = len(contour_intersections_control)
 
     for i in range(num_outer_list):

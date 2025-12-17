@@ -4,6 +4,7 @@ Representation for quadratic surface patches with convex domains.
 import json
 import logging
 import os
+import pathlib
 from typing import TextIO
 
 import numpy as np
@@ -12,10 +13,12 @@ import polyscope as ps
 from pyalgcon.core.bivariate_quadratic_function import (
     evaluate_quadratic_mapping, generate_monomial_to_bezier_matrix,
     generate_quadratic_coordinate_domain_triangle_normalization_matrix)
-from pyalgcon.core.common import (
-    ROWS, Matrix2x2f, Matrix3x2r, Matrix6x3f, Matrix6x3r, Matrix6x6r,
-    MatrixNx2f, PlanarPoint1d, SpatialVector, SpatialVector1d, Vector3f,
-    compute_point_cloud_bounding_box, load_json, todo, unimplemented)
+from pyalgcon.core.common import (ROWS, Matrix2x2f, Matrix3x2r, Matrix6x3f,
+                                  Matrix6x3r, Matrix6x6r, MatrixNx2f,
+                                  PlanarPoint1d, SpatialVector,
+                                  SpatialVector1d, Vector3f,
+                                  compute_point_cloud_bounding_box, load_json,
+                                  todo, unimplemented)
 from pyalgcon.core.convex_polygon import ConvexPolygon
 from pyalgcon.core.evaluate_surface_normal import \
     generate_quadratic_surface_normal_coeffs
@@ -137,7 +140,7 @@ class QuadraticSplineSurfacePatch:
             self.__cone_index = cone_index
 
     @classmethod
-    def init_from_json_file(cls, filename: str):
+    def init_from_json_file(cls, filename: pathlib.Path):
         """
         Initializes QuadraticSplineSurfacePatch object from JSON file.
         Used for testing retrieving files from algebraic_contours/test/

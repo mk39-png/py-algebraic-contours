@@ -48,7 +48,7 @@ class IntersectionData():
         """
         Check if the knot is the base of an oriented curve
 
-        @param[in] domain: domain for the curve
-        @param[in] eps: epsilon tolerance for the check
+        :param domain: [in] domain for the curve
+        :param eps: [in] epsilon tolerance for the check
         """
         self.is_base = float_equal(domain_ref.lower_bound, self.knot, eps)
