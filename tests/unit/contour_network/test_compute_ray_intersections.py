@@ -2,15 +2,20 @@
 Ray Intersection Tests
 """
 
+import pathlib
+
 import numpy as np
 import numpy.testing as npt
+import pytest
 
-from pyalgcon.contour_network.compute_ray_intersections import \
-    compute_spline_surface_ray_intersections
+from pyalgcon.contour_network.compute_ray_intersections import (
+    compute_spline_surface_ray_intersections, partition_ray_intersections)
 from pyalgcon.contour_network.compute_ray_intersections_pencil_method import \
     compute_spline_surface_patch_ray_intersections_pencil_method
 from pyalgcon.core.common import (Matrix2x2f, Matrix2x3f, Matrix3x2f,
                                   Matrix6x3f, PatchIndex, PlanarPoint1d,
+                                  SpatialVector1d, compare_eigen_numpy_matrix,
+                                  deserialize_eigen_matrix_csv_to_numpy,
                                   float_equal, todo)
 from pyalgcon.core.convex_polygon import ConvexPolygon
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface_patch import \
@@ -19,31 +24,92 @@ from pyalgcon.quadratic_spline_surface.twelve_split_spline import \
     TwelveSplitSplineSurface
 
 
-def test_compute_spline_surface_ray_intersections_spot_control(
+@pytest.mark.filterwarnings("ignore:loadtxt")
+def test_partition_ray_intersections(testing_fileinfo) -> None:
+    """
+    Testing part of compute_ray_intersections calculation.
+    """
+    # Retrieving parameters
+    base_data_folderpath: pathlib.Path
+    base_data_folderpath, _ = testing_fileinfo
+    filepath: pathlib.Path = base_data_folderpath / "contour_network" / \
+        "compute_ray_intersections" / "partition_ray_intersections"
+
+    # Number from how many files there are
+    for i in range(181):
+        ray_mapping_coeffs: Matrix2x3f = deserialize_eigen_matrix_csv_to_numpy(
+            filepath / "ray_mapping_coeffs" / f"{i}.csv")
+        comparison_point: SpatialVector1d = deserialize_eigen_matrix_csv_to_numpy(
+            filepath / "comparison_point" / f"{i}.csv")
+        ray_intersections: list[float] = deserialize_eigen_matrix_csv_to_numpy(
+            filepath / "ray_intersections" / f"{i}.csv").tolist()
+
+        # Execute method
+        ray_intersections_below_test: list[float]
+        ray_intersections_above_test: list[float]
+        (ray_intersections_below_test, ray_intersections_above_test) = (
+            partition_ray_intersections(ray_mapping_coeffs, comparison_point, ray_intersections))
+
+        # Compare results
+        compare_eigen_numpy_matrix(filepath / "ray_intersections_below" /
+                                   f"{i}.csv", np.array(ray_intersections_below_test))
+        compare_eigen_numpy_matrix(filepath / "ray_intersections_above" /
+                                   f"{i}.csv", np.array(ray_intersections_above_test))
+
+
+def test_compute_spline_surface_ray_intersections(
+        testing_fileinfo: tuple[pathlib.Path, pathlib.Path],
         twelve_split_spline_transformed: TwelveSplitSplineSurface) -> None:
     """
+    Used to test part of compute_segment_quantitative_invisibility
 
+    NOTE: this currently fails because Python output does not match 
+    C++ output 1-to-1
     """
-    spline_surface: TwelveSplitSplineSurface = twelve_split_spline_transformed
+    # Retrieving parameters
+    base_data_folderpath: pathlib.Path
+    base_data_folderpath, _ = testing_fileinfo
+    filepath: pathlib.Path = base_data_folderpath / "contour_network" / \
+        "compute_ray_intersections" / "compute_spline_surface_ray_intersections"
+    spline_surface: TwelveSplitSplineSurface = twelve_split_spline_transformed  # subclass inherits
 
-    patch_indices: list[PatchIndex]
-    surface_intersections: list[PlanarPoint1d]
-    ray_intersections: list[float]
-    ray_int_call: int = 0
-    ray_bbox_call: int = 0
-    ray_mapping_coeffs: Matrix2x3f
+    # Number of files (for spot mesh)
+    for i in range(198):
+        filename: str = f"{i}.csv"  # name shared among folders
 
-    # for i in
-    (patch_indices,
-     surface_intersections,
-     ray_intersections,
-     ray_int_call,
-     ray_bbox_call) = compute_spline_surface_ray_intersections(spline_surface,
-                                                               ray_mapping_coeffs,
-                                                               ray_int_call,
-                                                               ray_bbox_call)
+       # Deserialize inputs
+        patch_indices: list[PatchIndex]
+        surface_intersections: list[PlanarPoint1d]
+        ray_intersections: list[float]
+        ray_intersections_call_in: int = deserialize_eigen_matrix_csv_to_numpy(
+            filepath / "ray_intersections_call_in" / filename).item()
+        ray_bounding_box_call_in: int = deserialize_eigen_matrix_csv_to_numpy(
+            filepath / "ray_bounding_box_call_in" / filename).item()
+        ray_mapping_coeffs: Matrix2x3f = deserialize_eigen_matrix_csv_to_numpy(
+            filepath / "ray_mapping_coeffs" / filename)
 
-    todo("finish implementation")
+        # Execute method
+        (patch_indices,
+         surface_intersections,
+         ray_intersections,
+         ray_intersections_call_out,
+         ray_bounding_box_call_out) = compute_spline_surface_ray_intersections(
+            spline_surface,
+            ray_mapping_coeffs,
+            ray_intersections_call_in,
+            ray_bounding_box_call_in)
+
+        # Compare results
+        compare_eigen_numpy_matrix(filepath / "patch_indices" / filename,
+                                   np.array(patch_indices))
+        compare_eigen_numpy_matrix(filepath / "surface_intersections" / filename,
+                                   np.array(surface_intersections))
+        compare_eigen_numpy_matrix(filepath / "ray_intersections" / filename,
+                                   np.array(ray_intersections))
+        compare_eigen_numpy_matrix(filepath / "ray_intersections_call_out" / filename,
+                                   np.array(ray_intersections_call_out))
+        compare_eigen_numpy_matrix(filepath / "ray_bounding_box_call_out" / filename,
+                                   np.array(ray_bounding_box_call_out))
 
 
 def test_intersection_of_ray_and_plane_nonstandard_domain() -> None:

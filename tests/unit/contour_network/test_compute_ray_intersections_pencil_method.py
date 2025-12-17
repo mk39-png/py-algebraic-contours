@@ -12,7 +12,8 @@ import numpy as np
 from pyalgcon.contour_network.compute_ray_intersections_pencil_method import (
     compute_spline_surface_patch_ray_intersections_pencil_method,
     pencil_first_part, solve_quadratic_quadratic_equation_pencil_method)
-from pyalgcon.core.common import (PlanarPoint1d, Vector6f,
+from pyalgcon.core.common import (Matrix2x3f, PlanarPoint1d, Vector6f,
+                                  compare_eigen_numpy_matrix,
                                   compare_intersection_points,
                                   deserialize_eigen_matrix_csv_to_numpy, todo)
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface_patch import \
@@ -22,6 +23,9 @@ from pyalgcon.quadratic_spline_surface.quadratic_spline_surface_patch import \
 def test_compute_spline_surface_patch_ray_intersections_pencil_method(testing_fileinfo) -> None:
     """
     Testing values with default spot control mesh.
+
+    NOTE: this case is designed to fail since Python code will not match C++ 
+    case 1-to-1
     """
     # Retrieving parameters
     base_data_folderpath: pathlib.Path
@@ -31,22 +35,45 @@ def test_compute_spline_surface_patch_ray_intersections_pencil_method(testing_fi
         "compute_spline_surface_patch_ray_intersections_pencil_method"
 
     for i in range(3162):
+        # Deserialize parameters
+        spline_surface_patch: QuadraticSplineSurfacePatch = (
+            QuadraticSplineSurfacePatch.init_from_json_file(
+                filepath / "spline_surface_patch" / f"{i}.json"))
+        ray_mapping_coeffs: Matrix2x3f = deserialize_eigen_matrix_csv_to_numpy(
+            filepath / "ray_mapping_coeffs" / f"{i}.csv")
+        ray_intersections_call_in: int = deserialize_eigen_matrix_csv_to_numpy(
+            filepath / "ray_intersections_call_in" / f"{i}.csv").item()
+        ray_bbox_call_in: int = deserialize_eigen_matrix_csv_to_numpy(
+            filepath / "ray_bounding_box_call_in" / f"{i}.csv").item()
+
+        num_intersections: int
+        surface_intersections: list[PlanarPoint1d]  # length MAX_PATCH_RAY_INTERSECTIONS
+        ray_intersections: list[float]  # length MAX_PATCH_RAY_INTERSECTIONS
+        ray_intersections_call_out: int
+        ray_bbox_call_out: int
+
         # Execute method
         (num_intersections,
          surface_intersections,
          ray_intersections,
-         ray_int_call,
-         ray_bbox_call) = compute_spline_surface_patch_ray_intersections_pencil_method(
-            QuadraticSplineSurfacePatch.init_from_json_file(
-                filepath / "spline_surface_patch" / f"{i}.json"),
-            deserialize_eigen_matrix_csv_to_numpy(
-                filepath / "ray_mapping_coeffs" / f"{i}.csv"),
-            deserialize_eigen_matrix_csv_to_numpy(
-                filepath / "ray_intersections_call_in" / f"{i}.csv"),
-            deserialize_eigen_matrix_csv_to_numpy(
-                filepath / "ray_bounding_box_call_in" / f"{i}.csv"))
+         ray_intersections_call_out,
+         ray_bbox_call_out) = compute_spline_surface_patch_ray_intersections_pencil_method(
+            spline_surface_patch,
+            ray_mapping_coeffs,
+            ray_intersections_call_in,
+            ray_bbox_call_in)
 
-        todo("finish implementation")
+        # Compare results
+        compare_eigen_numpy_matrix(filepath / "num_intersections" / f"{i}.csv",
+                                   np.array(num_intersections))
+        compare_eigen_numpy_matrix(filepath / "surface_intersections" / f"{i}.csv",
+                                   np.array(surface_intersections))
+        compare_eigen_numpy_matrix(filepath / "ray_intersections" / f"{i}.csv",
+                                   np.array(ray_intersections))
+        compare_eigen_numpy_matrix(filepath / "ray_intersections_call_out" / f"{i}.csv",
+                                   np.array(ray_intersections_call_out))
+        compare_eigen_numpy_matrix(filepath / "ray_bounding_box_call_out" / f"{i}.csv",
+                                   np.array(ray_bbox_call_out))
 
 
 def test_solve_quadratic_quadratic_equation_pencil_method(testing_fileinfo) -> None:

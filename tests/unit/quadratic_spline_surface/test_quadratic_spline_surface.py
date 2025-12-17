@@ -6,12 +6,43 @@ import pathlib
 
 import numpy as np
 
-from pyalgcon.core.common import (MatrixNx3f, MatrixNx3i, SpatialVector1d,
-                                  compare_eigen_numpy_matrix,
+from pyalgcon.core.common import (MatrixNx3f, MatrixNx3i, PlanarPoint1d,
+                                  SpatialVector1d, compare_eigen_numpy_matrix,
                                   convert_nested_vector_to_matrix,
-                                  convert_polylines_to_edges)
+                                  convert_polylines_to_edges,
+                                  deserialize_eigen_matrix_csv_to_numpy)
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface import (
     QuadraticSplineSurface, SurfaceDiscretizationParameters)
+from pyalgcon.quadratic_spline_surface.twelve_split_spline import \
+    TwelveSplitSplineSurface
+
+
+def test_compute_hash_indices(testing_fileinfo,
+                              twelve_split_spline_transformed) -> None:
+    """
+    Testing part of compute_spline_surface_ray_intersections for contour calculation as well
+
+    NOTE: this test currently fails since the hash indices do not need to match 1-to-1
+    between the Python and C++ code.
+    """
+    # Retrieving parameters
+    base_data_folderpath: pathlib.Path
+    base_data_folderpath, _ = testing_fileinfo
+    filepath: pathlib.Path = base_data_folderpath / "quadratic_spline_surface" / \
+        "quadratic_spline_surface" / "compute_hash_indices"
+    spline_surface: TwelveSplitSplineSurface = twelve_split_spline_transformed  # subclass inherits
+
+    # Loop through files
+    for i in range(198):
+        # Deserialize parameter
+        ray_plane_point: PlanarPoint1d = deserialize_eigen_matrix_csv_to_numpy(
+            filepath / "ray_plane_point" / f"{i}.csv")
+
+        # Execute method
+        hash_indices: tuple[int, int] = spline_surface.compute_hash_indices(ray_plane_point)
+
+        # Compare results
+        compare_eigen_numpy_matrix(filepath / "hash_indices" / f"{i}.csv", np.array(hash_indices))
 
 
 def test_triangulate_patch_patch_index_0(testing_fileinfo,
