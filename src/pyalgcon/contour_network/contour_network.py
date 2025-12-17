@@ -1213,9 +1213,11 @@ class ContourNetwork(ProjectedCurveNetwork):
             return False
 
         # Determine if the tangent is pointing toward or away from the camera
-        tau: Vector3f = np.array([0, 0, 1], dtype=np.float64)
-        node_tangent: SpatialVector1d = self.node_spatial_tangent(node_index)
-        node_tangent_tau_projection = node_tangent * tau
+        # HACK: getting NumPy's matrix multiply to match that of Eigen to get (1, 3) x (3, 1)
+        # matrices to return a float value
+        tau: Matrix3x1r = np.array([0, 0, 1], dtype=np.float64).reshape((3, 1))
+        node_tangent: SpatialVector1d = self.node_spatial_tangent(node_index).reshape((1, 3))
+        node_tangent_tau_projection: float = (node_tangent @ tau).item()
         is_reversed: bool = node_tangent_tau_projection < 0
         logger.debug("Tangent at cusp node: %s", node_tangent)
         logger.debug("In segment midpoint is %s and out midpoint segment is %s",
