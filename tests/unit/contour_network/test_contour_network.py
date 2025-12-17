@@ -6,15 +6,47 @@ import logging
 import pathlib
 
 import numpy as np
+import pytest
 
 from pyalgcon.contour_network.contour_network import (ContourNetwork,
                                                       _build_contour_labels)
-from pyalgcon.core.common import (compare_eigen_numpy_matrix,
+from pyalgcon.core.common import (Matrix2x3f, SpatialVector1d,
+                                  compare_eigen_numpy_matrix,
                                   deserialize_eigen_matrix_csv_to_numpy)
 from pyalgcon.utils.projected_curve_networks_utils import (
     SVGOutputMode, compare_segment_labels)
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+@pytest.mark.filterwarnings("ignore:loadtxt")
+def test_compute_quantitative_invisibility_from_ray_intersections(testing_fileinfo) -> None:
+    """
+
+    """
+    # Initialize parameters
+    base_data_folderpath: pathlib.Path
+    base_data_folderpath, _ = testing_fileinfo
+    filepath: pathlib.Path = (base_data_folderpath / "contour_network" / "contour_network" /
+                              "compute_quantitative_invisibility_from_ray_intersections")
+
+    # Number from how many files there are
+    for i in range(198):
+        ray_mapping_coeffs: Matrix2x3f = deserialize_eigen_matrix_csv_to_numpy(
+            filepath / "ray_mapping_coeffs" / f"{i}.csv")
+        point: SpatialVector1d = deserialize_eigen_matrix_csv_to_numpy(
+            filepath / "point" / f"{i}.csv")
+        ray_intersections: list[float] = deserialize_eigen_matrix_csv_to_numpy(
+            filepath / "ray_intersections" / f"{i}.csv").tolist()
+
+        # Execute method
+        qi_poll_element_test: int = (
+            ContourNetwork._compute_quantitative_invisibility_from_ray_intersections(
+                ray_mapping_coeffs, point, ray_intersections))
+
+        # Compare results
+        compare_eigen_numpy_matrix(filepath / "qi_poll_element" / f"{i}.csv",
+                                   np.array(qi_poll_element_test))
 
 
 def test_quantitative_invisibility(testing_fileinfo: tuple[pathlib.Path, pathlib.Path],

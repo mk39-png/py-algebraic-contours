@@ -34,10 +34,10 @@ from pyalgcon.core.common import (DISCRETIZATION_LEVEL,
                                   INLINE_TESTING_ENABLED_QI, OFF_WHITE,
                                   TESTING_FOLDER_SOURCE,
                                   USE_DESERIALIZED_VALUES, Matrix2x3f,
-                                  Matrix3x3f, MatrixNx3f, NodeIndex,
-                                  PatchIndex, PlanarPoint1d, SegmentIndex,
-                                  SpatialVector1d, Vector3f, Vector3i,
-                                  compare_eigen_numpy_matrix,
+                                  Matrix3x1r, Matrix3x3f, MatrixNx3f,
+                                  NodeIndex, PatchIndex, PlanarPoint1d,
+                                  SegmentIndex, SpatialVector1d, Vector3f,
+                                  Vector3i, compare_eigen_numpy_matrix,
                                   compare_list_list_varying_lengths,
                                   compare_list_list_varying_lengths_float,
                                   deserialize_eigen_matrix_csv_to_numpy,
@@ -524,10 +524,9 @@ class ContourNetwork(ProjectedCurveNetwork):
     # *********************
     # Direct QI Computation
     # *********************
-
-    def __generate_ray_mapping_coeffs(self,
-                                      sample_point: SpatialVector1d,
-                                      ) -> Matrix2x3f:
+    @staticmethod
+    def _generate_ray_mapping_coeffs(sample_point: SpatialVector1d,
+                                     ) -> Matrix2x3f:
         """
         Compute the ray mapping coeffs for a given sample point
         """
@@ -539,11 +538,11 @@ class ContourNetwork(ProjectedCurveNetwork):
 
         return ray_mapping_coeffs
 
-    def __compute_quantitative_invisibility_from_ray_intersections(self,
-                                                                   ray_mapping_coeffs: Matrix2x3f,
-                                                                   point: SpatialVector1d,
-                                                                   ray_intersections: list[float]
-                                                                   ) -> int:
+    @staticmethod
+    def _compute_quantitative_invisibility_from_ray_intersections(ray_mapping_coeffs: Matrix2x3f,
+                                                                  point: SpatialVector1d,
+                                                                  ray_intersections: list[float]
+                                                                  ) -> int:
         """
         Compute the QI from a given point from the list of intersection parameters
         with the surface
@@ -580,8 +579,8 @@ class ContourNetwork(ProjectedCurveNetwork):
 
         self.segment_number += 1
 
-        ray_int_call: int = 0
-        ray_bbox_call: int = 0
+        ray_intersections_call: int = 0
+        ray_bounding_box_call: int = 0
         qi_poll: Vector3i = np.zeros(shape=(3, ), dtype=np.int64)
         spatial_curve: RationalFunction = self.segment_spatial_curve(segment_index)
         assert (spatial_curve.degree, spatial_curve.dimension) == (4, 3)
@@ -595,8 +594,8 @@ class ContourNetwork(ProjectedCurveNetwork):
             logger.info("Sample point: %s", sample_point)
 
             # Build ray mapping coefficients
-
-            ray_mapping_coeffs: Matrix2x3f = self.__generate_ray_mapping_coeffs(sample_point)
+            ray_mapping_coeffs: Matrix2x3f = ContourNetwork._generate_ray_mapping_coeffs(
+                sample_point)
             logger.info("Ray mapping coefficients: %s", ray_mapping_coeffs)
 
             # Compute intersections of the ray with the surface
@@ -614,13 +613,18 @@ class ContourNetwork(ProjectedCurveNetwork):
             (patch_indices,
              surface_intersections,
              ray_intersections,
-             ray_int_call,
-             ray_bbox_call) = compute_spline_surface_ray_intersections(spline_surface,
-                                                                       ray_mapping_coeffs,
-                                                                       ray_int_call,
-                                                                       ray_bbox_call)
+             ray_intersections_call,
+             ray_bounding_box_call) = compute_spline_surface_ray_intersections(
+                spline_surface,
+                ray_mapping_coeffs,
+                ray_intersections_call,
+                ray_bounding_box_call)
+
+            # FIXME not getting any updating ray intersections whatsoever...
+            # print(ray_intersections)
+
             # Compute the QI from the ray intersections
-            qi_poll[i] = (self.__compute_quantitative_invisibility_from_ray_intersections(
+            qi_poll[i] = (ContourNetwork._compute_quantitative_invisibility_from_ray_intersections(
                 ray_mapping_coeffs, sample_point, ray_intersections))
 
             # If no polling, return after first computation
@@ -628,8 +632,8 @@ class ContourNetwork(ProjectedCurveNetwork):
                 return qi_poll[i]
         logger.info("QI poll values: %s, %s, %s", qi_poll[0], qi_poll[1], qi_poll[2])
 
-        self.ray_intersection_call += ray_int_call
-        self.ray_bounding_box_call += ray_bbox_call
+        self.ray_intersection_call += ray_intersections_call
+        self.ray_bounding_box_call += ray_bounding_box_call
 
         # Poll for a majority
         if qi_poll[0] == qi_poll[1]:
