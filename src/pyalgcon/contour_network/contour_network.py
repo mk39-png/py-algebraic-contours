@@ -990,7 +990,7 @@ class ContourNetwork(ProjectedCurveNetwork):
 
         # Get the intersecting node and check it is valid
         intersecting_node_index: NodeIndex = self.intersection(node_index)
-        if self._is_valid_node_index(intersecting_node_index):
+        if not self._is_valid_node_index(intersecting_node_index):
             logger.error(
                 "Attempting to propagate QI with intersection rule at invalid node %s",
                 intersecting_node_index)
@@ -1138,7 +1138,7 @@ class ContourNetwork(ProjectedCurveNetwork):
 
         # Get the intersecting node and check it is valid
         intersecting_node_index: NodeIndex = self.intersection(node_index)
-        if self._is_valid_node_index(intersecting_node_index):
+        if not self._is_valid_node_index(intersecting_node_index):
             logger.error(
                 "Attempting to propagate QI with intersection rule at invalid node %s",
                 intersecting_node_index)

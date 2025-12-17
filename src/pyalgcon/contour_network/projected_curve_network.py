@@ -513,8 +513,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         assert self._is_valid_node_index(node_index)
         if not self._is_valid_node_index(node_index):
             logger.error("Invalid node query")
-            raise ValueError("Invalid node query")
-
             return False
 
         return self.nodes[node_index].is_knot()
@@ -526,7 +524,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         assert self._is_valid_node_index(node_index)
         if not self._is_valid_node_index(node_index):
             logger.error("Invalid node query")
-            raise ValueError("Invalid node query")
             return False
 
         return self.nodes[node_index].is_marked_knot()
@@ -538,7 +535,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         assert self._is_valid_node_index(node_index)
         if not self._is_valid_node_index(node_index):
             logger.error("Invalid node query")
-            raise ValueError("Invalid node query")
             return False
         return self.__nodes[node_index].is_intersection()
 
@@ -559,8 +555,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         assert self._is_valid_node_index(node_index)
         if not self._is_valid_node_index(node_index):
             logger.error("Invalid node query")
-            raise ValueError("Invalid node query")
-
             return False
         return self.__nodes[node_index].is_boundary_cusp()
 
@@ -571,8 +565,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         assert self._is_valid_node_index(node_index)
         if not self._is_valid_node_index(node_index):
             logger.error("Invalid node query")
-            raise ValueError("Invalid node query")
-
             return False
         return self.__nodes[node_index].is_path_start_node()
 
@@ -583,8 +575,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         assert self._is_valid_node_index(node_index)
         if not self._is_valid_node_index(node_index):
             logger.error("Invalid node query")
-            raise ValueError("Invalid node query")
-
             return False
         return self.__nodes[node_index].is_path_end_node()
 
