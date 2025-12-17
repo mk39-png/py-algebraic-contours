@@ -2,16 +2,49 @@
 Tests to find that the derivative of a rational function can be found.
 """
 
+import pathlib
+
 import numpy as np
 
-from pyalgcon.core.common import Matrix3x2f, Vector3f, float_equal
+from pyalgcon.core.common import (Matrix3x2f, SpatialVector1d, Vector3f,
+                                  compare_eigen_numpy_matrix,
+                                  deserialize_eigen_matrix_csv_to_numpy,
+                                  float_equal)
 from pyalgcon.core.rational_function import RationalFunction
+from pyalgcon.utils.rational_function_testing_utils import \
+    deserialize_rational_functions_from_file
 
 # def test_deserialize_rational_functions():
 #     folderpath = "spot_control\\contour_network\\compute_cusps\\compute_spline_surface_cusps\\"
 #     filename = "contour_segments.json"
 
 #     rational_functions: list[RationalFunction] = deserialize_rational_functions(folderpath+filename)
+
+
+def test_evaluate_normalized_coordinate(testing_fileinfo) -> None:
+    """
+    Testing with values from contour_network compute_segment_quantitative_invisibility
+    """
+    # Initialize parameters
+    base_data_folderpath: pathlib.Path
+    base_data_folderpath, _ = testing_fileinfo
+    filepath: pathlib.Path = (base_data_folderpath / "core" / "rational_function" /
+                              "evaluate_normalized_coordinate")
+
+    # Retrieve parameters
+    for i in range(198):
+        spatial_curve: RationalFunction = deserialize_rational_functions_from_file(
+            filepath / "spatial_curve" / f"{i}.csv")[0]
+        sample_parameter: float = deserialize_eigen_matrix_csv_to_numpy(
+            filepath / "sample_parameter" / f"{i}.csv").item()
+
+        # Execute method
+        sample_point: SpatialVector1d = spatial_curve.evaluate_normalized_coordinate(
+            sample_parameter)
+
+        # Compare results
+        compare_eigen_numpy_matrix(filepath / "sample_point" / f"{i}.csv",
+                                   sample_point)
 
 
 def test_zero_function() -> None:
