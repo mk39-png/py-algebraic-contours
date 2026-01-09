@@ -11,8 +11,9 @@ But anyways, could convert to MathUtils and back...
 import logging
 
 import numpy as np
-from pyalgcon.core.common import (ROWS, Matrix3x3f, Matrix4x4f, MatrixNx3f,
-                                  SpatialVector1d, Vector4f,
+
+from pyalgcon.core.common import (ROWS, Matrix3x3f, Matrix4x4f, MatrixNx3,
+                                  MatrixNx3f, SpatialVector1d, Vector4f,
                                   compute_point_cloud_bounding_box,
                                   float_equal, logger, todo, unimplemented)
 from pyalgcon.core.generate_transformation import (
@@ -153,6 +154,34 @@ def initialize_vertices():
     Used in generate_perspective_figure
     """
     todo()
+
+
+def apply_camera_matrix_transformation_to_vertices(input_V: MatrixNx3f,
+                                                   camera_matrix: Matrix4x4f,
+                                                   projection_matrix: Matrix4x4f,
+                                                   orthographic: bool = True,
+                                                   recenter_mesh: bool = False
+                                                   ) -> MatrixNx3f:
+    """
+    Used in generate_algebraic_contours.
+
+    :param input_V:          [in] mesh vertices before the transformation
+    :param camera_matrix:    [in] translation matrixs @ frame rotation matrix
+    :param orthographic:     [in] project camera to infinity if true
+    :param normalize_initial_positions: [in] normalize the initial vertices to a
+                                             bounding box if true
+    :return: vertices under projective transform
+    """
+
+    logger.info("Using camera matrix: %s\n", camera_matrix)
+    camera_to_plane_distance: float = 1.0
+
+    # DEBUG - overwrites parameter projection matrix
+    projection_matrix: Matrix4x4f = origin_to_infinity_projective_matrix(camera_to_plane_distance)
+    projective_transformation: Matrix4x4f = projection_matrix @ camera_matrix
+    output_V: MatrixNx3f = apply_transformation_to_vertices(input_V,
+                                                            projective_transformation)
+    return output_V
 
 
 def apply_camera_frame_transformation_to_vertices(input_V: MatrixNx3f,
