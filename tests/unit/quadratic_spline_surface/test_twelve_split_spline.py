@@ -284,7 +284,6 @@ def test_patches(testing_fileinfo,
     As in, we can deserialize and reserialize
     FIXME: make this modular and usable for any .obj
     """
-    logger.setLevel(logging.DEBUG)
     optimization_params: OptimizationParameters = OptimizationParameters()
 
     # Retrieve parameters

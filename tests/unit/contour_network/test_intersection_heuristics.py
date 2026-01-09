@@ -21,6 +21,20 @@ from pyalgcon.utils.rational_function_testing_utils import \
     deserialize_rational_functions_from_file
 
 
+def test_compute_homogeneous_bezier_points_over_interval_numpy() -> None:
+    """
+    Testing to ensure that functionality is akin to that of NumPy's implementation
+    """
+    # # TODO: testing to make sure that implementation is correct.
+    # bezier_x_coords_control: Vector5f = np.zeros(shape=(5, ), dtype=np.float64)
+    # bezier_y_coords_control: Vector5f = np.zeros(shape=(5, ), dtype=np.float64)
+    # for i in range(bezier_points.shape[ROWS]):
+    #     bezier_x_coords_control[i] = bezier_points[i, 0] / bezier_points[i, 2]
+    #     bezier_y_coords_control[i] = bezier_points[i, 1] / bezier_points[i, 2]
+    # npt.assert_allclose(bezier_x_coords, bezier_x_coords_control)
+    # npt.assert_allclose(bezier_y_coords, bezier_y_coords_control)
+
+
 def test_compute_homogeneous_bezier_points_over_interval(testing_fileinfo) -> None:
     """
     Tests compute_homogeneous_bezier_points_over_interval() method according to its usage in 
