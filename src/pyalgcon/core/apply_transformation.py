@@ -217,7 +217,7 @@ def apply_camera_frame_transformation_to_vertices(input_V: MatrixNx3f,
     # Normalize the vertices
     scale_factor: float = bounding_box_diagonal.max()
     num_vertices: int = input_V.shape[ROWS]
-    output_V = np.zeros((num_vertices, 3))
+    output_V: MatrixNx3f = np.zeros((num_vertices, 3))
     for i in range(num_vertices):
         output_V[i, :] = 2.0 * (input_V[i, :] - mesh_midpoint) / scale_factor
 
