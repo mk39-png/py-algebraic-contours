@@ -97,9 +97,6 @@ class InvisibilityParameters():
     write_contour_soup = False  # Option to write contours before graph construction for diagnostics
 
     # Method for computing quantitative visibility
-    #
-    # TODO: test with various QI modes
-    #
     invisibility_method: InvisibilityMethod = InvisibilityMethod.CHAINING
 
     # Options to view each local propagation step during computation for debugging
@@ -166,10 +163,6 @@ class ContourNetwork(ProjectedCurveNetwork):
 
         compute_projected_time: float = time.perf_counter() - time_start
 
-        #
-        # FIXME: quantitative invisibility calculation is a bit different
-        # so, go about and fix this.
-        #
         # Compute the quantitative invisibility
         time_start: float = time.perf_counter()
         self.__compute_quantitative_invisibility(spline_surface, invisibility_params)
@@ -235,24 +228,20 @@ class ContourNetwork(ProjectedCurveNetwork):
             patch_boundary_edges)
 
         # Build contour labels for boundary countours and patch locations
-        # FIXME: build contour labels looks GOOD
         contour_segment_labels: list[dict[str, int]] = _build_contour_labels(contour_patch_indices,
                                                                              contour_is_boundary)
 
         # Project contours to the plane
-        # FIXME: project_curves also looks good
         planar_contour_segments: list[RationalFunction] = project_curves(contour_segments, frame)
         # lazy check
         assert (planar_contour_segments[0].degree, planar_contour_segments[0].dimension) == (4, 2)
 
         # Chain the contour segments into closed contours
-        # FIXME: compute_closed_contours looks good
         contours: list[list[int]]
         contour_labels: list[int]
         contours, contour_labels = compute_closed_contours(contour_segments)
 
         # Pad contour domains by an epsilon
-        # FIXME: pad_contours looks good
         pad_contours(contour_domain_curve_segments,
                      contour_segments,
                      planar_contour_segments,
@@ -269,9 +258,6 @@ class ContourNetwork(ProjectedCurveNetwork):
 
         time_start = time.perf_counter()
 
-        #
-        # FIXME: compute_spline_surface_cusps looks good.
-        #
         (interior_cusps,
          boundary_cusps,
          has_cusp_at_base,
@@ -307,7 +293,6 @@ class ContourNetwork(ProjectedCurveNetwork):
         # Optionally write contours before any graph construction
         if invisibility_params.write_contour_soup:
             viewport: tuple[int, int] = (800, 800)
-            # TODO: include svgWriter of some sort
             svg_elements: list[svg.Element] = []
             write_contours_with_annotations(frame,
                                             contour_segments,
@@ -363,7 +348,8 @@ class ContourNetwork(ProjectedCurveNetwork):
 
     def view_contours(self) -> None:
         """
-        View the contour network without the underlying surface
+        View the contour network without the underlying surface.
+        This works best for seeing how the contours are formed in a 3D space.
         """
         polyscope.init()
         polyscope.set_view_projection_mode("orthographic")
@@ -371,6 +357,7 @@ class ContourNetwork(ProjectedCurveNetwork):
         polyscope.show()
         polyscope.remove_all_structures()
 
+    # TODO: change screenshot camera position and target type to be consistent with other screenshot methods
     def screenshot(self,
                    filename: str,
                    spline_surface: QuadraticSplineSurface,
@@ -406,7 +393,7 @@ class ContourNetwork(ProjectedCurveNetwork):
                                   camera_position: tuple[float, float, float] = (0, 0, 2),
                                   camera_target: tuple[float, float, float] = (0, 0, 0)) -> None:
         """
-        Save a screenshot of just the contours to file
+        Save a screenshot of just the contours to file.
 
         :param filename:        [in] file to save the screenshot to
         :param camera_position: [in] camera position for the screenshot
@@ -529,10 +516,6 @@ class ContourNetwork(ProjectedCurveNetwork):
             self.ray_number += 1
 
             # Compute the intersections of the ray with the spline surface
-
-            # FIXME: the function below not giving the correct number of calls...
-            # Also, ptch indices is wrong
-            # Surface intersections is wrong as well
             (patch_indices,
              surface_intersections,
              ray_intersections,
@@ -542,9 +525,6 @@ class ContourNetwork(ProjectedCurveNetwork):
                 ray_mapping_coeffs,
                 ray_intersections_call,
                 ray_bounding_box_call)
-
-            # FIXME not getting any updating ray intersections whatsoever...
-            # print(ray_intersections)
 
             # Compute the QI from the ray intersections
             qi_poll[i] = (ContourNetwork._compute_quantitative_invisibility_from_ray_intersections(
@@ -612,8 +592,7 @@ class ContourNetwork(ProjectedCurveNetwork):
         else:
             jump_size = 0
 
-        # FIXME: likely below causing trouble.
-        qi_poll: Vector3f = np.zeros(shape=(3, ), dtype=np.int64)
+        qi_poll: Vector3i = np.zeros(shape=(3, ), dtype=np.int64)
         for i in range(3):
             segment_index: SegmentIndex = iteration.current_segment_index
             qi_poll[i] = self.__compute_segment_quantitative_invisibility(spline_surface,
@@ -931,9 +910,11 @@ class ContourNetwork(ProjectedCurveNetwork):
         # Determine if the node is above the intersection node
         node_point: SpatialVector1d = self.node_spatial_point(node_index)
         intersecting_node_point: SpatialVector1d = self.node_spatial_point(intersecting_node_index)
+        # NOTE: (3, ) @ (3, ) shape returns float
         node_tau_projection: float = node_point @ tau
         intersecting_node_tau_projection: float = intersecting_node_point @ tau
         is_above: bool = (node_tau_projection < intersecting_node_tau_projection)
+
         logger.debug("Node has view direction projection %s", node_tau_projection)
         logger.debug("Intersecting node has view direction projection %s",
                      intersecting_node_tau_projection)
@@ -1151,7 +1132,7 @@ class ContourNetwork(ProjectedCurveNetwork):
                      self.segment_spatial_curve(self.in_(node_index)).mid_point(),
                      self.segment_spatial_curve(self.out(node_index)).mid_point())
 
-        # Propigate the QI
+        # Propagate the QI
         new_qi: int
         if is_reversed:
             new_qi = self.__propagate_quantitative_invisibility_across_node(node_index, -1)
@@ -1353,9 +1334,6 @@ class ContourNetwork(ProjectedCurveNetwork):
                         time.time() - start)
 
         # Check for errors in the QI
-        #
-        # TODO: quantitative invisibility is wrong, likely because the direction of the mesh is wrong... or whatnot.
-        #
         quantitative_invisibility: list[int] = self.enumerate_quantitative_invisibility()
 
         logger.debug(quantitative_invisibility)

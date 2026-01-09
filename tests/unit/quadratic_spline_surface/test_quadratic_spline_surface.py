@@ -78,6 +78,7 @@ def test_discretize(testing_fileinfo,
     """
     This is dependent on QuadraticSplineSurface.read_spline() working properly.
     TODO: this is redundant with test in test_quadratic_spline.py
+    But this is also designed to fail
     """
     # Retrieve parameters
     base_data_folderpath: pathlib.Path

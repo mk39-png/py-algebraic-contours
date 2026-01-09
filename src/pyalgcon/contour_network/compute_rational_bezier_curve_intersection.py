@@ -115,17 +115,8 @@ def _is_constant(A: Matrix5x3f, precision: float = 1e-6) -> bool:
 
 def _is_constant_list(A: list[SpatialVector1d], precision: float = 1e-6) -> bool:
     """
-    Uses original way of checking point_equal
+    Uses original way of checking point_equal as to avoid translation conflicts
     """
-    # # A = np.asarray(A)
-    # for a in A[1:]:
-
-    #     # FIXME: checking that NumPy implementation and C++ translation are both correct
-    #     assert np.allclose(a, a[0], atol=precision) == _point_equal(a, A[0], precision)
-
-    #     if not np.allclose(a, A[0], atol=precision):
-    #         return False
-    # return True
     for i in range(1, len(A)):
         assert A[0].shape == (3, )
         assert A[i].shape == (3, )
@@ -156,8 +147,6 @@ def check_split_criteria(q: list[SpatialVector1d]) -> bool:
     for i in range(3):
         v1: SpatialVector1d = p[i + 1] - p[i]
         v2: SpatialVector1d = p[i + 2] - p[i + 1]
-
-        # FIXME: double check C++ translation
         v1 = v1 / np.linalg.norm(v1)
         v2 = v2 / np.linalg.norm(v2)
         degree_sum += math.acos(v1.dot(v2))
@@ -171,22 +160,18 @@ def _get_solutions(A: list[SpatialVector1d],
                    B: list[SpatialVector1d],
                    precision: float) -> list[tuple[float, float]]:
     """
-
+    NOTE: get_solutions() passed a reference to the same Interval_ink object into iterate()
     """
     assert A[0].shape == (3, )
     assert B[0].shape == (3, )
 
     domsA: list[Interval_ink] = []
     domsB: list[Interval_ink] = []
-    # unit_interval_1 = Interval_ink(0, 1)
-    # unit_interval_2 = Interval_ink(0, 1)
+    # NOTE: passing in a reference to the same Interval_ink object since it is not modified
+    # inside of iterate()
     UNIT_INTERVAL = Interval_ink(0, 1)
 
     counter: int = 0
-
-    #
-    # FIXME: for image_segment_index == 9, domsA and domsB are empty! which is really bad for us.
-    #
     counter = iterate(domsA, domsB, A, B, UNIT_INTERVAL, UNIT_INTERVAL, precision, counter)
 
     if len(domsA) != len(domsB):
@@ -205,8 +190,6 @@ def _left_portion(t: float, B: list[SpatialVector1d]) -> None:
     """
     n: int = len(B)
     for i in range(1, n):
-
-        # FIXME: is below correct translation?
         for j in range(n - 1, i - 1, -1):
             B[j] = _lerp(t, B[j - 1], B[j])
 
@@ -348,7 +331,7 @@ def _clipline(P: Matrix5x3f,
         t2 = 0.1e1
     else:
         t2 = 0.0e0
-        for j in range(1, nP):  # FIXME: does this translate from j = 1; j <= nP - 1; j++?
+        for j in range(1, nP):
             if vnx[j - 1] < 0.1e1:
                 t2 = max(t2, vnx[j - 1])
 
@@ -381,7 +364,6 @@ def _clipfatline(P: Matrix5x3f,
     L_max: Vector3f = np.zeros(shape=(3, ))
     t_min: Vector2f = np.zeros(shape=(2, ))
     t_max: Vector2f = np.zeros(shape=(2, ))
-    # FIXME: iter 10 for image_segment_index 9 SHOULD ENTER THIS IF AND NOT GO INTO FATLINE ELSE STATEMENT
     if _is_constant(Q, precision):
         if _is_constant(P, precision):
             clip_range[0] = 0
@@ -390,9 +372,7 @@ def _clipfatline(P: Matrix5x3f,
         else:
             direction: Vector2f = np.array([-(P[4][1] / P[4][2] - P[0][1] / P[0][2]),
                                             P[4][0] / P[4][2] - P[0][0] / P[0][2]])
-            # FIXME: potentially bad translation? normalizing direcction.
             direction = direction / np.linalg.norm(direction)
-            # direction /= np.linalg.norm(direction)
             L_min[0] = direction[1]
             L_min[1] = -direction[0]
             L_min[2] = (-direction[1] * (Q[0][0] + Q[4][0]) / 2 +
@@ -406,7 +386,6 @@ def _clipfatline(P: Matrix5x3f,
 
     _clipline(P, L_min, t_min)
     _clipline(P, L_max, t_max)
-    # FIXME: the below gets executed by the machine....
     if t_min[0] == -0.1e1 or t_max[0] == -0.1e1:
         clip_range[0] = -1
         clip_range[1] = -1
@@ -429,7 +408,6 @@ def iterate(domsA: list[Interval_ink],
             counter: int) -> int:
     """
     Inkscope code
-    NOTE: function runs recursively.
     # FIXME potential problem with translation of C++ pointers
     Passes and returns precision to caller method 
 
@@ -445,12 +423,10 @@ def iterate(domsA: list[Interval_ink],
     :return counter:
     """
     # Base case in order to limit recursion
-    # FIXME: extra part from C++ implementation, maybe not needed
     if (_float_equal_ink(domA_const.extent(), 1.0) and
             _float_equal_ink(domB_const.extent(), 1.0)):
         counter = 0
 
-    # FIXME: potentially bad translation below...
     counter += 1
     if counter > 100:
         return counter
@@ -462,7 +438,7 @@ def iterate(domsA: list[Interval_ink],
     pB: list[SpatialVector1d] = copy.deepcopy(B_const)
     C1: list[SpatialVector1d] = pA
     C2: list[SpatialVector1d] = pB
-    dompA: Interval_ink = copy.deepcopy(domA_const)  # FIXME: does class deepcopy even work?
+    dompA: Interval_ink = copy.deepcopy(domA_const)
     dompB: Interval_ink = copy.deepcopy(domB_const)
     dom1: Interval_ink = dompA
     dom2: Interval_ink = dompB
@@ -471,10 +447,8 @@ def iterate(domsA: list[Interval_ink],
         m1: SpatialVector1d = _middle_point(C1[0], C1[-1])
         m2: SpatialVector1d = _middle_point(C2[0], C2[-1])
         if _point_equal(m1, m2):
-            domsA.append(copy.deepcopy(domA_const))  # FIXME: potentially deep copy needed
+            domsA.append(copy.deepcopy(domA_const))
             domsB.append(copy.deepcopy(domB_const))
-            # domsA.append(domA_const)  # FIXME: potentially deep copy needed
-            # domsB.append(domB_const)
 
         return counter
 
@@ -482,8 +456,7 @@ def iterate(domsA: list[Interval_ink],
     while ((iteration + 1) < 100) and (dompA.extent() >= precision or dompB.extent() >= precision):
         iteration += 1
 
-        # Convert list[SpatialVector] to Matrix5x3f
-        # TODO: can't I just use np.array(A) and np.array(B) for P and Q, respectively?
+        # Converting list[SpatialVector] to Matrix5x3f
         P: Matrix5x3f = np.zeros((5, 3), dtype=np.float64)
         Q: Matrix5x3f = np.zeros((5, 3), dtype=np.float64)
         clip_range: Vector2f = np.zeros((2, ), dtype=np.float64)
@@ -497,10 +470,8 @@ def iterate(domsA: list[Interval_ink],
             Q[i][1] = C2[i][1]
             Q[i][2] = C2[i][2]
 
-        # FIXME: the function below is messing up on iteration 10 for image_segment_index 9
         _clipfatline(Q, P, clip_range, precision)
 
-        # FIXME: potentially bad translation...
         dom: Interval_ink = Interval_ink(clip_range[0], clip_range[1])
 
         if (_float_equal_ink(dom.max(), -1.0) and _float_equal_ink(dom.min(), -1.0)):
@@ -523,54 +494,38 @@ def iterate(domsA: list[Interval_ink],
 
         # if we have clipped less than 20% than we need to subdive the curve
         # with the largest domain into two sub-curves
-
-        # FIXME: check if modification by reference.
-
         if dom.extent() > MIN_CLIPPED_SIZE_THRESHOLD:
             pC1: list[SpatialVector1d]
             pC2: list[SpatialVector1d]
             dompC1: Interval_ink
             dompC2: Interval_ink
             if dompA.extent() > dompB.extent():
-                # pC1 = pC2 = copy.deepcopy(pA)
-                # pC1 = pA[:]
-                # pC2 = pA[:]
                 pC1 = copy.deepcopy(pA)
                 pC2 = copy.deepcopy(pA)
                 _portion(pC1, H1_INTERVAL)
                 _portion(pC2, H2_INTERVAL)
                 dompC1 = copy.deepcopy(dompA)
                 dompC2 = copy.deepcopy(dompA)
-                # dompC1 = dompC2 = dompA
-                # dompC1 = dompA
-                # dompC2 = dompA
                 _map_to(dompC1, H1_INTERVAL)
                 _map_to(dompC2, H2_INTERVAL)
                 counter = iterate(domsA, domsB, pC1, pB, dompC1, dompB, precision, counter)
                 counter = iterate(domsA, domsB, pC2, pB, dompC2, dompB, precision, counter)
             else:
-                # pC1 = pC2 = pB
-                # pC1 = pB[:]
-                # pC2 = pB[:]
                 pC1 = copy.deepcopy(pB)
                 pC2 = copy.deepcopy(pB)
                 _portion(pC1, H1_INTERVAL)
                 _portion(pC2, H2_INTERVAL)
                 dompC1 = copy.deepcopy(dompB)
                 dompC2 = copy.deepcopy(dompB)
-                # dompC1 = dompC2 = dompB
-                # dompC1 = dompB
-                # dompC2 = dompB
                 _map_to(dompC1, H1_INTERVAL)
                 _map_to(dompC2, H2_INTERVAL)
                 counter = iterate(domsB, domsA, pC1, pA, dompC1, dompA, precision, counter)
                 counter = iterate(domsB, domsA, pC2, pA, dompC2, dompA, precision, counter)
             return counter
 
-        # TODO: does this swapping even work?
         C1, C2 = C2, C1
         dom1, dom2 = dom2, dom1
-    # At iteration 10 for image_segment_index == 9, the below return statement should be met...
+
     domsA.append(dompA)
     domsB.append(dompB)
     return counter

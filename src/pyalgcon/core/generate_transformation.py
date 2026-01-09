@@ -101,8 +101,8 @@ def x_axis_rotation_projective_matrix():
     """
     Generate the projective matrix for rotation around the x axis.
 
-    @param[in] degree: degree of rotation around the x axis
-    @return 4x4 projective matrix for the transformation
+    :param degree: [in] degree of rotation around the x axis
+    :return: 4x4 projective matrix for the transformation
     """
     pass
 
@@ -111,8 +111,8 @@ def y_axis_rotation_projective_matrix():
     """
     Generate the projective matrix for rotation around the y axis.
 
-    @param[in] degree: degree of rotation around the y axis
-    @return 4x4 projective matrix for the transformation
+    :param degree: [in] degree of rotation around the y axis
+    :return: 4x4 projective matrix for the transformation
     """
     pass
 
@@ -121,8 +121,8 @@ def z_axis_rotation_projective_matrix():
     """
     Generate the projective matrix for rotation around the z axis.
 
-    @param[in] degree: degree of rotation around the z axis
-    @return 4x4 projective matrix for the transformation
+    :param degree: [in] degree of rotation around the z axis
+    :return: 4x4 projective matrix for the transformation
     """
     pass
 
@@ -134,9 +134,10 @@ def axis_rotation_projective_matrix():
 
     The order of rotation is z axis -> y axis -> x axis
 
-    @param[in] x_degree: degree of rotation around the x axis
-    @param[in] y_degree: degree of rotation around the y axis
-    @param[in] z_degree: degree of rotation around the z axis
-    @return 4x4 projective matrix for the transformation
+    :param x_degree: [in] degree of rotation around the x axis
+    :param y_degree: [in] degree of rotation around the y axis
+    :param z_degree: [in] degree of rotation around the z axis
+
+    :return: 4x4 projective matrix for the transformation
     """
     pass

@@ -192,10 +192,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
                                                              num_intersections))
 
         # Record chain start points
-        #
-        # FIXME: test the function below...
-        # TODO: change the method to take in arguments?
-        #
         self.__init_chain_start_nodes()
 
         # Check the validity of the topological graph structure
@@ -1251,7 +1247,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         points, start_polyline = planar_curve_start.discretize(curve_disc_params)
 
         # Add other chain segment points, skipping shared endpoints
-        # FIXME: check for duplicates with the above...
         while not iter_.at_end_of_chain:
             planar_curve_segment: RationalFunction = (
                 self.segments[iter_.current_segment_index].planar_curve)
@@ -1259,9 +1254,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
             segment_polyline: list[int]
             segment_points, segment_polyline = planar_curve_segment.discretize(curve_disc_params)
 
-            # FIXME: utilize len just to be safe.
             for i in range(1, len(segment_points)):
-                # for _, segment_point in enumerate(segment_points, 1):
                 points.append(segment_points[i])
 
             iter_.increment()
@@ -1308,8 +1301,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
 
             # FIXME: using enumerate with start value is a bit weird
             for i in range(1, len(segment_points)):
-                # for _, segment_point in enumerate(segment_points, 1):
-                # points.append(segment_point)
                 points.append(segment_points[i])
                 is_cusp.append(False)
 
@@ -1393,7 +1384,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
                 next_[i] = j
                 prev[j] = i
 
-        # TODO: originally was a CHECK_VALIDITY pragma, may want to reimplement something like that
         if CHECK_VALIDITY:
             # Check if the connectivity has consistent next/prev pairs
             if not is_valid_next_prev_pair(next_, prev):
@@ -1658,8 +1648,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         points: list[PlanarPoint1d]
         polylines: list[list[int]]
         points, polylines = discretize_curve_segments(4, 3, spatial_curves_ref, curve_disc_params)
-
-        # FIXME: apparently there's a problem with the method below
         points_mat: MatrixXf = convert_nested_vector_to_matrix(points)
         edges: list[tuple[int, int]] = convert_polylines_to_edges(polylines)
         spatial_curve_network_segments: polyscope.CurveNetwork = polyscope.register_curve_network(

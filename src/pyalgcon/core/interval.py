@@ -37,9 +37,6 @@ class Interval:
         # TODO: do I really need reset_bounds after everything above?
         # self.reset_bounds()
 
-    # NOTE: I'm including these getters and setters because they have more logic
-    # beyond simple getting and setting
-
     def set_lower_bound(self, lower_bound: float,  is_open: bool = False) -> None:
         """
         Sets t0 to lower_bound.

@@ -282,6 +282,9 @@ def compare_list_list_varying_lengths_float(filepath: pathlib.Path,
     [1, 2],
     [5, 7, 8, 8, 19, 1],
     ]
+
+    NOTE: default precision is 0.0 to match the default atol value of 
+    assert_allclose
     """
     rows_control: list[list[float]] = []
 
@@ -808,10 +811,8 @@ def flatten_matrix_by_row():
     todo()
 
 
-# TODO: this seems like something that would interact with the Blender API.
-#       Move this over to a different file to separate the parts that interact with the Blender API
-def read_camera_matrix():
-    todo()
+def read_camera_matrix(filepath: pathlib.Path) -> Matrix4x4f:
+    unimplemented("see deserialize_eigen_matrix_csv_to_numpy()")
 
 
 def generate_linspace(t_0: float, t_1: float, num_points: int) -> Vector1D:

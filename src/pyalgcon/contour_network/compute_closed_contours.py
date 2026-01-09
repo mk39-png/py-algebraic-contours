@@ -100,7 +100,6 @@ def _is_valid_contours(contours: list[list[int]],
     """
     # Check contour segments are contiguous
     for i, _ in enumerate(contours):
-        # for j, _ in enumerate(contours[i], start=1): # FIXME: for some reason, enumerate is not working as expected. goes to index j == 10 rather than stopping at 9
         for j in range(1, len(contours[i])):
             if not _are_overlapping_points(contour_end_points[contours[i][j - 1]],
                                            contour_start_points[contours[i][j]]):
@@ -263,8 +262,6 @@ def compute_closed_contours(contour_segments: list[RationalFunction]) -> tuple[l
     Given contour segments on a surface, chain them together to generate the
     full closed contours.
 
-    FIXME: potential bad C++ translation. Maybe pass in params to modify by reference.
-
     :param contour_segments: [in] surface contour segments (degree 4, dimension 3)
     :return contours: list of indices of segments for complete surface contours
     :return contour_labels: index of the contour corresponding to each segment
@@ -298,13 +295,6 @@ def compute_closed_contours(contour_segments: list[RationalFunction]) -> tuple[l
         # Traverse forward until the contour is closed or no new contour is found
         closed_contour: bool = True  # Assume closed until proven otherwise
 
-        # FIXME WHILE LOOP BELOW IS BAD
-        # FIXME WHILE LOOP BELOW IS BAD
-        # FIXME WHILE LOOP BELOW IS BAD
-        # FIXME WHILE LOOP BELOW IS BAD
-        # BELOW METHOD ISNT MAKING THE CORRECT AMOUNT OF CONTOURS!!
-        # ALSO, CONTOUR_START_POINTS AND CONTOUR_END_POINTS SHOULD HAVE NONZERO VALUES of... FLOATS
-        # So then, it must be some thing abofe then, right? The one where its appending the start and end points.
         while not _is_closed_contour(current_contour, contour_start_points, contour_end_points):
             adjacent_segment_found: bool = _add_next_contour_segment(contour_segments,
                                                                      current_contour,

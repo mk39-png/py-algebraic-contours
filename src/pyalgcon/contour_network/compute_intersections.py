@@ -76,11 +76,7 @@ def _compute_bezier_clipping_planar_curve_intersections(first_planar_curve: Rati
     assert (second_planar_curve.degree, second_planar_curve.dimension) == (4, 2)
     assert first_bezier_control_points.shape == (5, 3)
     assert second_bezier_control_points.shape == (5, 3)
-
     intersection_points: list[tuple[float, float]] = []
-    # FIXME:
-    # if not check_split_criteria(curve1):
-    #     print("potential self intersection p1!")
     intersection_param_inkscope: list[tuple[float, float]]
     p1: list[SpatialVector1d] = []
     p2: list[SpatialVector1d] = []
@@ -96,10 +92,6 @@ def _compute_bezier_clipping_planar_curve_intersections(first_planar_curve: Rati
         p2,
         FIND_INTERSECTIONS_BEZIER_CLIPPING_PRECISION)  # 1e-7
 
-    #
-    # FIXME: below seems OK? I think? I mean, the problem is with finding too many intersections
-    # Rather than the actual value of those intersections.
-    #
     for spline in intersection_param_inkscope:
         t_spline: float = spline[0]
         s_spline: float = spline[1]
@@ -126,9 +118,6 @@ def _prune_intersection_points(first_planar_curve: RationalFunction,
     assert (first_planar_curve.degree, first_planar_curve.dimension) == (4, 2)
     assert (second_planar_curve.degree, second_planar_curve.dimension) == (4, 2)
 
-    # FIXME: Potential this function that decides whether or not to add something...
-    # Check for i == 76 of intersection_indices...
-
     for intersection_point in intersection_points:
         t: float = intersection_point[0]
         s: float = intersection_point[1]
@@ -142,9 +131,6 @@ def _prune_intersection_points(first_planar_curve: RationalFunction,
         # Add points otherwise
         first_curve_intersections_ref.append(t)
         second_curve_intersections_ref.append(s)
-
-
-# counter_compute_planar_curve_testing: int = 0
 
 
 def _compute_planar_curve_intersections_from_bounding_box(
@@ -195,9 +181,6 @@ def _compute_planar_curve_intersections_from_bounding_box(
     # Compute intersection points by Bezier clipping
     intersection_points: list[tuple[float, float]]
     try:
-        #
-        # FIXME: below is not giving values wanted... for some intersections
-        #
         intersection_points = _compute_bezier_clipping_planar_curve_intersections(
             first_planar_curve,
             second_planar_curve,
@@ -211,19 +194,11 @@ def _compute_planar_curve_intersections_from_bounding_box(
         return
 
     # Prune the computed intersections to ensure they are in the correct domain
-    #
-    # FIXME: this appears to work for image_segment_index == 9 in compute_intersections
-    #
     _prune_intersection_points(first_planar_curve,
                                second_planar_curve,
                                intersection_points,
                                first_curve_intersections_ref,
                                second_curve_intersections_ref)
-
-    # TODO: test this function for every call of this as well...
-    # Which means... yeah... testing both pieces together since there could be something wrong with
-    # how they interact?
-    # Because both of them work fine on their own...
 
     t2: datetime = datetime.now()
     total_time: int = (t2 - t1).microseconds
@@ -316,9 +291,6 @@ def compute_intersections(image_segments: list[RationalFunction],
     # Setup intersection diagnostic tools
     intersection_stats: IntersectionStats = IntersectionStats()
 
-    #
-    # FIXME: method below looks good
-    #
     # Compute all rational bezier control points
     image_segments_bezier_control_points: list[Matrix5x3f] = []
     for image_segment in image_segments:
@@ -345,7 +317,6 @@ def compute_intersections(image_segments: list[RationalFunction],
     hash_table, reverse_hash_table = compute_bounding_box_hash_table(image_segments_bounding_box)
 
     # Compute intersections
-    # FIXME: check this loop itself to see if its correct or not
     num_segments: int = len(image_segments)
     for image_segment_index in range(num_segments):
         cells: list[int] = reverse_hash_table[image_segment_index]
@@ -354,9 +325,6 @@ def compute_intersections(image_segments: list[RationalFunction],
         for cell in cells:
             j: int = cell // num_interval
             k: int = cell % num_interval
-
-            # FIXME: maybe switch data strucutre for the hash table
-            # Wait, the ordering of the hash table is a bit weird...
 
             for i in hash_table[j][k]:
                 if i >= image_segment_index or visited[i]:
@@ -383,12 +351,6 @@ def compute_intersections(image_segments: list[RationalFunction],
                     image_segments_bounding_box[i],
                     image_segments_bezier_control_points[image_segment_index],
                     image_segments_bezier_control_points[i])
-                counter_planar_curve_calls += 1
-                # print(counter_planar_curve_calls)
-                # logger.error(counter_planar_curve_calls)
-
-                # TODO: test this loop below...
-                # Because uhhh, I haven't tested it yet for every iteration.
                 intersections[image_segment_index].extend(current_segment_intersections)
                 intersections[i].extend(other_segment_intersections)
 
@@ -444,8 +406,7 @@ def split_planar_curves_no_self_intersection(planar_curves: list[RationalFunctio
     """
     Get planar curve split parameters until the refined curves cannot have self
     intersections
-
-    TODO: this is not used anywhere else besides testing.
+    NOTE: this is only used in testing
 
     :param planar_curves: [in] list of planar curve segments
     :return split_points: points to split curves at to avoid self intersections

@@ -27,7 +27,9 @@ def generate_independent_variable() -> None:
      @return constructed differentiable variable
     """
     unimplemented(
-        "Method is used by build_independent_variable_vector() and build_independent_variable_matrix(), both of which are unimplemented. Is also used in tests (which are commented out in original ASOC code)")
+        "Method is used by build_independent_variable_vector() and"
+        " build_independent_variable_matrix(), both of which are unimplemented. "
+        "Is also used in tests (which are commented out in original ASOC code)")
 
 
 def build_independent_variable_vector():
@@ -67,7 +69,8 @@ def generate_constant_variable():
     @return constructed differentiable variable
     """
     unimplemented(
-        "Method is used by build_constant_variable_vector() and build_constant_variable_matrix(), both of which are unimplemented.")
+        "Method is used by build_constant_variable_vector() and build_constant_variable_matrix(), "
+        "both of which are unimplemented.")
 
 
 def build_constant_variable_vector():

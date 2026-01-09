@@ -710,11 +710,11 @@ class AffineManifold:
         """
         Save an image of the cone manifold and its data to file.
 
-        @param[in] filename: file to save the screenshot to
-        @param[in] V: mesh vertex positions
-        @param[in] camera_position: camera position for the screenshot
-        @param[in] camera_target: camera target for the screenshot
-        @param[in] use_orthographic: use orthographic perspective if true
+        :param filename:         [in] file to save the screenshot to
+        :param V:                [in] mesh vertex positions
+        :param camera_position:  [in] camera position for the screenshot
+        :param camera_target:    [in] camera target for the screenshot
+        :param use_orthographic: [in] use orthographic perspective if true
         """
         # Add the contour network to the surface
         self.add_to_viewer(V)

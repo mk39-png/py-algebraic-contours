@@ -511,11 +511,6 @@ def solve_quadratic_quadratic_equation_pencil_method(a: Vector6f,
     assert a.shape == (6, )
     assert b.shape == (6, )
 
-    #
-    #
-    # FIXME: utilize the implementation of max_ finder used in the C++ code
-    #
-    #
     # Divide by max coefficient to get better precision
     max_: float = abs(a[0])
     for i in range(6):
@@ -523,11 +518,7 @@ def solve_quadratic_quadratic_equation_pencil_method(a: Vector6f,
             max_ = abs(a[i])
         if max_ < abs(b[i]):
             max_ = abs(b[i])
-        # max_ = max(abs(a[i]), abs(b[i]))
 
-    #
-    # FIXME: F and G look good after the fix above
-    #
     F: Vector6f = np.array([a[4] / max_, a[5] / max_, a[0] / max_,
                             a[3] / max_, a[1] / max_, a[2] / max_], dtype=np.float64)
     G: Vector6f = np.array([b[4] / max_, b[5] / max_, b[0] / max_,
@@ -535,14 +526,6 @@ def solve_quadratic_quadratic_equation_pencil_method(a: Vector6f,
     intersection_flag: bool
     num_intersections: int
     intersection_points: list[PlanarPoint1d]
-
-    # !!!!!!!!!!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!!!!!!!!!
-    #
-    # FIXME: pencil_first_part not giving satisfactory results
-    #
-    # !!!!!!!!!!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!!!!!!!!!
     intersection_flag, num_intersections, intersection_points = pencil_first_part(F, G)
     assert len(intersection_points) == MAX_PATCH_RAY_INTERSECTIONS
 
@@ -679,15 +662,9 @@ def compute_spline_surface_patch_ray_intersections_pencil_method(
                      ray_origin[2]) /
                     ray_mapping_coeffs[1, 2])
         if t > 0 and t <= 1:
-
-            # FIXME: potentially poor C++ translation
             normalized_ray_intersections.append(t)
             normalized_surface_intersections.append(normalized_surface_intersections_all[i])
             num_intersections_normalized += 1
-
-    # FIXME: are normalized_surface_intersections_all and other lists supposed to be length
-    # MAX_PATCH_RAY_INTERSECTIONS!?
-    # Or are they just allocated to have that much space?
 
     # Invert the normalization and prune intersections outside of the triangle domain
     for i in range(num_intersections_normalized):
@@ -698,8 +675,6 @@ def compute_spline_surface_patch_ray_intersections_pencil_method(
         assert surface_intersection.shape == (2, )
 
         if domain.contains(surface_intersection):
-            # FIXME: potentially bad c++ translation
-            # FIXME: may just want to use dict
             surface_intersections.append(surface_intersection)
             ray_intersections.append(normalized_ray_intersections[i])
             num_intersections += 1
