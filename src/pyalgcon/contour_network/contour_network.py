@@ -159,36 +159,10 @@ class ContourNetwork(ProjectedCurveNetwork):
         time_start = time.perf_counter()
 
         # Constructs parent class parameters
-        if USE_DESERIALIZED_VALUES:
-            # Skips the whole building contour calculation process, saving time when testing.
-            filepath: str = (
-                f"{TESTING_FOLDER_SOURCE}\\contour_network\\projected_curve_network\\init_projected_curve_network\\")
-            super().__init__(deserialize_conics_from_file(filepath+"parameter_segments.json"),
-                             deserialize_rational_functions_from_file(
-                                 filepath+"spatial_segments.json"),
-                             deserialize_rational_functions_from_file(
-                                 filepath+"planar_segments.json"),
-                             deserialize_segment_labels(filepath+"segment_labels.json"),
-                             deserialize_list_list_varying_lengths(filepath+"chains.csv"),
-                             deserialize_eigen_matrix_csv_to_numpy(
-                                 filepath+"chain_labels.csv").tolist(),
-                             deserialize_list_list_varying_lengths_float(
-                                 filepath+"interior_cusps.csv"),
-                             deserialize_eigen_matrix_csv_to_numpy(
-                                 filepath+"has_cusp_at_base.csv").astype(bool).tolist(),
-                             deserialize_list_list_varying_lengths_float(
-                                 filepath+"intersections.csv"),
-                             deserialize_list_list_varying_lengths(
-                                 filepath+"intersection_indices.csv"),
-                             deserialize_list_list_intersection_data(
-                                 filepath+"intersection_data.json"),
-                             num_intersections=176)
-        else:
-            # Standard constructor.
-            super().__init__(*self.__build_projected_curve_network_params(spline_surface,
-                                                                          intersect_params,
-                                                                          invisibility_params,
-                                                                          patch_boundary_edges))
+        super().__init__(*self.__build_projected_curve_network_params(spline_surface,
+                                                                      intersect_params,
+                                                                      invisibility_params,
+                                                                      patch_boundary_edges))
 
         compute_projected_time: float = time.perf_counter() - time_start
 
@@ -250,28 +224,6 @@ class ContourNetwork(ProjectedCurveNetwork):
 
         time_start: float = time.perf_counter()
 
-        #
-        # FIXME: below method looks good
-        #
-        # NOTE: method below takes the most time.
-        # TODO: but, try and speed up the testing by adding a statment to switch between these and
-        # deserializing the code.
-
-        # if USE_DESERIALIZED_VALUES or TESTING_ENABLED:
-        # filepath: str = f"{TESTING_FOLDER_SOURCE}\\contour_network\\compute_contours\\compute_spline_surface_contours_and_boundaries\\"
-        # contour_domain_curve_segments = deserialize_conics(
-        #     filepath+"contour_domain_curve_segments.json")
-        # contour_segments = deserialize_rational_functions(
-        #     filepath+"contour_segments.json")
-        # contour_patch_indices = np.array(deserialize_eigen_matrix_csv_to_numpy(
-        #     filepath+"contour_patch_indices.csv"), dtype=int).tolist()
-        # contour_is_boundary = np.array(deserialize_eigen_matrix_csv_to_numpy(
-        #     filepath+"contour_is_boundary.csv"), dtype=bool).tolist()
-        # contour_intersections = deserialize_list_list_intersection_data(
-        #     filepath+"contour_intersections.json")
-        # num_intersections = 0
-
-        # else:
         (contour_domain_curve_segments,
             contour_segments,
             contour_patch_indices,
@@ -293,22 +245,11 @@ class ContourNetwork(ProjectedCurveNetwork):
         # lazy check
         assert (planar_contour_segments[0].degree, planar_contour_segments[0].dimension) == (4, 2)
 
-        if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-            filepath: pathlib.Path = SPOT_FILEPATH / "contour_network" / "project_curves"
-            compare_rational_functions_from_file(
-                filepath / "planar_curves.json", planar_contour_segments)
-
         # Chain the contour segments into closed contours
         # FIXME: compute_closed_contours looks good
         contours: list[list[int]]
         contour_labels: list[int]
         contours, contour_labels = compute_closed_contours(contour_segments)
-
-        if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-            filepath: pathlib.Path = SPOT_FILEPATH / "contour_network" / \
-                "compute_closed_contours" / "compute_closed_contours"
-            compare_list_list_varying_lengths(filepath / "contours.csv", contours)
-            compare_eigen_numpy_matrix(filepath / "contour_labels.csv", np.array(contour_labels))
 
         # Pad contour domains by an epsilon
         # FIXME: pad_contours looks good
@@ -316,15 +257,6 @@ class ContourNetwork(ProjectedCurveNetwork):
                      contour_segments,
                      planar_contour_segments,
                      invisibility_params.pad_amount)
-
-        if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-            filepath: pathlib.Path = SPOT_FILEPATH / "contour_network" / "compute_contours" / "pad_contours"
-            compare_conics_from_file(filepath / "contour_domain_curve_segments_PADDED.json",
-                                     contour_domain_curve_segments)
-            compare_rational_functions_from_file(
-                filepath / "contour_segments_PADDED.json", contour_segments)
-            compare_rational_functions_from_file(
-                filepath / "planar_contour_segments_PADDED.json", planar_contour_segments)
 
         compute_contour_time: float = time.perf_counter() - time_start
 
@@ -348,15 +280,6 @@ class ContourNetwork(ProjectedCurveNetwork):
                                                          contour_segments,
                                                          contour_patch_indices,
                                                          contours)
-
-        if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-            filepath: pathlib.Path = SPOT_FILEPATH / "contour_network" / \
-                "compute_cusps" / "compute_spline_surface_cusps"
-            compare_list_list_varying_lengths_float(filepath / "interior_cusps.csv", interior_cusps)
-            compare_list_list_varying_lengths_float(filepath / "boundary_cusps.csv", boundary_cusps)
-            compare_eigen_numpy_matrix(filepath / "has_cusp_at_base.csv",
-                                       np.array(has_cusp_at_base))
-            compare_eigen_numpy_matrix(filepath / "has_cusp_at_tip.csv", np.array(has_cusp_at_tip))
 
         compute_cusp_time: float = time.perf_counter() - time_start
         logger.debug("Found %s interior cusps", nested_vector_size(interior_cusps))
@@ -1358,12 +1281,6 @@ class ContourNetwork(ProjectedCurveNetwork):
         and propagate it to all segments
         """
 
-        if INLINE_TESTING_ENABLED_QI:
-            filepath: str = f"{TESTING_FOLDER_SOURCE}\\contour_network\\contour_network\\compute_chained_quantitative_invisibility\\"
-
-            compare_eigen_numpy_matrix(filepath+"chain_start_nodes.csv",
-                                       np.array(self.chain_start_nodes))
-
         # Compute QI for all segment chains independently
         for i, start_node_index in enumerate(self.chain_start_nodes):
             # Compute QI for the first segment
@@ -1373,15 +1290,6 @@ class ContourNetwork(ProjectedCurveNetwork):
                 spline_surface, start_segment_index, invisibility_params)
             self.set_segment_quantitative_invisibility(start_segment_index, qi_start)
 
-            if INLINE_TESTING_ENABLED_QI:
-                filepath: str = f"{TESTING_FOLDER_SOURCE}\\contour_network\\contour_network\\compute_chained_quantitative_invisibility\\"
-                # Start segment index is GOOD
-                # compare_eigen_numpy_matrix(filepath+"start_segment_index\\" + f"{i}.csv",
-                #                            np.array(start_segment_index))
-
-                # only qi start is being picky right now.
-                compare_eigen_numpy_matrix(filepath+"qi_start\\" + f"{i}.csv",
-                                           np.array(qi_start))
             # Propagate the QI to the other chain segments
             self.__chain_quantitative_invisibility_forward(
                 spline_surface, start_segment_index, invisibility_params)

@@ -198,15 +198,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         #
         self.__init_chain_start_nodes()
 
-        # TODO: testing with chain start nodes
-
-        if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-            filepath: pathlib.Path = SPOT_FILEPATH / "contour_network" / \
-                "projected_curve_network" / "init_chain_start_nodes"
-            compare_list_node_geometry(filepath / "nodes_out.json", self.__nodes)
-            compare_eigen_numpy_matrix(filepath / "chain_start_nodes.csv",
-                                       np.array(self.__chain_start_nodes, dtype=int))
-
         # Check the validity of the topological graph structure
         if CHECK_VALIDITY:
             for node_index in range(self.num_nodes):

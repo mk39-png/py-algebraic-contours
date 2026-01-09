@@ -284,18 +284,6 @@ def compute_closed_contours(contour_segments: list[RationalFunction]) -> tuple[l
         assert contour_start_points[-1].shape == (3, )
         assert contour_end_points[-1].shape == (3, )
 
-    # TESTING
-    if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-
-        compare_eigen_numpy_matrix(
-            SPOT_FILEPATH / "contour_network" / "compute_closed_contours" /
-            "compute_closed_contours" / "contour_start_points.csv",
-            np.array(contour_start_points))
-        compare_eigen_numpy_matrix(
-            SPOT_FILEPATH / "contour_network" / "compute_closed_contours" /
-            "compute_closed_contours" / "contour_end_points.csv",
-            np.array(contour_end_points))
-
     while True:
         # Get next starting contour segment to process or return if none left
         starting_segment_index: int = _get_starting_contour_segment(used_segments)

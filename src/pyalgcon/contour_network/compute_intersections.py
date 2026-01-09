@@ -329,16 +329,6 @@ def compute_intersections(image_segments: list[RationalFunction],
             image_segment.domain.upper_bound)
         image_segments_bezier_control_points.append(bezier_control_points)
 
-    # if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-    #     filepath: pathlib.Path = SPOT_FILEPATH / "contour_network" / "intersection_heuristics" / \
-    #         "compute_homogeneous_bezier_points_over_interval"
-    #     compare_eigen_numpy_matrix(filepath / "image_segments_bezier_control_points.csv",
-    #                                np.array(image_segments_bezier_control_points),
-    #                                make_3d=True)
-
-    #
-    # FIXME: method below looks good
-    #
     # Compute all bounding boxes
     image_segments_bounding_box: list[tuple[PlanarPoint1d, PlanarPoint1d]] = []
     for image_segment in image_segments:
@@ -347,40 +337,12 @@ def compute_intersections(image_segments: list[RationalFunction],
         lower_left_point, upper_right_point = compute_bezier_bounding_box(image_segment)
         image_segments_bounding_box.append((lower_left_point, upper_right_point))
 
-    # if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-    #     filepath: str = "spot_control\\contour_network\\intersection_heuristics\\compute_bezier_bounding_box\\"
-    #     compare_eigen_numpy_matrix(filepath+"image_segments_bounding_box.csv",
-    #                                np.array(image_segments_bounding_box),
-    #                                make_3d=True)
-
-    #
-    # FIXME: method below looks good
-    #
     # Hash by uv
     num_interval: int = 50
     # FIXME Make global: change both here and num_interval
     hash_table: dict[int, dict[int, list[int]]]
     reverse_hash_table: list[list[int]]
     hash_table, reverse_hash_table = compute_bounding_box_hash_table(image_segments_bounding_box)
-
-    if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-        filepath: pathlib.Path = SPOT_FILEPATH / "contour_network" / \
-            "intersection_heuristics" / "compute_bounding_box_hash_table"
-
-        hash_table_control: list[list[list[int]]] = load_json(filepath / "hash_table_out.json")
-        # Hash table is 50x50 with each element holding an array of int.
-        for i in range(50):
-            outer_table: list[list[int]] = hash_table_control[i]
-            for j in range(50):
-                inner_table: list[int] = hash_table_control[i][j]
-                for k, data_control in enumerate(inner_table):
-                    assert hash_table[i][j][k] == data_control
-        compare_list_list_varying_lengths(filepath / "reverse_hash_table.csv", reverse_hash_table)
-
-    # COUNTER FOR TESTING
-    counter: int = 0
-    counter_planar_curve_calls: int = 0
-    # counter_compute_planar_curve_testing
 
     # Compute intersections
     # FIXME: check this loop itself to see if its correct or not
@@ -410,32 +372,6 @@ def compute_intersections(image_segments: list[RationalFunction],
                 # Compute intersections between the two image segments
                 current_segment_intersections: list[float] = []
                 other_segment_intersections: list[float] = []
-
-                # Testing to see if parameters into the function below are correct
-                if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-                    filepath: pathlib.Path = SPOT_FILEPATH / "contour_network" / \
-                        "compute_intersections" / "compute_planar_curve_intersections"
-                    compare_rational_functions_from_file(
-                        filepath / "first_planar_curve" / f"{counter}.json",
-                        [image_segments[image_segment_index]])
-                    compare_rational_functions_from_file(
-                        filepath / "second_planar_curve" / f"{counter}.json", [image_segments[i]])
-                    compare_intersection_stats(filepath / "intersection_stats_in" / f"{counter}.json",
-                                               intersection_stats)
-                    compare_eigen_numpy_matrix(filepath / "first_bounding_box" / f"{counter}.csv",
-                                               np.array(image_segments_bounding_box[image_segment_index]))
-                    compare_eigen_numpy_matrix(filepath / "second_bounding_box" / f"{counter}.csv",
-                                               np.array(image_segments_bounding_box[i]))
-                    compare_eigen_numpy_matrix(
-                        filepath / "first_bezier_control_points" / f"{counter}.csv",
-                        image_segments_bezier_control_points[image_segment_index])
-                    compare_eigen_numpy_matrix(
-                        filepath / "second_bezier_control_points" / f"{counter}.csv",
-                        image_segments_bezier_control_points[i])
-
-                #
-                # FIXME: method below is providing more segment intersections than we would like
-                #
                 _compute_planar_curve_intersections_from_bounding_box(
                     image_segments[image_segment_index],
                     image_segments[i],
@@ -489,26 +425,6 @@ def compute_intersections(image_segments: list[RationalFunction],
                                                           intersect_params.trim_amount)
                     contour_intersections_ref[i].append(other_intersection_data)
                     num_intersections += 1
-
-                # Comparing intermediate results
-                if INLINE_TESTING_ENABLED_CONTOUR_NETWORK:
-                    filepath: pathlib.Path = SPOT_FILEPATH / \
-                        "contour_network" / "compute_intersections" / \
-                        "compute_intersections" / "after_compute_curve_intersections"
-                    compare_list_list_varying_lengths_float(
-                        filepath / "intersections" / f"{counter}.csv",
-                        intersections,
-                        1e-3)
-                    compare_list_list_varying_lengths(
-                        filepath / "intersection_indices" / f"{counter}.csv",
-                        intersection_indices)
-                    compare_list_list_intersection_data_from_file(
-                        filepath / "contour_intersections" / f"{counter}.json",
-                        contour_intersections_ref)
-                    compare_eigen_numpy_matrix(
-                        filepath / "num_intersections" / f"{counter}.csv",
-                        np.array(num_intersections))
-                    counter += 1
 
     # Record intersection information
     intersection_call: int = intersection_stats.intersection_call
