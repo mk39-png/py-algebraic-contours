@@ -3,16 +3,14 @@ generate_transformations.py
 Methods to generate projective transformation matrices.
 """
 
-
 import numpy as np
 
-from pyalgcon.core.common import (Matrix3x3f, Matrix4x4f,
-                                  SpatialVector1d, todo)
+from pyalgcon.core.common import (Matrix3x3f, Matrix4x4f, SpatialVector1d,
+                                  todo, unimplemented)
 
 
-def get_frame():
-    # Skip
-    todo()
+def get_frame() -> None:
+    unimplemented()
 
 
 def origin_to_infinity_projective_matrix(plane_distance: float) -> Matrix4x4f:
@@ -38,7 +36,7 @@ def origin_to_infinity_projective_matrix(plane_distance: float) -> Matrix4x4f:
     return projection_matrix
 
 
-def infinity_to_origin_projective_matrix():
+def infinity_to_origin_projective_matrix() -> None:
     """
     Generate the projective matrix that sends a point at infinity to the origin
     while fixing the plane z = plane_distance.
@@ -48,7 +46,7 @@ def infinity_to_origin_projective_matrix():
     @param[in] plane_distance: distance from the origin to the plane
     @return 4x4 projective matrix for the transformation
     """
-    pass
+    unimplemented()
 
 
 def rotate_frame_projective_matrix(frame: Matrix3x3f) -> Matrix4x4f:
@@ -92,45 +90,91 @@ def translation_projective_matrix(translation: SpatialVector1d) -> Matrix4x4f:
     return translation_matrix
 
 
-def scaling_projective_matrix():
+def scaling_projective_matrix() -> None:
     # Skip
-    pass
+    unimplemented()
 
 
-def x_axis_rotation_projective_matrix():
+def x_axis_rotation_projective_matrix(degree: float) -> Matrix4x4f:
     """
     Generate the projective matrix for rotation around the x axis.
 
     :param degree: [in] degree of rotation around the x axis
     :return: 4x4 projective matrix for the transformation
     """
-    pass
+    rotation_matrix: Matrix4x4f = np.zeros(shape=(4, 4), dtype=np.float64)
+    angle: float = (2 * np.pi / 360) * degree
+
+    # Leave x coordinate fixed
+    rotation_matrix[0, 0] = 1.0
+
+    # Rotate y and z coordinates
+    rotation_matrix[1, 1] = np.cos(angle)
+    rotation_matrix[1, 2] = -np.sin(angle)
+    rotation_matrix[2, 1] = np.sin(angle)
+    rotation_matrix[2, 2] = np.cos(angle)
+
+    # No homogeneous coordinate change
+    rotation_matrix[3, 3] = 1.0
+
+    return rotation_matrix
 
 
-def y_axis_rotation_projective_matrix():
+def y_axis_rotation_projective_matrix(degree: float) -> Matrix4x4f:
     """
     Generate the projective matrix for rotation around the y axis.
 
     :param degree: [in] degree of rotation around the y axis
     :return: 4x4 projective matrix for the transformation
     """
-    pass
+    rotation_matrix: Matrix4x4f = np.zeros(shape=(4, 4), dtype=np.float64)
+    angle: float = (2 * np.pi / 360) * degree
+
+    # Leave y coordinate fixed
+    rotation_matrix[1, 1] = 1.0
+
+    # Rotate x and z coordinates
+    rotation_matrix[0, 0] = np.cos(angle)
+    rotation_matrix[0, 2] = -np.sin(angle)
+    rotation_matrix[2, 0] = np.sin(angle)
+    rotation_matrix[2, 2] = np.cos(angle)
+
+    # No homogeneous coordinate change
+    rotation_matrix[3, 3] = 1.0
+
+    return rotation_matrix
 
 
-def z_axis_rotation_projective_matrix():
+def z_axis_rotation_projective_matrix(degree: float) -> Matrix4x4f:
     """
     Generate the projective matrix for rotation around the z axis.
 
     :param degree: [in] degree of rotation around the z axis
     :return: 4x4 projective matrix for the transformation
     """
-    pass
+    rotation_matrix: Matrix4x4f = np.zeros(shape=(4, 4), dtype=np.float64)
+    angle: float = (2 * np.pi / 360) * degree
+
+    # Leave z coordinate fixed
+    rotation_matrix[2, 2] = 1.0
+
+    # Rotate x and z coordinates
+    rotation_matrix[0, 0] = np.cos(angle)
+    rotation_matrix[0, 1] = -np.sin(angle)
+    rotation_matrix[1, 0] = np.sin(angle)
+    rotation_matrix[1, 1] = np.cos(angle)
+
+    # No homogeneous coordinate change
+    rotation_matrix[3, 3] = 1.0
+
+    return rotation_matrix
 
 
-def axis_rotation_projective_matrix():
+def axis_rotation_projective_matrix(x_degree: float,
+                                    y_degree: float,
+                                    z_degree: float) -> Matrix4x4f:
     """
-    Generate the projective matrix for chained rotation around the standard
-    axes.
+    Generate the projective matrix for chained rotation around the standard axes.
 
     The order of rotation is z axis -> y axis -> x axis
 
@@ -140,4 +184,7 @@ def axis_rotation_projective_matrix():
 
     :return: 4x4 projective matrix for the transformation
     """
-    pass
+    rotation_matrix: Matrix4x4f = z_axis_rotation_projective_matrix(z_degree)
+    rotation_matrix = y_axis_rotation_projective_matrix(y_degree) @ rotation_matrix
+    rotation_matrix = x_axis_rotation_projective_matrix(x_degree) @ rotation_matrix
+    return rotation_matrix
