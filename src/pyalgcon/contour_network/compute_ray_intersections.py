@@ -89,13 +89,13 @@ def compute_spline_surface_ray_intersections(spline_surface: QuadraticSplineSurf
             patch_indices.append(i)
             surface_intersections.append(patch_surface_intersections[j])
             ray_intersections.append(patch_ray_intersections[j])
-            logger.info("Patch ray intersection at t=%s found, out of %s",
-                        patch_ray_intersections[j],
-                        num_intersections)
+            logger.debug("Patch ray intersection at t=%s found, out of %s",
+                         patch_ray_intersections[j],
+                         num_intersections)
 
-    logger.info("%s surface ray intersections found", len(surface_intersections))
-    logger.info("Spline surface intersection points: %s", surface_intersections)
-    logger.info("Ray intersection points: %s", ray_intersections)
+    logger.debug("%s surface ray intersections found", len(surface_intersections))
+    logger.debug("Spline surface intersection points: %s", surface_intersections)
+    logger.debug("Ray intersection points: %s", ray_intersections)
 
     return (patch_indices,
             surface_intersections,
@@ -125,10 +125,10 @@ def partition_ray_intersections(ray_mapping_coeffs: Matrix2x3f,
     ray_intersections_above: list[float] = []
     ray_intersections_below: list[float] = []
     num_intersections: PatchIndex = len(ray_intersections)
-    logger.info("Partitioning intersections %s on ray %s around point %s",
-                ray_intersections,
-                ray_mapping_coeffs,
-                comparison_point)
+    logger.debug("Partitioning intersections %s on ray %s around point %s",
+                 ray_intersections,
+                 ray_mapping_coeffs,
+                 comparison_point)
 
     # Compute parameter for point
     point_0: SpatialVector1d = ray_mapping_coeffs[0, :]
@@ -149,7 +149,7 @@ def partition_ray_intersections(ray_mapping_coeffs: Matrix2x3f,
             ray_intersections_below.append(ray_intersection)
         else:
             ray_intersections_above.append(ray_intersection)
-    logger.info("Intersections below: %s", ray_intersections_below)
-    logger.info("Intersections above: %s", ray_intersections_above)
+    logger.debug("Intersections below: %s", ray_intersections_below)
+    logger.debug("Intersections above: %s", ray_intersections_above)
 
     return ray_intersections_below, ray_intersections_above
