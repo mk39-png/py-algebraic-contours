@@ -1623,6 +1623,8 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         points, polylines = discretize_curve_segments(4, 3, spatial_curves_ref, curve_disc_params)
         points_mat: MatrixXf = convert_nested_vector_to_matrix(points)
         edges: list[tuple[int, int]] = convert_polylines_to_edges(polylines)
+        # Wrapping edges in np.array so that it has .shape attribute.
+        # Otherwise, polyscope will fail since it expects NumPy arrays
         spatial_curve_network_segments: polyscope.CurveNetwork = polyscope.register_curve_network(
             "spatial_curve_network_segments", points_mat, edges)
         spatial_curve_network_segments.set_radius(0.001)
@@ -1652,8 +1654,10 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
                                                         curve_disc_params)
         visible_points_mat: MatrixXf = convert_nested_vector_to_matrix(visible_points)
         visible_edges: list[tuple[int, int]] = convert_polylines_to_edges(visible_polylines)
+
+        # Wrapping visible_edges in np.array() so that it has .shape attribute
         visible_spatial_curves_network: polyscope.CurveNetwork = polyscope.register_curve_network(
-            "visible_spatial_curves", visible_points_mat, visible_edges)
+            "visible_spatial_curves", visible_points_mat, np.array(visible_edges))
         visible_spatial_curves_network.set_radius(0.0025)
         visible_spatial_curves_network.set_color((0.0, 0.0, 0.0))
 
