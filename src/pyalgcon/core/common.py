@@ -505,8 +505,27 @@ def view_parameterized_mesh() -> None:
     deprecated()
 
 
-def screenshot_mesh() -> None:
-    todo()
+def screenshot_mesh(V: MatrixXf,
+                    F: MatrixXi,
+                    filename: str | pathlib.Path,
+                    camera_position: SpatialVector1d = np.array([0, 0, 0]),
+                    camera_target: SpatialVector1d = np.array([0, 0, 2]),
+                    use_orthographic: bool = False) -> None:
+    """
+    Input parameters to screenshot using Polyscope.
+    """
+    polyscope.init()
+    surface: polyscope.SurfaceMesh = polyscope.register_surface_mesh("surface", V, F)
+    surface.set_edge_width(1)
+    surface.set_color((0.670, 0.673, 0.292))
+    polyscope.look_at(camera_position, camera_target)
+    if use_orthographic:
+        polyscope.str_to_projection_mode("orthographic")
+    else:
+        polyscope.str_to_projection_mode("perspective")
+    polyscope.screenshot(filename)
+    polyscope.remove_all_structures()
+    return
 
 # ****************
 # Basic arithmetic
