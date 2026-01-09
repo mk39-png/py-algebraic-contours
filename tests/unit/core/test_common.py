@@ -45,8 +45,8 @@ def test_index_vector_complement(testing_fileinfo,
     # Retrieve parameters
     base_data_folderpath: pathlib.Path
     base_data_folderpath, _ = testing_fileinfo
-    filepath: pathlib.Path = base_data_folderpath / "optimize_spline_surface" / \
-        "generate_optimized_twelve_split_position_data"
+    filepath: pathlib.Path = base_data_folderpath / "quadratic_spline_surface" / \
+        "optimize_spline_surface" / "generate_optimized_twelve_split_position_data"
     V: np.ndarray
     V, _, _, _ = parsed_control_mesh
     affine_manifold: AffineManifold = initialize_affine_manifold

@@ -8,10 +8,10 @@ from dataclasses import dataclass
 import numpy as np
 import polyscope
 
-from pyalgcon.core.common import (
-    COLS, MatrixXf, Vector1D, Vector2D, convert_nested_vector_to_matrix,
-    convert_polylines_to_edges, interval_lerp, todo, unimplemented,
-    unreachable)
+from pyalgcon.core.common import (COLS, MatrixXf, Vector1D, Vector2D,
+                                  convert_nested_vector_to_matrix,
+                                  convert_polylines_to_edges, interval_lerp,
+                                  unimplemented)
 from pyalgcon.core.interval import Interval
 from pyalgcon.core.polynomial_function import (
     compute_polynomial_mapping_derivative, compute_polynomial_mapping_product,
