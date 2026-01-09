@@ -1437,8 +1437,9 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         curve_disc_params: CurveDiscretizationParameters = CurveDiscretizationParameters()
         for i in range(self.num_segments):
             if self.__segments[i].quantitative_invisibility > 0:
-                planar_curve: RationalFunction = self.__segments[i].planar_curve
-                write_planar_curve_segment(planar_curve, curve_disc_params, svg_elements, 800, 400)
+                continue
+            planar_curve: RationalFunction = self.__segments[i].planar_curve
+            write_planar_curve_segment(planar_curve, curve_disc_params, svg_elements, 800, 400)
 
     def __write_contrast_invisible_segments(self,  svg_elements_ref: list[svg.Element]) -> None:
         """
