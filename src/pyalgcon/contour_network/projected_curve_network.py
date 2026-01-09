@@ -316,23 +316,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
 
         return spatial_curves_ref
 
-    # def enumerate_planar_curves(self) -> list[RationalFunction]:
-    #     """
-    #     Returns new list of planar curves.
-    #     FIXME: potentially flawed deep copy of RationalFunction planar curve.
-    #     FIXME: may just want a list of references to the planar_curve of segments
-
-    #     :return planar_curves: list of all planar curves
-    #     """
-    #     planar_curves: list[RationalFunction] = []
-
-    #     for i in range(self.num_segments):
-    #         planar_curves.append(copy.deepcopy(self.__segments[i].planar_curve))
-    #         assert (self.__segments[i].planar_curve.degree,
-    #                 self.__segments[i].planar_curve.dimension) == (4, 2)
-
-    #     return planar_curves
-
     def enumerate_planar_nodes(self) -> tuple[list[PlanarPoint1d],
                                               list[PlanarPoint1d],
                                               list[PlanarPoint1d],

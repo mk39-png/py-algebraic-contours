@@ -10,10 +10,11 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from pyalgcon.core.common import (
-    PLANAR_BOUNDING_BOX_PRECISION, Matrix4x2f, Matrix5x2f, Matrix5x3f,
-    Matrix5x5f, PlanarPoint1d, Vector5f, compute_point_cloud_bounding_box,
-    float_equal)
+from pyalgcon.core.common import (PLANAR_BOUNDING_BOX_PRECISION, Matrix4x2f,
+                                  Matrix5x2f, Matrix5x3f, Matrix5x5f,
+                                  PlanarPoint1d, Vector5f,
+                                  compute_point_cloud_bounding_box,
+                                  float_equal)
 from pyalgcon.core.rational_function import RationalFunction
 
 logger: logging.Logger = logging.getLogger(__name__)

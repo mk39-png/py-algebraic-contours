@@ -13,17 +13,12 @@ import polyscope as ps
 from cholespy import CholeskySolverD
 from scipy.sparse import csr_matrix
 
-from pyalgcon.core.affine_manifold import (
-    AffineManifold, VertexManifoldChart)
-from pyalgcon.core.common import (COLS, DISCRETIZATION_LEVEL,
-                                  ROWS, SKY_BLUE, Index,
-                                  Matrix6x3f, Matrix6x12f,
-                                  Matrix12x3f, MatrixNx3f,
-                                  MatrixXf, MatrixXi,
-                                  Vector1D, Vector3f,
-                                  unimplemented)
-from pyalgcon.core.compute_boundaries import \
-    compute_face_boundary_edges
+from pyalgcon.core.affine_manifold import AffineManifold, VertexManifoldChart
+from pyalgcon.core.common import (COLS, DISCRETIZATION_LEVEL, ROWS, SKY_BLUE,
+                                  Index, Matrix6x3f, Matrix6x12f, Matrix12x3f,
+                                  MatrixNx3f, MatrixXf, MatrixXi, Vector1D,
+                                  Vector3f, unimplemented)
+from pyalgcon.core.compute_boundaries import compute_face_boundary_edges
 from pyalgcon.core.convex_polygon import ConvexPolygon
 from pyalgcon.quadratic_spline_surface.optimize_spline_surface import (
     OptimizationParameters, build_twelve_split_spline_energy_system,
@@ -224,7 +219,7 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         affine_manifold: AffineManifold = self.affine_manifold
 
         # Generate normals
-        N: MatrixXf = self.generate_face_normals(V, affine_manifold)
+        N: MatrixXf = TwelveSplitSplineSurface.generate_face_normals(V, affine_manifold)
 
         # Build optimized corner and midpoint data
         # TODO: the below should take in corner_data and midpoint_data and then return new.

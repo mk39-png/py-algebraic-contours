@@ -18,9 +18,12 @@ from pyalgcon.contour_network.compute_intersections import \
 from pyalgcon.contour_network.contour_network import (ContourNetwork,
                                                       InvisibilityParameters)
 from pyalgcon.core.affine_manifold import AffineManifold
-from pyalgcon.core.apply_transformation import \
-    apply_camera_frame_transformation_to_vertices
-from pyalgcon.core.common import Matrix3x3f, MatrixNx3f
+from pyalgcon.core.apply_transformation import (
+    apply_camera_frame_transformation_to_vertices,
+    apply_camera_matrix_transformation_to_vertices)
+from pyalgcon.core.common import (Matrix3x3f, Matrix4x4f, MatrixNx3f, MatrixXf,
+                                  MatrixXi,
+                                  deserialize_eigen_matrix_csv_to_numpy)
 from pyalgcon.quadratic_spline_surface.optimize_spline_surface import \
     OptimizationParameters
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface import \
@@ -29,15 +32,19 @@ from pyalgcon.quadratic_spline_surface.twelve_split_spline import (
     TwelveSplitSplineSurface, compute_twelve_split_spline_patch_boundary_edges)
 
 logger: logging.Logger = logging.getLogger(__name__)
+logging.disable(logging.DEBUG)
+logging.disable(logging.INFO)
+# logging.basicConfig(level=logging.DEBUG,
+# handlers=[logging.FileHandler("test.log")])
 
 
 @pytest.fixture(scope="session", params=[
     ("spot_control", "spot_control_mesh-cleaned_conf_simplified_with_uv.obj")
 ])
-def testing_fileinfo(request) -> tuple[pathlib.Path, pathlib.Path]:
+def testing_fileinfo(request: pytest.FixtureRequest) -> tuple[pathlib.Path, pathlib.Path]:
     """ Flexible method to resolve filepath of test data.
 
-    :returns: tuple of folderpath and filepath to a given obj file
+    :returns: tuple of folderpath and filepath to a given obj file (e.g. tests/data/spot_control/)
     """
     # Setup
     foldername: str
@@ -52,11 +59,10 @@ def testing_fileinfo(request) -> tuple[pathlib.Path, pathlib.Path]:
 
 
 @pytest.fixture(scope="session")
-def parsed_control_mesh(testing_fileinfo: tuple[pathlib.Path, pathlib.Path]
-                        ) -> tuple[np.ndarray,
-                                   np.ndarray,
-                                   np.ndarray,
-                                   np.ndarray]:
+def parsed_control_mesh(testing_fileinfo: tuple[pathlib.Path, pathlib.Path]) -> tuple[np.ndarray,
+                                                                                      np.ndarray,
+                                                                                      np.ndarray,
+                                                                                      np.ndarray]:
     """ 
     Used for testing control mesh in generating 
     the TwelveSplitSplineSurface.
@@ -81,16 +87,19 @@ def parsed_control_mesh(testing_fileinfo: tuple[pathlib.Path, pathlib.Path]
     V_temp, uv_temp, N_temp, F_temp, FT_temp, FN_temp = igl.readOBJ(obj_filepath)
 
     # Wrapping inside np.array for typing
-    V: np.ndarray = np.array(V_temp)
-    uv: np.ndarray = np.array(uv_temp)
-    F: np.ndarray = np.array(F_temp)
-    FT: np.ndarray = np.array(FT_temp)
+    V: MatrixXf = np.array(V_temp)
+    uv: MatrixXf = np.array(uv_temp)
+    F: MatrixXi = np.array(F_temp)
+    FT: MatrixXi = np.array(FT_temp)
 
     return V, uv, F, FT
 
 
 @pytest.fixture(scope="session")
-def initialize_affine_manifold(parsed_control_mesh) -> AffineManifold:
+def initialize_affine_manifold(parsed_control_mesh: tuple[np.ndarray,
+                                                          np.ndarray,
+                                                          np.ndarray,
+                                                          np.ndarray]) -> AffineManifold:
     """
     Fixture to calculate the AffineManifold from the load_mesh_testing fixture.
     """
@@ -103,35 +112,44 @@ def initialize_affine_manifold(parsed_control_mesh) -> AffineManifold:
     return affine_manifold
 
 
-# @pytest.fixture
-# def projection_matrices() -> list[np.ndarray]:
-#     """Preset matrices from Blender to test with
+@pytest.fixture(scope="session", params=[
+    "spot_quadrangulated_tri_clean_camera.csv",
+    "top_middle_overhead_camera.csv"
+])
+def projection_matrix_on_vertices(request,
+                                  testing_fileinfo,
+                                  parsed_control_mesh) -> MatrixNx3f:
+    """
+    Returns vertices under projection matrix.
+    TODO: combine this projection matrix with the projection frame testing.
+    """
+    # Retrieve parameters
+    base_data_folderpath: pathlib.Path
+    base_data_folderpath, _ = testing_fileinfo
+    camera_matrix_filename: str = request.param
+    filepath: pathlib.Path = base_data_folderpath / camera_matrix_filename
 
-#     :return: perspective matrix
-#     :rtype: list[np.ndarray]
-#     """
-#     return [np.array([
-#         [2.777777671813965, 0.0, 0.0, 0.0],
-#         [0.0, 4.938271522521973, 0.0, 0.0],
-#         [0.0, 0.0, -1.0020020008087158, -0.20020020008087158],
-#         [0.0, 0.0, -1.0, 0.0]], dtype=np.float64)]
+    V_raw: np.ndarray
+    uv: np.ndarray
+    F: np.ndarray
+    FT: np.ndarray
+    V_raw, uv, F, FT = parsed_control_mesh
 
-# TODO: modify the below to support various projection matrices.
-# @pytest.fixture(scope="session")
-# def projection_on_vertices(parsed_control_mesh, projection_matrices) -> np.ndarray:
-#     """
-#     Returns vertices under projection matrix.
-#     """
-#     folder_path, (V_raw, uv, F, FT) = parsed_control_mesh
+    # TODO: have ability to test with various projection matrices
+    camera_matrix: Matrix4x4f = deserialize_eigen_matrix_csv_to_numpy(filepath)
 
-#     # TODO: have ability to test with various projection matrices
-#     projection_matrix: np.ndarray = projection_matrices[0]
-#     V_transformed: MatrixNx3f = apply_transformation_to_vertices(V_raw, projection_matrix)
-#     return V_transformed
+    # FIXME: remove the projection matrix
+    V_transformed: MatrixNx3f = apply_camera_matrix_transformation_to_vertices(
+        V_raw, camera_matrix, np.zeros(4))
+
+    return V_transformed
 
 
 @pytest.fixture(scope="session")
-def projection_frame_on_vertices(parsed_control_mesh) -> np.ndarray:
+def projection_frame_on_vertices(parsed_control_mesh: tuple[np.ndarray,
+                                                            np.ndarray,
+                                                            np.ndarray,
+                                                            np.ndarray],) -> MatrixNx3f:
     """
     Returns vertices projected onto camera default camera.
     """
@@ -150,7 +168,8 @@ def projection_frame_on_vertices(parsed_control_mesh) -> np.ndarray:
 
 
 @pytest.fixture(scope="session")
-def quadratic_spline_surface_control_from_file(testing_fileinfo) -> QuadraticSplineSurface:
+def quadratic_spline_surface_control_from_file(testing_fileinfo: tuple[pathlib.Path, pathlib.Path]
+                                               ) -> QuadraticSplineSurface:
     """
     Utilizes the .from_file() class method to create a QuadraticSplineSurface from file.
     This follows the format of QuadraticSplineSurface serialization that the original C++ code
@@ -168,8 +187,11 @@ def quadratic_spline_surface_control_from_file(testing_fileinfo) -> QuadraticSpl
 
 
 @pytest.fixture(scope="session")
-def twelve_split_spline_raw(parsed_control_mesh,
-                            initialize_affine_manifold) -> TwelveSplitSplineSurface:
+def twelve_split_spline_raw(parsed_control_mesh: tuple[np.ndarray,
+                                                       np.ndarray,
+                                                       np.ndarray,
+                                                       np.ndarray],
+                            initialize_affine_manifold: AffineManifold) -> TwelveSplitSplineSurface:
     """
     Creates a TwelveSplitSpline surface WITHOUT transformed vertices
     NOTE: initializes 12-split spline for use in quadratic surface tests.
@@ -193,8 +215,8 @@ def twelve_split_spline_raw(parsed_control_mesh,
 
 
 @pytest.fixture(scope="session")
-def twelve_split_spline_transformed(initialize_affine_manifold,
-                                    projection_frame_on_vertices) -> TwelveSplitSplineSurface:
+def twelve_split_spline_transformed(initialize_affine_manifold: AffineManifold,
+                                    projection_matrix_on_vertices: MatrixNx3f) -> TwelveSplitSplineSurface:
     """
     This is used to test the member variables of TwevleSplitSplineSurface().
     Helper function that initialized TwelveSplitSplineSurface from the spot_control mesh.
@@ -205,7 +227,7 @@ def twelve_split_spline_transformed(initialize_affine_manifold,
     NOTE: initializes 12-split spline for use in contour network.
     """
     affine_manifold: AffineManifold = initialize_affine_manifold
-    V_transformed: np.ndarray = projection_frame_on_vertices
+    V_transformed: np.ndarray = projection_matrix_on_vertices
     optimization_params: OptimizationParameters = OptimizationParameters()
 
     # Generate quadratic spline
@@ -251,10 +273,10 @@ def initialize_patch_boundary_edges(parsed_control_mesh: tuple[np.ndarray,
 
 @pytest.fixture(scope="session")
 def initialize_contour_network(
-        testing_fileinfo,
-        twelve_split_spline_transformed,
-        initialize_patch_boundary_edges) -> tuple[pathlib.Path,
-                                                  ContourNetwork]:
+        testing_fileinfo: tuple[pathlib.Path, pathlib.Path],
+        twelve_split_spline_transformed: TwelveSplitSplineSurface,
+        initialize_patch_boundary_edges: list[tuple[int, int]]) -> tuple[pathlib.Path,
+                                                                         ContourNetwork]:
     """
     Used for testing of contour network generation
     """
@@ -275,5 +297,5 @@ def initialize_contour_network(
         patch_boundary_edges
     )
 
-    output_contour_filepath: pathlib.Path = base_data_folderpath / "contour_network" / "output.svg"
-    return output_contour_filepath, contour_network
+    output_contour_folderpath: pathlib.Path = base_data_folderpath / "contour_network"
+    return output_contour_folderpath, contour_network

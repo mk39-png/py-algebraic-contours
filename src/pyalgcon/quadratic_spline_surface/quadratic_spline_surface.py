@@ -419,7 +419,7 @@ class QuadraticSplineSurface:
         polyscope.show()
 
     def screenshot(self,
-                   filename: str,
+                   filename: pathlib.Path,
                    camera_position: SpatialVector = np.array([[0.0, 0.0, 2.0]], dtype=np.float64),
                    camera_target: SpatialVector = np.array([[0.0, 0.0, 0.0]], dtype=np.float64),
                    use_orthographic: bool = False) -> None:

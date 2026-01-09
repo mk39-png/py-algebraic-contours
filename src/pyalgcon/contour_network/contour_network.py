@@ -29,37 +29,17 @@ from pyalgcon.contour_network.projected_curve_network import (
     ProjectedCurveNetwork, SegmentChainIterator)
 from pyalgcon.contour_network.write_output import \
     write_contours_with_annotations
-from pyalgcon.core.common import (DISCRETIZATION_LEVEL,
-                                  INLINE_TESTING_ENABLED_CONTOUR_NETWORK,
-                                  INLINE_TESTING_ENABLED_QI, OFF_WHITE,
-                                  TESTING_FOLDER_SOURCE,
-                                  USE_DESERIALIZED_VALUES, Matrix2x3f,
+from pyalgcon.core.common import (DISCRETIZATION_LEVEL, OFF_WHITE, Matrix2x3f,
                                   Matrix3x1r, Matrix3x3f, MatrixNx3f,
                                   NodeIndex, PatchIndex, PlanarPoint1d,
                                   SegmentIndex, SpatialVector1d, Vector3f,
-                                  Vector3i, compare_eigen_numpy_matrix,
-                                  compare_list_list_varying_lengths,
-                                  compare_list_list_varying_lengths_float,
-                                  deserialize_eigen_matrix_csv_to_numpy,
-                                  deserialize_list_list_varying_lengths,
-                                  deserialize_list_list_varying_lengths_float,
-                                  dot_product, nested_vector_size,
+                                  Vector3i, dot_product, nested_vector_size,
                                   vector_contains)
 from pyalgcon.core.conic import Conic
 from pyalgcon.core.rational_function import (CurveDiscretizationParameters,
                                              RationalFunction)
-from pyalgcon.debug.debug import SPOT_FILEPATH
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface import \
     QuadraticSplineSurface
-from pyalgcon.utils.compute_intersections_testing_utils import \
-    deserialize_list_list_intersection_data
-from pyalgcon.utils.conic_testing_utils import (compare_conics_from_file,
-                                                deserialize_conics_from_file)
-from pyalgcon.utils.projected_curve_networks_utils import \
-    deserialize_segment_labels
-from pyalgcon.utils.rational_function_testing_utils import (
-    compare_rational_functions_from_file,
-    deserialize_rational_functions_from_file)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -463,15 +443,15 @@ class ContourNetwork(ProjectedCurveNetwork):
         # Partition intersections into points above and below the sample point
         if len(ray_intersections) == 0:
             return 0
-        else:
-            ray_intersections_below: list[float]
-            ray_intersections_above: list[float]
-            (ray_intersections_below,
-             ray_intersections_above) = partition_ray_intersections(ray_mapping_coeffs,
-                                                                    point,
-                                                                    ray_intersections)
-            #  Set QI as the number of intersection points occluding the sample point
-            return len(ray_intersections_below)
+
+        ray_intersections_below: list[float]
+        ray_intersections_above: list[float]
+        (ray_intersections_below,
+            ray_intersections_above) = partition_ray_intersections(ray_mapping_coeffs,
+                                                                   point,
+                                                                   ray_intersections)
+        #  Set QI as the number of intersection points occluding the sample point
+        return len(ray_intersections_below)
 
     def __compute_segment_quantitative_invisibility(self,
                                                     spline_surface: QuadraticSplineSurface,
