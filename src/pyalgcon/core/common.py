@@ -12,6 +12,7 @@ import numpy as np
 import numpy.linalg as LA
 import numpy.testing as npt
 import numpy.typing as npty
+import polyscope
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -326,7 +327,7 @@ def compare_eigen_numpy_matrix(filepath: pathlib.Path,
     """
     eigen_array: np.ndarray = deserialize_eigen_matrix_csv_to_numpy(
         filepath, make_3d)
-    npt.assert_allclose(numpy_array, eigen_array)
+    npt.assert_allclose(numpy_array, eigen_array, atol=atol)
 
 
 def compare_intersection_points(filepath: pathlib.Path,
