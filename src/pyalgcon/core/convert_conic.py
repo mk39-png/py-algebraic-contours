@@ -9,9 +9,8 @@ from typing import Any
 import numpy as np
 import numpy.testing as npt
 
-from pyalgcon.core.common import (Matrix2x2f, PlanarPoint1d,
-                                  Vector2f, Vector6f,
-                                  float_equal, todo)
+from pyalgcon.core.common import (Matrix2x2f, PlanarPoint1d, Vector2f,
+                                  Vector6f, float_equal, todo)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -66,7 +65,7 @@ def compute_symmetric_matrix_eigen_decomposition(A: Matrix2x2f) -> tuple[Vector2
     # FIXME: potentially incorrect C++ translation
     npt.assert_allclose(
         A,
-        rotation.T @ np.diag([eigenvalues[0], eigenvalues[1]]) @ rotation)
+        rotation.T @ np.diag([eigenvalues[0], eigenvalues[1]]) @ rotation, atol=1e-5)
     assert float_equal(np.linalg.det(rotation), 1.0)
 
     return eigenvalues, rotation

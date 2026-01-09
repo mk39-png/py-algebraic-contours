@@ -318,7 +318,8 @@ def compare_list_list_varying_lengths(filepath: pathlib.Path, rows_test: list[li
 
 def compare_eigen_numpy_matrix(filepath: pathlib.Path,
                                numpy_array: np.ndarray,
-                               make_3d: bool = False) -> None:
+                               make_3d: bool = False,
+                               atol=0.0) -> None:
     """ 
     Standardized function for comparing matrices for testing.
     Takes a filename and creates an absolute filepath to src/tests/
