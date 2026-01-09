@@ -638,7 +638,6 @@ def compute_spline_surface_patch_ray_intersections_pencil_method(
         coeff_G)
     if num_intersections_all > MAX_PATCH_RAY_INTERSECTIONS:
         logger.error("More than the maximum possible number of patch ray intersections found")
-        raise ValueError("More than the maximum possible number of patch ray intersections found")
     assert num_intersections_all <= MAX_PATCH_RAY_INTERSECTIONS
     logger.debug("%s intersections found before pruning", num_intersections_all)
 

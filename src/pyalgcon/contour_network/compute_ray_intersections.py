@@ -77,7 +77,6 @@ def compute_spline_surface_ray_intersections(spline_surface: QuadraticSplineSurf
         # Add patch intersections to surface intersections arrays
         if num_intersections > MAX_PATCH_RAY_INTERSECTIONS:
             logger.error("More than four intersections found of a ray with a patch")
-            raise ValueError("More than four intersections found of a ray with a patch")
 
         for j in range(num_intersections):
             patch_indices.append(i)

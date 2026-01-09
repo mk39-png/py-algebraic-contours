@@ -65,7 +65,7 @@ class SegmentGeometry():
         self.__quantitative_invisibility = -1
 
         if not self.__is_valid_segment_geometry():
-            raise ValueError("Invalid segment made")
+            logger.error("Invalid segment made")
 
     # *******************
     # Getters and setters

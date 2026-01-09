@@ -1026,9 +1026,8 @@ class AffineManifold:
             one_ring_uv_positions[i + 1, :] = self._layout_next_vertex(one_ring_uv_positions[i, :],
                                                                        next_edge_length,
                                                                        prev_edge_length)
-            if logger.getEffectiveLevel() != logging.INFO:
-                logger.info("Next vertex is %s",
-                            one_ring_uv_positions[i + 1, :])
+            logger.info("Next vertex is %s",
+                        one_ring_uv_positions[i + 1, :])
 
             assert float_equal(next_edge_length, np.linalg.norm(
                 one_ring_uv_positions[i + 1, :] - one_ring_uv_positions[i, :]))

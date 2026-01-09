@@ -3,11 +3,8 @@ Methods to compute intersections for quadratic surfaces.
 """
 
 import logging
-import pathlib
 from dataclasses import dataclass
 from datetime import datetime
-
-import numpy as np
 
 from pyalgcon.contour_network.compute_rational_bezier_curve_intersection import (
     find_intersections_bezier_clipping,
@@ -18,23 +15,11 @@ from pyalgcon.contour_network.intersection_heuristics import (
     compute_bezier_bounding_box, compute_bounding_box_hash_table,
     compute_homogeneous_bezier_points_over_interval)
 from pyalgcon.core.common import (FIND_INTERSECTIONS_BEZIER_CLIPPING_PRECISION,
-                                  INLINE_TESTING_ENABLED_CONTOUR_NETWORK,
                                   Matrix5x3f, PlanarPoint1d, SpatialVector1d,
-                                  compare_eigen_numpy_matrix,
-                                  compare_list_list_varying_lengths,
-                                  compare_list_list_varying_lengths_float,
-                                  float_equal_zero, interval_lerp, load_json)
+                                  float_equal_zero, interval_lerp)
 from pyalgcon.core.rational_function import RationalFunction
-from pyalgcon.debug.debug import SPOT_FILEPATH
-from pyalgcon.utils.compute_intersections_testing_utils import (
-    compare_intersection_stats, compare_list_list_intersection_data_from_file)
-from pyalgcon.utils.rational_function_testing_utils import \
-    compare_rational_functions_from_file
 
 logger: logging.Logger = logging.getLogger(__name__)
-
-# FIXME: remove when done testing inline
-ROOT_FOLDER = "spot_control"
 
 
 @dataclass
@@ -47,7 +32,6 @@ class IntersectionParameters():
     # Amount to trim ends of contour segments by; intersections that are trimmed are clamped
     # to the endpoint.
     trim_amount: float = 1e-5
-    # trim_amount: float = 1.0000000000000001e-05
 
 
 def _convert_spline_to_planar_curve_parameter(planar_curve: RationalFunction,
@@ -186,11 +170,10 @@ def _compute_planar_curve_intersections_from_bounding_box(
             second_planar_curve,
             first_bezier_control_points,
             second_bezier_control_points)
-    except Exception as e:
+    except ValueError as e:
+        # FIXME: this return is different from the logic in the original C++ code and may need
+        # adjustment
         logger.error("Failed to find intersection points %s", e)
-        # FIXME: raising another error to just end the program whenever theres a big failure
-        # But change back to exception for the final release build
-        raise ValueError(e)
         return
 
     # Prune the computed intersections to ensure they are in the correct domain
@@ -416,7 +399,7 @@ def split_planar_curves_no_self_intersection(planar_curves: list[RationalFunctio
     for i, planar_curve in enumerate(planar_curves):
         assert (planar_curve.degree, planar_curve.dimension) == (4, 2)
         if float_equal_zero(planar_curve.domain.get_length(), 1e-6):
-            raise ValueError(f"Splitting curve of length {planar_curve.domain.get_length()}")
+            logger.error(f"Splitting curve of length {planar_curve.domain.get_length()}")
 
         # Get Bezier points
         bezier_control_points: Matrix5x3f = compute_homogeneous_bezier_points_over_interval(

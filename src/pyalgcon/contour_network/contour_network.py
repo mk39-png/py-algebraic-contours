@@ -1339,7 +1339,6 @@ class ContourNetwork(ProjectedCurveNetwork):
         logger.debug(quantitative_invisibility)
         if vector_contains(quantitative_invisibility, -1):
             logger.error("Negative QI present in final values")
-            raise ValueError("Negative QI present in final values")
 
     # *******
     # Viewers

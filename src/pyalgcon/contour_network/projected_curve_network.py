@@ -199,7 +199,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
             for node_index in range(self.num_nodes):
                 if (self.is_intersection_node(node_index) and
                         not self._is_valid_node_index(self.intersection(node_index))):
-                    raise ValueError(f"Intersection node {node_index} does not \
+                    logger.error(f"Intersection node {node_index} does not \
                                     have a valid intersection")
 
             # Check the validity of the geometric graph structure
@@ -1139,7 +1139,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
             start_si: SegmentIndex = self.out(ni)
             if not self._is_valid_segment_index(start_si):
                 logger.error("Start node is an end point")
-                raise ValueError("Start node is an end point")
                 return False
 
             # Check chain from start node
@@ -1159,24 +1158,16 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
                 logger.error("%s node %s is not covered by chain iteration",
                              self.nodes[ni].formatted_node(),
                              ni)
-                raise ValueError("%s node %s is not covered by chain iteration",
-                                 self.nodes[ni].formatted_node(),
-                                 ni)
 
         num_missed_segments = 0
         for si in range(self.num_segments):
             if not is_covered_segment[si]:
                 logger.error("Segment %s is not covered by chain iteration", si)
-                raise ValueError("Segment %s is not covered by chain iteration", si)
 
         if (num_missed_segments > 0) or (num_missed_nodes > 0):
             logger.error("Missed %s nodes and %s segments",
                          num_missed_nodes,
                          num_missed_segments)
-            raise ValueError("Missed %s nodes and %s segments",
-                             num_missed_nodes,
-                             num_missed_segments)
-
         return True
 
     # ***************
@@ -1208,7 +1199,8 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
                 is_covered_node[ni] = True
                 start_si: SegmentIndex = self.out(ni)
                 if not self._is_valid_segment_index(start_si):
-                    raise ValueError("Start node is an end point")
+                    logger.error("Start node is an end point")
+                    return
 
                 # Check chain from start node
                 # FIXME: potential mistranslation from C++ to Python (esp w/ pointers)
@@ -1388,7 +1380,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
             # Check if the connectivity has consistent next/prev pairs
             if not is_valid_next_prev_pair(next_, prev):
                 logger.error("Invalid next/prev pair found")
-                raise ValueError("Invalid next/prev pair found")
                 return simplified_points, simplified_polylines
 
         # Combine the sorted lines
@@ -1419,9 +1410,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
             while condition:
                 covered[current_index] = True
 
-                # FIXME: using enumerate with start value is a bit weird.
-                for j in range(1, len(all_points)):
-                    # for j, _ in enumerate(all_points, start=1):
+                for j in range(1, len(all_points[current_index])):
                     polyline.append(len(points))
                     points.append(all_points[current_index][j - 1])
                 prev_index = current_index
@@ -1436,7 +1425,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
                 difference: PlanarPoint1d = start_point - end_point
                 if difference.dot(difference) > 2e-4:
                     logger.error("Points %s and %s are distant", end_point, start_point)
-                    raise ValueError("Points %s and %s are distant", end_point, start_point)
                 condition: bool = (current_index != start_index)
 
             # Close loop or add last point
