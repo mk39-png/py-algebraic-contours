@@ -5,54 +5,15 @@ Methods to chain contour segments into closed contours.
 
 import logging
 
-import numpy as np
-
-from pyalgcon.core.common import (INLINE_TESTING_ENABLED_CONTOUR_NETWORK,
-                                  PLACEHOLDER_VALUE, SpatialVector1d,
-                                  compare_eigen_numpy_matrix, float_equal_zero,
-                                  todo)
+from pyalgcon.core.common import (PLACEHOLDER_VALUE, SpatialVector1d,
+                                  float_equal_zero)
 from pyalgcon.core.rational_function import RationalFunction
-from pyalgcon.debug.debug import SPOT_FILEPATH
 
 logger: logging.Logger = logging.getLogger(__name__)
+
 # *******
 # Helpers
 # *******
-
-
-def _contour_segment_squared_distance(contour_segments: list[RationalFunction],
-                                      contour_segment_1: int,
-                                      contour_segment_2: int) -> float:
-    """
-    Compute the squared distance between two contours
-    """
-    # lazy check
-    assert contour_segments[0].degree == 4
-    assert contour_segments[0].dimension == 3
-
-    # Get distance between the contour start and end points
-    first_segment_end_point: SpatialVector1d = contour_segments[contour_segment_1].end_point()
-    second_segment_start_point: SpatialVector1d = contour_segments[contour_segment_2].start_point()
-    assert first_segment_end_point.shape == (3, )
-    assert second_segment_start_point.shape == (3, )
-    displacement: SpatialVector1d = second_segment_start_point - first_segment_end_point
-    squared_distance: float = displacement.dot(displacement)
-
-    return squared_distance
-
-
-def _is_adjacent_contour_segment(contour_segments: list[RationalFunction],
-                                 contour_segment_1: int,
-                                 contour_segment_2: int) -> bool:
-    """
-    Return true iff contour segment 2 follows contour segment 1
-    """
-    # Get distance between the contour start and end points
-    squared_distance: float = _contour_segment_squared_distance(contour_segments,
-                                                                contour_segment_1,
-                                                                contour_segment_2)
-
-    return float_equal_zero(squared_distance)
 
 
 def _point_distance_squared(point_1: SpatialVector1d, point_2: SpatialVector1d) -> float:
@@ -332,20 +293,3 @@ def compute_closed_contours(contour_segments: list[RationalFunction]) -> tuple[l
                     break
 
         assert _is_valid_contours(contours, contour_start_points, contour_end_points)
-
-
-def write_contour_closure_distances(contour_segments: list[RationalFunction],
-                                    contours: list[list[int]],
-                                    filename: str) -> None:
-    """
-    Given closed contours, write the distance between the endpoints of
-    the segments to file.
-
-    param contour_segments: [in] surface contour segments
-    param contours: [in] list indices of segments for complete surface contours
-    param filename: [in] file to write contour distances to
-    """
-    # lazy check
-    assert contour_segments[0].degree == 4
-    assert contour_segments[0].dimension == 3
-    todo()

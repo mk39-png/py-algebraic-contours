@@ -4,136 +4,20 @@ compute_cusps
 Methods to compute cusps for a quadratic spline surface.
 """
 
-
 import numpy as np
 
-from pyalgcon.contour_network.compute_curve_frame import \
-    compute_quadratic_surface_curve_frame
 from pyalgcon.contour_network.compute_ray_intersections_pencil_method import \
     solve_quadratic_quadratic_equation_pencil_method
-from pyalgcon.core.common import (Matrix3x2f, Matrix3x3f,
-                                  Matrix6x3f, PatchIndex,
-                                  PlanarPoint1d, Vector1D,
-                                  Vector3f, Vector6f,
-                                  deprecated, float_equal,
-                                  float_equal_zero, todo)
+from pyalgcon.core.common import (Matrix3x2f, Matrix6x3f, PatchIndex,
+                                  PlanarPoint1d, Vector1D, Vector3f, Vector6f,
+                                  float_equal, float_equal_zero)
 from pyalgcon.core.conic import Conic
-from pyalgcon.core.polynomial_function import \
-    polynomial_real_roots
+from pyalgcon.core.polynomial_function import polynomial_real_roots
 from pyalgcon.core.rational_function import RationalFunction
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface import \
     QuadraticSplineSurface
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface_patch import \
     QuadraticSplineSurfacePatch
-
-
-def compute_quadratic_surface_cusp_function(surface_mapping_coeffs: Matrix6x3f,
-                                            normal_mapping_coeffs: Matrix6x3f,
-                                            frame: Matrix3x3f,
-                                            contour_domain_curve_segment: Conic
-                                            ) -> RationalFunction:
-    """
-    Compute an implicit function for a quadratic surface with cusps at the roots.
-
-    Note that this function is high degree and may have spurious cusps.
-    compute_spline_surface_cusps is preferred for finding cusps.
-
-    :param surface_mapping_coeffs: [in] coefficients for the quadratic surface
-    :param normal_mapping_coeffs:  [in] coefficients for the quadratic surface normal
-    :param frame: [in] projection frame
-    :param contour_domain_curve_segment: [in] local parametric domain contour segment
-    :return cusp_functions: implicit cusp function
-    """
-    deprecated("Function does not appear to be used.")
-
-    assert surface_mapping_coeffs.shape == (6, 3)
-    assert normal_mapping_coeffs.shape == (6, 3)
-    assert frame.shape == (3, 3)
-
-    # Compute the contour tangent normal function
-    contour_segment_tangent: RationalFunction  # degree 8, dimension 3
-    contour_segment_normal: RationalFunction  # degree 4, dimension 3
-    contour_segment_tangent_normal: RationalFunction  # degree 12, dimension 3
-    (contour_segment_tangent,
-     contour_segment_normal,
-     contour_segment_tangent_normal) = compute_quadratic_surface_curve_frame(
-        surface_mapping_coeffs,
-        normal_mapping_coeffs,
-        contour_domain_curve_segment)
-    assert contour_segment_tangent.degree == 8
-    assert contour_segment_tangent.dimension == 3
-    assert contour_segment_normal.degree == 4
-    assert contour_segment_normal.dimension == 3
-    assert contour_segment_tangent_normal.degree == 12
-    assert contour_segment_tangent_normal.dimension == 3
-
-    # Compute the component of the tangent normal in the camera direction
-    # TODO: double check C++ implementation
-    tau: Vector3f = frame[:, 2]
-    cusp_function: RationalFunction
-    cusp_function = contour_segment_tangent_normal.apply_one_form(tau)
-    assert cusp_function.degree == 12
-    assert cusp_function.dimension == 1
-    return cusp_function
-
-
-def _compute_spline_surface_patch_cusp_function(spline_surface_patch: QuadraticSplineSurfacePatch,
-                                                frame: Matrix3x3f,
-                                                contour_domain_curve_segment: Conic
-                                                ) -> RationalFunction:
-    """
-    Compute the cusp function for a single patch
-    """
-    assert frame.shape == (3, 3)
-
-    # Generate surface and normal mappings
-    surface_mapping_coeffs: Matrix6x3f = spline_surface_patch.surface_mapping
-    normal_mapping_coeffs: Matrix6x3f = spline_surface_patch.normal_mapping
-    assert surface_mapping_coeffs.shape == (6, 3)
-    assert normal_mapping_coeffs.shape == (6, 3)
-
-    # Compute cusp function for quadratic surface patch
-    cusp_function: RationalFunction = compute_quadratic_surface_cusp_function(
-        surface_mapping_coeffs,
-        normal_mapping_coeffs,
-        frame,
-        contour_domain_curve_segment)
-    assert (cusp_function.degree, cusp_function.dimension) == (12, 1)
-    return cusp_function
-
-
-def compute_spline_surface_cusp_functions(spline_surface: QuadraticSplineSurface,
-                                          frame: Matrix3x3f,
-                                          contour_domain_curve_segments: list[Conic],
-                                          patch_indices: list[PatchIndex]
-                                          ) -> list[RationalFunction]:
-    """
-    Compute implicit functions per patch for a spline surface with cusps at the roots.
-
-    Note that these functions are high degree and may have spurious cusps.
-    compute_spline_surface_cusps is preferred for finding cusps.
-
-    :param spline_surface: [in] quadratic spline surface
-    :param frame: [in] projection frame
-    :param contour_domain_curve_segments: [in] local parametric domain contour segments
-    :param patch_indices: [in] spline surface patch indices for the contour segments
-    :return cusp_functions: implicit cusp functions per contour segment. degree 12, dimension 1.
-    """
-    deprecated("Function does not appear to be used.")
-
-    assert frame.shape == (3, 3)
-    cusp_functions: list[RationalFunction] = []
-
-    for i, _ in enumerate(contour_domain_curve_segments):
-        patch_index: PatchIndex = patch_indices[i]
-        cusp_function: RationalFunction = _compute_spline_surface_patch_cusp_function(
-            spline_surface.get_patch(patch_index),
-            frame,
-            contour_domain_curve_segments[i])
-        assert (cusp_function.degree, cusp_function.dimension) == (12, 1)
-        cusp_functions.append(cusp_function)
-
-    return cusp_functions
 
 
 def tangent_x(px: Vector6f, py: Vector6f) -> Vector6f:

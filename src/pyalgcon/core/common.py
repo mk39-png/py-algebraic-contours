@@ -15,10 +15,6 @@ import numpy.typing as npty
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-logging.basicConfig(level=logging.DEBUG)
-logging.disable(logging.DEBUG)
-logging.disable(logging.INFO)
-
 
 # *******
 # GLOBALS
@@ -154,15 +150,6 @@ PLACEHOLDER_BOOL = False
 # TESTING FLAGS
 CHECK_VALIDITY: bool = False
 
-# Source folder for control vlaues for testing
-TESTING_FOLDER_SOURCE = "spot_control"
-# Used to determine whether to compare files for testing and whatnot
-INLINE_TESTING_ENABLED_CONTOUR_NETWORK: bool = False
-INLINE_TESTING_ENABLED_QI: bool = False
-# Used to determine whether to skip certain functions and use deserialized results instead.
-# Primarily used to save time on runtime for testing purposes.
-USE_DESERIALIZED_VALUES: bool = False
-
 #
 # ***********************
 
@@ -210,8 +197,6 @@ def load_json(filepath: pathlib.Path) -> list[dict] | list[list[dict]] | list[li
     Parses a list of dataclasses.
     """
     obj: list[list[dict]] | list[dict] | list[list[list]] | None = None
-
-    # filepath: str = os.path.abspath(f"tests\\data\\{filename}")
 
     with open(filepath, 'r', encoding='utf-8') as file:
         try:
