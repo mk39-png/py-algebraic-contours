@@ -6,13 +6,11 @@ Methods for writing contour data to SVG file.
 import numpy as np
 import svg
 
-from pyalgcon.contour_network.discretize import \
-    discretize_curve_segments
-from pyalgcon.core.common import (Color, Matrix3x3f,
-                                  PlanarPoint1d,
+from pyalgcon.contour_network.discretize import discretize_curve_segments
+from pyalgcon.core.common import (Color, Matrix3x3f, PlanarPoint1d,
                                   SpatialVector1d, Vector2f)
-from pyalgcon.core.rational_function import (
-    CurveDiscretizationParameters, RationalFunction)
+from pyalgcon.core.rational_function import (CurveDiscretizationParameters,
+                                             RationalFunction)
 
 
 def _project_point(p: SpatialVector1d, frame: Matrix3x3f, scale: int, offset: int) -> Vector2f:
@@ -240,7 +238,7 @@ def write_planar_curve_segment(planar_curve_segment: RationalFunction,
                                svg_elements_ref: list[svg.Element],
                                scale: int = 800,
                                offset: int = 400,
-                               color: Color = (0, 0, 0, 1)) -> None:
+                               color: Color = (0, 0, 255, 1)) -> None:
     """
     Write planar curve segment to SVG.
 
@@ -266,7 +264,7 @@ def _write_contour_point(frame: Matrix3x3f,
                          svg_elements_ref: list[svg.Element],
                          scale: int = 800,
                          offset: int = 400,
-                         color: Color = (1, 0, 0, 1)) -> None:
+                         color: Color = (255, 0, 0, 1)) -> None:
     """
     Helper to write_contour_points()
     """

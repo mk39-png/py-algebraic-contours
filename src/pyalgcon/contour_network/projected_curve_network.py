@@ -1440,11 +1440,12 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
                 planar_curve: RationalFunction = self.__segments[i].planar_curve
                 write_planar_curve_segment(planar_curve, curve_disc_params, svg_elements, 800, 400)
 
-    def __write_contrast_invisible_segments(self,  svg_elements: list[svg.Element]) -> None:
+    def __write_contrast_invisible_segments(self,  svg_elements_ref: list[svg.Element]) -> None:
         """
+        Writes contours to SVG, highlighting the invisible segments in red.
         """
         curve_disc_params: CurveDiscretizationParameters = CurveDiscretizationParameters()
-        invisible_color: Color = (1, 0, 0, 1)
+        invisible_color: Color = (255, 0, 0, 1)
         for i in range(self.num_segments):
             planar_curve: RationalFunction = self.__segments[i].planar_curve
             if self.__segments[i].quantitative_invisibility > 0:
@@ -1459,7 +1460,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         """
         for start_node_index in self.chain_start_nodes:
             # Get random chain color
-            color_without_alpha: Vector3f = np.random.rand(3, )
+            color_without_alpha: Vector3i = (np.random.rand(3, ) * 255).astype(int)
             color: Color = (color_without_alpha[0],
                             color_without_alpha[1],
                             color_without_alpha[2],
