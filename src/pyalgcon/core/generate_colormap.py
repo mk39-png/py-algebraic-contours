@@ -38,7 +38,7 @@ def generate_random_category_colormap(category_labels: list[int]) -> MatrixXr:
     category_colors: list[Vector3f] = []
     for _ in range(max_index + 1):
         category_colors.append(_generate_random_color())
-    assert len(category_colors) == max_index + 2
+    assert len(category_colors) == max_index + 1
 
     # Assign colors corresponding to indices
     for i, _ in enumerate(category_labels):
