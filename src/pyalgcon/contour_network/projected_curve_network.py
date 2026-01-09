@@ -4,6 +4,7 @@ soup.
 """
 import logging
 import pathlib
+from typing import Any
 
 import numpy as np
 import polyscope
@@ -15,26 +16,21 @@ from pyalgcon.contour_network.write_output import (add_curve_to_svg,
                                                    write_planar_curve_segment,
                                                    write_planar_point)
 from pyalgcon.core.abstract_curve_network import AbstractCurveNetwork
-from pyalgcon.core.common import (CHECK_VALIDITY,
-                                  INLINE_TESTING_ENABLED_CONTOUR_NETWORK,
-                                  PLACEHOLDER_VALUE, Color, MatrixXf,
-                                  NodeIndex, PlanarPoint1d, SegmentIndex,
-                                  SpatialVector1d, Vector3f,
-                                  compare_eigen_numpy_matrix,
-                                  convert_nested_vector_to_matrix,
-                                  convert_polylines_to_edges, todo,
-                                  unimplemented)
+from pyalgcon.core.common import (CHECK_VALIDITY, PLACEHOLDER_VALUE, Color,
+                                  MatrixXf, NodeIndex, PlanarPoint1d,
+                                  SegmentIndex, SpatialVector1d, Vector3f,
+                                  Vector3i, convert_nested_vector_to_matrix,
+                                  convert_polylines_to_edges, todo)
 from pyalgcon.core.conic import Conic
 from pyalgcon.core.generate_colormap import generate_random_category_colormap
 from pyalgcon.core.rational_function import (CurveDiscretizationParameters,
                                              RationalFunction)
-from pyalgcon.debug.debug import SPOT_FILEPATH
 from pyalgcon.utils.projected_curve_networks_utils import (
     NodeGeometry, SegmentGeometry, SVGOutputMode,
     build_projected_curve_network_without_intersections,
-    compare_list_node_geometry, connect_segment_intersections,
-    is_valid_next_prev_pair, remove_redundant_intersections,
-    split_segments_at_cusps, split_segments_at_intersections)
+    connect_segment_intersections, is_valid_next_prev_pair,
+    remove_redundant_intersections, split_segments_at_cusps,
+    split_segments_at_intersections)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -293,11 +289,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
             logger.error("Cannot set negative segment QI")
             return
         self.segments[segment_index].quantitative_invisibility = new_quantitative_invisibility
-
-    # def enumerate_parameter_curves(self) -> None:
-    #     """
-    #     """
-    #     unimplemented()
 
     def enumerate_spatial_curves(self) -> list[RationalFunction]:
         """
@@ -1451,10 +1442,11 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
             planar_curve: RationalFunction = self.__segments[i].planar_curve
             if self.__segments[i].quantitative_invisibility > 0:
                 write_planar_curve_segment(
-                    planar_curve, curve_disc_params, svg_elements, 800, 400, invisible_color)
+                    planar_curve, curve_disc_params, svg_elements_ref, 800, 400, invisible_color)
             else:
+                # print(self.__segments[i].quantitative_invisibility)
                 write_planar_curve_segment(
-                    planar_curve, curve_disc_params, svg_elements, 800, 400)
+                    planar_curve, curve_disc_params, svg_elements_ref, 800, 400)
 
     def __write_random_chains(self, svg_elements: list[svg.Element]) -> None:
         """
@@ -1602,13 +1594,6 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
                              400,
                              color)
 
-    def __add_planar_segments_to_viewer(self) -> None:
-        """
-        Add planar curves to the polyscope viewer
-        # NOTE: method not used
-        """
-        unimplemented()
-
     def __add_spatial_segments_to_viewer(self) -> None:
         """
         Add spatial curves to the polyscope viewer
@@ -1626,7 +1611,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         # Wrapping edges in np.array so that it has .shape attribute.
         # Otherwise, polyscope will fail since it expects NumPy arrays
         spatial_curve_network_segments: polyscope.CurveNetwork = polyscope.register_curve_network(
-            "spatial_curve_network_segments", points_mat, edges)
+            "spatial_curve_network_segments", points_mat, np.array(edges))
         spatial_curve_network_segments.set_radius(0.001)
         spatial_curve_network_segments.set_color((0.600, 0.000, 0.067))
 
@@ -1661,6 +1646,17 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         visible_spatial_curves_network.set_radius(0.0025)
         visible_spatial_curves_network.set_color((0.0, 0.0, 0.0))
 
+    @staticmethod
+    def __point_cloud_array_adapter(nodes: list[Any]) -> np.ndarray:
+        """ 
+        Converts a list to array compatible with register_point_cloud() Polyscope function.
+        Useful in case where nodes list is empty but we need a (0, 3) shape array for Polyscope.
+        """
+        if len(nodes) == 0:
+            return np.zeros(shape=(0, 3), dtype=np.float64)
+
+        return np.array(nodes)
+
     def __add_spatial_nodes_to_viewer(self) -> None:
         """
         Add spatial curves to the polyscope viewer
@@ -1692,39 +1688,50 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
 
         # Register all spatial nodes
         spatial_knot_nodes_cloud: polyscope.PointCloud = polyscope.register_point_cloud(
-            "spatial_knot_nodes", spatial_knot_nodes)
+            "spatial_knot_nodes",
+            ProjectedCurveNetwork.__point_cloud_array_adapter(spatial_knot_nodes))
         spatial_knot_nodes_cloud.set_enabled(False)
 
         spatial_marked_knot_nodes_cloud: polyscope.PointCloud = polyscope.register_point_cloud(
-            "spatial_marked_knot_nodes", spatial_marked_knot_nodes)
+            "spatial_marked_knot_nodes",
+            ProjectedCurveNetwork.__point_cloud_array_adapter(spatial_marked_knot_nodes))
         spatial_marked_knot_nodes_cloud.set_enabled(False)
 
         spatial_intersection_nodes_cloud: polyscope.PointCloud = polyscope.register_point_cloud(
-            "spatial_intersection_nodes", spatial_intersection_nodes)
+            "spatial_intersection_nodes",
+            ProjectedCurveNetwork.__point_cloud_array_adapter(spatial_intersection_nodes))
         spatial_intersection_nodes_cloud.set_color((0.227, 0.420, 0.208))
 
         spatial_interior_cusp_nodes_cloud: polyscope.PointCloud = polyscope.register_point_cloud(
-            "spatial_interior_cusp_nodes",                             spatial_interior_cusp_nodes)
+            "spatial_interior_cusp_nodes",
+            ProjectedCurveNetwork.__point_cloud_array_adapter(spatial_interior_cusp_nodes))
         spatial_interior_cusp_nodes_cloud.set_color((0.537, 0.671, 0.890))
         spatial_interior_cusp_nodes_cloud.add_vector_quantity(
-            "in_tangents", spatial_interior_cusp_in_tangents)
+            "in_tangents",
+            ProjectedCurveNetwork.__point_cloud_array_adapter(spatial_interior_cusp_in_tangents))
         spatial_interior_cusp_nodes_cloud .add_vector_quantity(
-            "out_tangents", spatial_interior_cusp_out_tangents)
+            "out_tangents",
+            ProjectedCurveNetwork.__point_cloud_array_adapter(spatial_interior_cusp_out_tangents))
 
         spatial_boundary_cusp_nodes_cloud: polyscope.PointCloud = polyscope.register_point_cloud(
-            "spatial_boundary_cusp_nodes", spatial_boundary_cusp_nodes)
+            "spatial_boundary_cusp_nodes",
+            ProjectedCurveNetwork.__point_cloud_array_adapter(spatial_boundary_cusp_nodes))
         spatial_boundary_cusp_nodes_cloud.set_color((0.0, 0.0, 0.545))
         spatial_boundary_cusp_nodes_cloud.add_vector_quantity(
-            "in_tangents", spatial_boundary_cusp_in_tangents)
+            "in_tangents",
+            ProjectedCurveNetwork.__point_cloud_array_adapter(spatial_boundary_cusp_in_tangents))
         spatial_boundary_cusp_nodes_cloud.add_vector_quantity(
-            "out_tangents", spatial_boundary_cusp_out_tangents)
+            "out_tangents",
+            ProjectedCurveNetwork.__point_cloud_array_adapter(spatial_boundary_cusp_out_tangents))
 
         spatial_path_start_nodes_cloud: polyscope.PointCloud = polyscope.register_point_cloud(
-            "spatial_path_start_nodes", spatial_path_start_nodes)
+            "spatial_path_start_nodes",
+            ProjectedCurveNetwork.__point_cloud_array_adapter(spatial_path_start_nodes))
         spatial_path_start_nodes_cloud.set_enabled(False)
 
         spatial_path_end_nodes_cloud: polyscope.PointCloud = polyscope.register_point_cloud(
-            "spatial_path_end_nodes", spatial_path_end_nodes)
+            "spatial_path_end_nodes",
+            ProjectedCurveNetwork.__point_cloud_array_adapter(spatial_path_end_nodes))
         spatial_path_end_nodes_cloud.set_enabled(False)
 
     def __clear_geometry(self) -> None:
