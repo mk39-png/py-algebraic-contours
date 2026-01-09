@@ -747,15 +747,15 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
                 if self.is_boundary_cusp_node(i):
                     logger.info("Writing boundary cusp node at %s", node_point)
                     write_planar_point(
-                        node_point, svg_elements, 800, 400, (0, 0, 0.545, 1))  # Blue
+                        node_point, svg_elements, 800, 400, (0, 0, 139, 1))  # Blue
                 elif self.is_interior_cusp_node(i):
                     logger.info("Writing interior cusp node at %s", node_point)
                     write_planar_point(
-                        node_point, svg_elements, 800, 400, (0.537, 0.671, 0.890, 1))  # Light blue
+                        node_point, svg_elements, 800, 400, (137, 171, 227, 1))  # Light blue
                 elif self.is_intersection_node(i):
                     logger.info("Writing intersection node at %s", node_point)
                     write_planar_point(
-                        node_point, svg_elements, 800, 400, (0.227, 0.420, 0.208, 1))  # Green
+                        node_point, svg_elements, 800, 400, (58, 107, 53, 1))  # Green
 
         # Write SVG
         svg_writer = svg.SVG(viewBox=viewport, elements=svg_elements)
