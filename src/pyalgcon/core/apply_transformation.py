@@ -224,7 +224,7 @@ def apply_camera_frame_transformation_to_vertices(input_V: MatrixNx3f,
 
     if recenter_mesh:
         # Renormalize the projected vertices
-        min_point, max_point = compute_point_cloud_bounding_box(output_V, )
+        min_point, max_point = compute_point_cloud_bounding_box(output_V)
         mesh_midpoint = 0.5 * (max_point + min_point)
         logger.info("Projected mesh bounding box: %s, %s", min_point, max_point)
         logger.info("Projected mesh midpoint: %s", mesh_midpoint)
