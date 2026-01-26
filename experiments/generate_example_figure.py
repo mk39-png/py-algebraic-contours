@@ -1,23 +1,23 @@
-"""
-Executable to generate a pipeline example from a mesh and camera specification.
-Generates an image of the mesh, the quadratic surface (with front camera view),
-the full contours with cusps and intersections, and the final occluding contours.
+#!/usr/bin/env python3
 
-The following rotation angles were originally used for the below meshes, in
-order x, y, z.
+# Executable to generate a pipeline example from a mesh and camera specification.
+# Generates an image of the mesh, the quadratic surface (with front camera view),
+# the full contours with cusps and intersections, and the final occluding contours.
 
-Spot 1 -30 1
-Bigguy: 0 150 0
-Blub: 0 150 0
-Fertility: 0 150 0
-Bob: 15 -30 15
-Killaroo: 90 30 0
-Monsterfrog: 0 150 0
-Pawn: 90 0 0
-Pipes: 0 170 0
-Ogre 0 150 0
-Toad 75 130 0
-"""
+# The following rotation angles were originally used for the below meshes, in
+# order x, y, z.
+
+# Spot 1 -30 1
+# Bigguy: 0 150 0
+# Blub: 0 150 0
+# Fertility: 0 150 0
+# Bob: 15 -30 15
+# Killaroo: 90 30 0
+# Monsterfrog: 0 150 0
+# Pawn: 90 0 0
+# Pipes: 0 170 0
+# Ogre 0 150 0
+# Toad 75 130 0
 
 import argparse
 import logging
