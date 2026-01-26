@@ -4,8 +4,8 @@ import argparse
 import logging
 import pathlib
 import sys
-from datetime import datetime
 import time
+from datetime import datetime
 
 import igl
 import numpy as np
@@ -30,8 +30,6 @@ from pyalgcon.quadratic_spline_surface.optimize_spline_surface import \
 from pyalgcon.quadratic_spline_surface.twelve_split_spline import (
     TwelveSplitSplineSurface, compute_twelve_split_spline_patch_boundary_edges)
 
-
-import logging
 logging.disable(logging.CRITICAL)
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -186,27 +184,24 @@ def main(args: argparse.Namespace) -> None:
         total_time: float = timer_end - timer_start
 
         # Write timing data
-        out_per_view.write(f"{input_filename}, \
-                           {rotation_matrix[0, :]} \
-                           {rotation_matrix[1, :]} \
-                           {rotation_matrix[2, :]}, \
-                           {total_time}, \
-                           {contour_network.surface_update_position_time}, \
-                           {contour_network.compute_contour_time}, \
-                           {contour_network.compute_cusp_time}, \
-                           {contour_network.compute_intersection_time}, \
-                           {contour_network.compute_visibility_time}, \
-                           {contour_network.compute_projected_time}, \
-                           {contour_network.segment_number}, \
-                           {contour_network.interior_cusp_number}, \
-                           {contour_network.boundary_cusp_number}, \
-                           {contour_network.intersection_call}, \
-                           {contour_network.ray_intersection_call}, \
-                           {spline_surface.num_patches}\n")
-
-    # Close output file
-    out_per_view.close()
-    out_view_independent.close()
+        with open(output_dir / "per_view.csv", 'a', encoding='utf-8', newline="") as out_per_view:
+            out_per_view.write(f"{input_filename}, \
+                            {rotation_matrix[0, :]} \
+                            {rotation_matrix[1, :]} \
+                            {rotation_matrix[2, :]}, \
+                            {total_time}, \
+                            {contour_network.surface_update_position_time}, \
+                            {contour_network.compute_contour_time}, \
+                            {contour_network.compute_cusp_time}, \
+                            {contour_network.compute_intersection_time}, \
+                            {contour_network.compute_visibility_time}, \
+                            {contour_network.compute_projected_time}, \
+                            {contour_network.segment_number}, \
+                            {contour_network.interior_cusp_number}, \
+                            {contour_network.boundary_cusp_number}, \
+                            {contour_network.intersection_call}, \
+                            {contour_network.ray_intersection_call}, \
+                            {spline_surface.num_patches}\n")
 
 
 if __name__ == "__main__":
