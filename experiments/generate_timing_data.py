@@ -1,14 +1,11 @@
-"""
-Docstring for experiments.generate_timing_data
-"""
-
-# Get command line argument
+#!/usr/bin/env python3
 
 import argparse
 import logging
 import pathlib
 import sys
 from datetime import datetime
+import time
 
 import igl
 import numpy as np
@@ -33,6 +30,9 @@ from pyalgcon.quadratic_spline_surface.optimize_spline_surface import \
 from pyalgcon.quadratic_spline_surface.twelve_split_spline import (
     TwelveSplitSplineSurface, compute_twelve_split_spline_patch_boundary_edges)
 
+
+import logging
+logging.disable(logging.CRITICAL)
 logger: logging.Logger = logging.getLogger(__name__)
 
 
@@ -75,8 +75,10 @@ def main(args: argparse.Namespace) -> None:
     FN: MatrixXi
     initial_V, uv, N, F, FT, FN = igl.readOBJ(input_filename)
 
+    #
     # Start timer for quadratic spline generation
-    timer_start: datetime = datetime.now()
+    #
+    timer_start: float = time.perf_counter()
 
     # Generate quadratic spline
     optimization_params: OptimizationParameters = OptimizationParameters()
@@ -92,15 +94,22 @@ def main(args: argparse.Namespace) -> None:
     energy_hessian_inverse: CholeskySolverD = spline_surface.energy_hessian_inverse
 
     # Get spline construction_time
-    spline_surface_time: float = (timer_start - datetime.now()).microseconds
+    timer_end: float = time.perf_counter()
+    spline_surface_time: float = timer_end - timer_start
 
+    #
     # Time and get the boundary edges
-    timer_start = datetime.now()
+    #
+    timer_start = time.perf_counter()
     patch_boundary_edges: list[tuple[int, int]] = compute_twelve_split_spline_patch_boundary_edges(
         F, face_to_patch_indices)
-    compute_patch_boundary_time: float = (timer_start - datetime.now()).seconds
+    timer_end: float = time.perf_counter()
+    compute_patch_boundary_time: float = timer_end - timer_start
 
+    #
     # Start the timer for the contour generation
+    #
+    timer_start = time.perf_counter()
 
     # Build the contours
     intersect_params: IntersectionParameters = IntersectionParameters()
@@ -112,39 +121,45 @@ def main(args: argparse.Namespace) -> None:
         spline_surface, intersect_params, invisibility_params, patch_boundary_edges)
 
     # Get contour network construction time
-    initial_contour_network_time: float = (timer_start - datetime.now()).seconds
+    timer_end: float = time.perf_counter()
+    initial_contour_network_time: float = timer_end - timer_start
 
     # Write headers
     _add_header_to_csv(output_dir)
 
     # Write view independent timing data
-    with open(output_dir / "view_independent.csv", 'a', encoding='utf-8') as out_view_independent:
+    with open(output_dir / "view_independent.csv", 'a', encoding='utf-8', newline="") as out_view_independent:
         out_view_independent.write(
             f"{input_filename}, {F.shape[0]}, {spline_surface_time}, {compute_patch_boundary_time}\n")
 
     # Write view dependent timing data
-    with open(output_dir / "per_view.csv", 'a', encoding='utf-8') as out_per_view:
+    with open(output_dir / "per_view.csv", 'a', encoding='utf-8', newline="") as out_per_view:
         out_per_view.write(
             f"{input_filename}, \
                 1 0 0 0 1 0 0 0 1, \
-                {initial_contour_network_time}, \
+                {initial_contour_network_time},\
                 0.0, \
-                {contour_network.compute_contour_time}, \
-                {contour_network.compute_cusp_time}, \
-                {contour_network.compute_intersection_time}, \
-                {contour_network.compute_visibility_time}, \
-                {contour_network.compute_projected_time}, \
-                {contour_network.segment_number}, \
-                {contour_network.interior_cusp_number}, \
-                {contour_network.boundary_cusp_number}, \
-                {contour_network.intersection_call}, \
-                {contour_network.ray_intersection_call}, \
-                {spline_surface.num_patches},\n")
+                {contour_network.compute_contour_time},\
+                {contour_network.compute_cusp_time},\
+                {contour_network.compute_intersection_time},\
+                {contour_network.compute_visibility_time},\
+                {contour_network.compute_projected_time},\
+                {contour_network.segment_number},\
+                {contour_network.interior_cusp_number},\
+                {contour_network.boundary_cusp_number},\
+                {contour_network.intersection_call},\
+                {contour_network.ray_intersection_call},\
+                {spline_surface.num_patches}\n",)
 
+    #
+    #
+    # Generating contours
+    #
+    #
     # Generate a random number generator for angles
     # TODO: translate properly
     np.random.seed(0)
-    angle_distribution: np.ndarray = np.random.uniform(low=0.0, high=2.0 * np.pi)
+    angle_distribution: np.ndarray = np.random.uniform(low=0.0, high=2.0 * np.pi, size=3)
 
     # Run tests
     for i in range(num_tests):
@@ -198,7 +213,8 @@ if __name__ == "__main__":
         prog="animate_rotation", description="Generate rotation animation for a given mesh.")
     parser.add_argument("-i", "--input", type=str, help="Mesh filepath.", required=True)
     parser.add_argument("-o", "--output", type=str, default="./", help="Output directory")
-    parser.add_argument("--num_tests", type=int, help="Number of tests to run. Nonnegative number")
+    parser.add_argument("--num_tests", type=int, default=1,
+                        help="Number of tests to run. Nonnegative number")
 
     args: argparse.Namespace = parser.parse_args()
     sys.exit(main(args))
