@@ -136,20 +136,23 @@ class ContourNetwork(ProjectedCurveNetwork):
         time_start = time.perf_counter()
 
         # Constructs parent class parameters
-        super().__init__(*self.__build_projected_curve_network_params(spline_surface,
-                                                                      intersect_params,
-                                                                      invisibility_params,
-                                                                      patch_boundary_edges))
+        # NOTE: long tuple separated out as its own variable for performance measuring
+        curve_network_params: tuple = self.__build_projected_curve_network_params(spline_surface,
+                                                                                  intersect_params,
+                                                                                  invisibility_params,
+                                                                                  patch_boundary_edges)
+        self.compute_projected_time: float = time.perf_counter() - time_start
 
-        compute_projected_time: float = time.perf_counter() - time_start
+        # Now calling parent class' constructor.
+        super().__init__(*curve_network_params)
 
         # Compute the quantitative invisibility
         time_start: float = time.perf_counter()
         self.__compute_quantitative_invisibility(spline_surface, invisibility_params)
-        compute_visibility_time: float = time.perf_counter() - time_start
+        self.compute_visibility_time: float = time.perf_counter() - time_start
 
-    @staticmethod
     def __build_projected_curve_network_params(
+        self,
         spline_surface: QuadraticSplineSurface,
         intersect_params: IntersectionParameters,
         invisibility_params: InvisibilityParameters,
@@ -226,18 +229,15 @@ class ContourNetwork(ProjectedCurveNetwork):
                      contour_segments,
                      planar_contour_segments,
                      invisibility_params.pad_amount)
-
-        compute_contour_time: float = time.perf_counter() - time_start
+        self.compute_contour_time: float = time.perf_counter() - time_start
 
         # Get cusp points and intersections if needed
+        time_start = time.perf_counter()
         num_segments: int = len(contour_segments)
         interior_cusps: list[list[float]]
         boundary_cusps: list[list[float]]
         has_cusp_at_base: list[bool]
         has_cusp_at_tip: list[bool]
-
-        time_start = time.perf_counter()
-
         (interior_cusps,
          boundary_cusps,
          has_cusp_at_base,
@@ -247,7 +247,7 @@ class ContourNetwork(ProjectedCurveNetwork):
                                                          contour_patch_indices,
                                                          contours)
 
-        compute_cusp_time: float = time.perf_counter() - time_start
+        self.compute_cusp_time: float = time.perf_counter() - time_start
         logger.debug("Found %s interior cusps", nested_vector_size(interior_cusps))
         logger.debug("Found %s boundary cusps", nested_vector_size(boundary_cusps))
 
@@ -267,7 +267,7 @@ class ContourNetwork(ProjectedCurveNetwork):
                                                     contour_intersections,
                                                     num_intersections)
 
-        compute_intersection_time: float = time.perf_counter() - time_start
+        self.compute_intersection_time: float = time.perf_counter() - time_start
         logger.debug("Found %s intersections", nested_vector_size(intersection_knots))
 
         # Optionally write contours before any graph construction
