@@ -178,11 +178,12 @@ def main(args: argparse.Namespace) -> None:
         V = apply_camera_frame_transformation_to_vertices(initial_V, frame)
 
         # Time update
-        timer_start = datetime.now()
-        spline_surface.update_positions(V, fit_matrix, energy_hessian)
+        timer_start = time.perf_counter()
+        spline_surface.update_positions(V, fit_matrix, energy_hessian_inverse)
         contour_network: ContourNetwork = ContourNetwork(
             spline_surface, intersect_params, invisibility_params, patch_boundary_edges)
-        total_time: float = (timer_start - datetime.now()).seconds
+        timer_end = time.perf_counter()
+        total_time: float = timer_end - timer_start
 
         # Write timing data
         out_per_view.write(f"{input_filename}, \
