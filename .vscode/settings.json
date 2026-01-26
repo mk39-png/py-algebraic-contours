@@ -1,0 +1,22 @@
+{
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/src/pyalgcon",
+    ],
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit",
+    },
+    "autopep8.args": [
+        "--max-line-length=100",
+    ],
+    "explorer.autoReveal": false,
+    "python.languageServer": "Pylance",
+    "autoDocstring.docstringFormat": "sphinx",
+    "editor.rulers": [
+        100
+    ],
+}
