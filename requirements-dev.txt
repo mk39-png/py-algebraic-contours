@@ -9,3 +9,4 @@ svg.py
 pytest
 ./external/cholespy
 bpy==4.5.3
+scikit-image
