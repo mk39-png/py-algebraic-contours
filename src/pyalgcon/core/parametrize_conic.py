@@ -12,14 +12,12 @@ import numpy.testing as npt
 from pyalgcon.core.bivariate_quadratic_function import (
     evaluate_line, generate_quadratic_coordinate_affine_transformation_matrix,
     is_conic_standard_form, u_derivative_matrix, v_derivative_matrix)
-from pyalgcon.core.common import (Matrix2x2f, Matrix3x2f,
-                                  Matrix6x6r, PlanarPoint1d,
-                                  Vector3f, Vector6f,
-                                  compute_discriminant,
-                                  float_equal)
+from pyalgcon.core.common import (Matrix2x2f, Matrix3x2f, Matrix6x6f,
+                                  Matrix6x6r, PlanarPoint1d, Vector3f,
+                                  Vector6f, compute_discriminant, float_equal,
+                                  vector_equal)
 from pyalgcon.core.conic import Conic, ConicType
-from pyalgcon.core.convert_conic import \
-    convert_conic_to_standard_form
+from pyalgcon.core.convert_conic import convert_conic_to_standard_form
 from pyalgcon.core.interval import Interval
 from pyalgcon.core.rational_function import RationalFunction
 
@@ -332,7 +330,7 @@ def parametrize_standard_form_conic(conic_standard_form: Vector6f) -> list[Conic
 def check_standard_form(conic_coeffs: Vector6f,
                         conic_standard_form: Vector6f,
                         rotation: Matrix2x2f,
-                        translation: PlanarPoint1d) -> None:
+                        translation: PlanarPoint1d) -> bool:
     """Checks if parameters are in standard form"""
     logger.debug("Checking standard form %s for implicit function %s",
                  conic_standard_form, conic_coeffs)
@@ -345,7 +343,7 @@ def check_standard_form(conic_coeffs: Vector6f,
     logger.debug("Implicit function after rotation is %s",
                  test_conic_coeffs)
 
-    npt.assert_allclose(test_conic_coeffs, conic_standard_form, atol=1e-4)
+    return vector_equal(test_conic_coeffs, conic_standard_form, eps=1e-4)
 
 
 def check_parametrized_conic(conic: Conic, conic_coeffs: Vector6f) -> bool:
@@ -418,7 +416,7 @@ def parametrize_conic(conic_coeffs: Vector6f) -> list[Conic]:
     translation: PlanarPoint1d
     conic_standard_form: Vector6f
     conic_standard_form, rotation, translation = convert_conic_to_standard_form(conic_coeffs)
-    check_standard_form(conic_coeffs, conic_standard_form, rotation, translation)
+    assert check_standard_form(conic_coeffs, conic_standard_form, rotation, translation)
 
     # Get parameterization of conic
     standard_form_conics: list[Conic] = parametrize_standard_form_conic(conic_standard_form)
