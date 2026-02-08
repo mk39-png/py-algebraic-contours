@@ -1,7 +1,10 @@
 __pycache__/
 .pytest_cache
 .venv/
-data/
+results/
+*.csv
 *.obj
+*.json
 *.ini
 *.coverage
+*.log
