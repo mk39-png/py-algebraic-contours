@@ -119,6 +119,7 @@ Matrix5x5f = np.ndarray
 Matrix6x3r = np.ndarray  # shape (6, 3)
 Matrix6x3f = np.ndarray  # shape (6, 3)
 Matrix6x6r = np.ndarray
+Matrix6x6f = np.ndarray
 Matrix6x12f = np.ndarray
 Matrix12x3f = np.ndarray
 Matrix12x12r = np.ndarray
