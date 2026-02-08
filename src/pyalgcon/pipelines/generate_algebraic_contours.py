@@ -1,6 +1,7 @@
 """
-Blender-facing 
-This is the user-facing interface to input a mesh and generate the algebraic contours.
+generate_algebraic_contours.py
+This is the user-facing interface to input a mesh and generate the twelve split spline 
+quadratic spline surface.
 """
 import logging
 import pathlib
@@ -31,16 +32,16 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 def generate_algebraic_contours(camera_matrix: Matrix4x4f,
-                                directory_temp: pathlib.Path,
-                                projection_matrix: Matrix4x4f | None = None) -> None:
+                                filepath: pathlib.Path) -> None:
     """
-    Testing contour network creation with control spot mesh.
-    Reads from the temporary file.
+    Runs end-to-end pipeline of contour generation from mesh parsing to contour generation itself.
 
-    :param: projection matrix
+    :param camera_matrix: 4x4 matrix containing the rotation frame and translation vector
+    :param filepath: output filepath 
+    :return: None
     """
     # TODO: implement some ability for the user to change these parameters
-    svg_output_mode = SVGOutputMode.CONTRAST_INVISIBLE_SEGMENTS
+    svg_output_mode: SVGOutputMode = SVGOutputMode.CONTRAST_INVISIBLE_SEGMENTS
     optimization_params = OptimizationParameters()
     intersect_params = IntersectionParameters()
     invisibility_params = InvisibilityParameters(invisibility_method=InvisibilityMethod.CHAINING)
@@ -53,7 +54,7 @@ def generate_algebraic_contours(camera_matrix: Matrix4x4f,
     F: ArrayLike
     FT: ArrayLike
     FN: ArrayLike
-    V, uv, N, F, FT, FN = igl.readOBJ(directory_temp)
+    V, uv, N, F, FT, FN = igl.readOBJ(filepath)
     # print(projection_matrix)
 
     # Set up the camera
@@ -77,7 +78,7 @@ def generate_algebraic_contours(camera_matrix: Matrix4x4f,
     # V_transformed: MatrixNx3f = apply_transformation_to_vertices(V, projection_matrix_ASOC)
 
     V_transformed: MatrixNx3f = apply_camera_matrix_transformation_to_vertices(
-        V, camera_matrix, projection_matrix)
+        V, camera_matrix)
 
     # Preparing mesh data for use in contours calculation
     # TODO: will this work? The whole conversion of the MathUtils matrix to NumPy matrix?
@@ -87,7 +88,7 @@ def generate_algebraic_contours(camera_matrix: Matrix4x4f,
     # print(V_transformed.shape)
 
     # Generate quadratic spline
-    print("Computing spline surface...")
+    logger.info("Computing spline surface...")
     affine_manifold: AffineManifold = AffineManifold(F, uv, FT)
     # TODO: should cache this result somewhere since the camera can be
     spline_surface: TwelveSplitSplineSurface = TwelveSplitSplineSurface(V_transformed,
@@ -99,7 +100,7 @@ def generate_algebraic_contours(camera_matrix: Matrix4x4f,
         compute_twelve_split_spline_patch_boundary_edges(F, spline_surface.face_to_patch_indices))
 
     # Build the contours
-    print("Computing contours...")
+    logger.info("Computing contours...")
     contour_network: ContourNetwork = ContourNetwork(
         spline_surface,
         intersect_params,
@@ -113,9 +114,10 @@ def generate_algebraic_contours(camera_matrix: Matrix4x4f,
     # contour_network_filepath: pathlib.Path = directory_temp / f"{contour_network_filename}"
     try:
         # Write to SVG file
-        contour_network.write(directory_temp.parent / "contours.svg", svg_output_mode, show_nodes)
+        # contour_network.write(directory_temp.parent / "contours.svg", svg_output_mode, show_nodes)
+        contour_network.write(filepath, svg_output_mode, show_nodes)
 
         # Write to png
         # contour_network.write_rasterized_contours("contours.png")
     except (IOError):
-        logger.error("FAILED TO WRITE CONTOURS TO DIRECTORY %s", directory_temp)
+        logger.error("FAILED TO WRITE CONTOURS TO DIRECTORY %s", filepath)

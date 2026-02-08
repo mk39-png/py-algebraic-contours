@@ -13,7 +13,7 @@ from pyalgcon.contour_network.contour_network import (ContourNetwork,
 from pyalgcon.core.common import (Matrix2x3f, Matrix4x4f, SpatialVector1d,
                                   compare_eigen_numpy_matrix,
                                   deserialize_eigen_matrix_csv_to_numpy)
-from pyalgcon.exec.generate_algebraic_contours import \
+from pyalgcon.pipelines.generate_algebraic_contours import \
     generate_algebraic_contours
 from pyalgcon.utils.projected_curve_networks_utils import (
     SVGOutputMode, compare_segment_labels)

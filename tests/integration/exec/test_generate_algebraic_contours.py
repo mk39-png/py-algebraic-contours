@@ -8,7 +8,7 @@ import pathlib
 import numpy as np
 import pytest
 
-from pyalgcon.exec.generate_algebraic_contours import \
+from pyalgcon.pipelines.generate_algebraic_contours import \
     generate_algebraic_contours
 
 
