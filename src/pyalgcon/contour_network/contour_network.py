@@ -339,7 +339,7 @@ class ContourNetwork(ProjectedCurveNetwork):
 
     # TODO: change screenshot camera position and target type to be consistent with other screenshot methods
     def screenshot(self,
-                   filename: str,
+                   filename: pathlib.Path,
                    spline_surface: QuadraticSplineSurface,
                    camera_position: tuple[float, float, float] = (0, 0, 2),
                    camera_target: tuple[float, float, float] = (0, 0, 0),
