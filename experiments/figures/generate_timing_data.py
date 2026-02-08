@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
+# DEPRECATED: do not use this direct translation of generate_timing_data
+# For running experiments, rely on generate_timing_metrics
+
 import argparse
 import logging
 import pathlib
 import sys
 import time
-from datetime import datetime
 
 import igl
 import numpy as np
@@ -34,27 +36,10 @@ logging.disable(logging.CRITICAL)
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def _add_header_to_csv(output_dir: pathlib.Path) -> None:
-    """
-    Helper method to add a header to the timing .csv file, overwriting the pre-existing files
-    with the same names.
-    """
-    # Write view independent timing data header
-    with open(output_dir / "view_independent.csv", 'w', encoding='utf-8') as out_view_independent:
-        out_view_independent.write(
-            "mesh name, num triangles, time spline surface, time patch boundary edges\n")
-
-    # Write view dependent timing data header
-    with open(output_dir / "per_view.csv", 'w', encoding='utf-8') as out_per_view:
-        out_per_view.write("mesh name, rotation matrix, total time per view, surface update, "
-                           "compute contour, compute cusps, compute intersections, compute "
-                           "visibility, graph building, num segments, num int cusps, num bound "
-                           "cusps, num intersection call, num ray inter call, num patches\n")
-
-
 def main(args: argparse.Namespace) -> None:
     """
-    Main
+    Main function
+    NOTE: input_filename and camera_filename can also take in a path 
     """
     input_filename = pathlib.Path(args.input)
     output_dir = pathlib.Path(args.output)
@@ -122,31 +107,33 @@ def main(args: argparse.Namespace) -> None:
     timer_end: float = time.perf_counter()
     initial_contour_network_time: float = timer_end - timer_start
 
-    # Write headers
-    _add_header_to_csv(output_dir)
-
     # Write view independent timing data
-    with open(output_dir / "view_independent.csv", 'a', encoding='utf-8', newline="") as out_view_independent:
+    with open(output_dir / "view_independent_pyac.csv", 'a', encoding="utf-8") as out_view_independent:
         out_view_independent.write(
-            f"{input_filename}, {F.shape[0]}, {spline_surface_time}, {compute_patch_boundary_time}\n")
+            f"{input_filename}, \
+               {F.shape[0]}, \
+               {spline_surface_time}, \
+               {compute_patch_boundary_time}\n")
 
     # Write view dependent timing data
-    with open(output_dir / "per_view.csv", 'a', encoding='utf-8', newline="") as out_per_view:
+    with open(output_dir / "per_view_pyac.csv", "a", encoding="utf-8") as out_per_view:
         out_per_view.write(
             f"{input_filename}, \
+                n/a, \
                 1 0 0 0 1 0 0 0 1, \
-                {initial_contour_network_time},\
+                n/a, \
+                {initial_contour_network_time}, \
                 0.0, \
-                {contour_network.compute_contour_time},\
-                {contour_network.compute_cusp_time},\
-                {contour_network.compute_intersection_time},\
-                {contour_network.compute_visibility_time},\
-                {contour_network.compute_projected_time},\
-                {contour_network.segment_number},\
-                {contour_network.interior_cusp_number},\
-                {contour_network.boundary_cusp_number},\
-                {contour_network.intersection_call},\
-                {contour_network.ray_intersection_call},\
+                {contour_network.compute_contour_time}, \
+                {contour_network.compute_cusp_time}, \
+                {contour_network.compute_intersection_time}, \
+                {contour_network.compute_visibility_time}, \
+                {contour_network.compute_projected_time}, \
+                {contour_network.segment_number}, \
+                {contour_network.interior_cusp_number}, \
+                {contour_network.boundary_cusp_number}, \
+                {contour_network.intersection_call}, \
+                {contour_network.ray_intersection_call}, \
                 {spline_surface.num_patches}\n",)
 
     #
@@ -155,12 +142,13 @@ def main(args: argparse.Namespace) -> None:
     #
     #
     # Generate a random number generator for angles
-    # TODO: translate properly
     np.random.seed(0)
-    angle_distribution: np.ndarray = np.random.uniform(low=0.0, high=2.0 * np.pi, size=3)
+    angle_distribution: np.ndarray = np.random.uniform(low=0.0, high=360, size=3)
 
     # Run tests
-    for i in range(num_tests):
+    frame: Matrix3x3f
+    z_distance: float
+    for _ in range(num_tests):
         # Generate random rotation matrix
         theta_x: float = angle_distribution[0]
         theta_y: float = angle_distribution[1]
@@ -184,11 +172,11 @@ def main(args: argparse.Namespace) -> None:
         total_time: float = timer_end - timer_start
 
         # Write timing data
-        with open(output_dir / "per_view.csv", 'a', encoding='utf-8', newline="") as out_per_view:
+        with open(output_dir / "per_view.csv", "a", encoding="utf-8") as out_per_view:
             out_per_view.write(f"{input_filename}, \
-                            {rotation_matrix[0, :]} \
-                            {rotation_matrix[1, :]} \
-                            {rotation_matrix[2, :]}, \
+                            {frame[0, :]} \
+                            {frame[1, :]} \
+                            {frame[2, :]}, \
                             {total_time}, \
                             {contour_network.surface_update_position_time}, \
                             {contour_network.compute_contour_time}, \
@@ -206,8 +194,10 @@ def main(args: argparse.Namespace) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        prog="animate_rotation", description="Generate rotation animation for a given mesh.")
+        prog="animate_rotation", description="Append timing data CSVs for a given mesh and camera "
+        " matrix.")
     parser.add_argument("-i", "--input", type=str, help="Mesh filepath.", required=True)
+    parser.add_argument("-c", "--camera", type=str, help="Camera filepath. ")
     parser.add_argument("-o", "--output", type=str, default="./", help="Output directory")
     parser.add_argument("--num_tests", type=int, default=1,
                         help="Number of tests to run. Nonnegative number")

@@ -1,6 +1,7 @@
-"""
-Generate perspective view of a mesh and its orthographic distortion equivalent.
-"""
+#!/usr/bin/env python3
+
+# Generate perspective view of a mesh and its orthographic distortion equivalent.
+
 import argparse
 import logging
 import pathlib
@@ -21,8 +22,6 @@ from pyalgcon.core.apply_transformation import (
 from pyalgcon.core.common import (Matrix3x3f, Matrix4x4f, MatrixNx3f, MatrixXf,
                                   MatrixXi,
                                   deserialize_eigen_matrix_csv_to_numpy)
-from pyalgcon.core.convert_conic import \
-    compute_symmetric_matrix_eigen_decomposition
 from pyalgcon.core.generate_transformation import (
     axis_rotation_projective_matrix, origin_to_infinity_projective_matrix)
 from pyalgcon.quadratic_spline_surface.optimize_spline_surface import \
