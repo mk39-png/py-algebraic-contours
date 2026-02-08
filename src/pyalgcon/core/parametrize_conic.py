@@ -334,16 +334,16 @@ def check_standard_form(conic_coeffs: Vector6f,
                         rotation: Matrix2x2f,
                         translation: PlanarPoint1d) -> None:
     """Checks if parameters are in standard form"""
-    logger.info("Checking standard form %s for implicit function %s",
-                conic_standard_form, conic_coeffs)
+    logger.debug("Checking standard form %s for implicit function %s",
+                 conic_standard_form, conic_coeffs)
 
-    change_of_basis_matrix: Matrix6x6r
+    change_of_basis_matrix: Matrix6x6f
     change_of_basis_matrix = generate_quadratic_coordinate_affine_transformation_matrix(rotation,
                                                                                         translation)
     test_conic_coeffs: Vector6f = change_of_basis_matrix @ conic_coeffs
     assert test_conic_coeffs.ndim == 1
-    logger.info("Implicit function after rotation is %s",
-                test_conic_coeffs)
+    logger.debug("Implicit function after rotation is %s",
+                 test_conic_coeffs)
 
     npt.assert_allclose(test_conic_coeffs, conic_standard_form, atol=1e-4)
 
