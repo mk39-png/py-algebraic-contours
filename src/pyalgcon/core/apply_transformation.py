@@ -158,7 +158,6 @@ def initialize_vertices():
 
 def apply_camera_matrix_transformation_to_vertices(input_V: MatrixNx3f,
                                                    camera_matrix: Matrix4x4f,
-                                                   projection_matrix: Matrix4x4f,
                                                    orthographic: bool = True,
                                                    recenter_mesh: bool = False
                                                    ) -> MatrixNx3f:
