@@ -443,26 +443,31 @@ def float_equal_zero(x: float, eps=FLOAT_EQUAL_PRECISION) -> bool:
 
     :param x:   [in] value to compare with zero
     :param eps: [in] threshold for equality
-    :return true iff x is below 1e-10
+    :return: true iff x is below 1e-10
     """
 
     # NOTE: Use absolute tolerance! Relative tolerance is not suited for our purpose.
     return math.isclose(x, 0.0, abs_tol=eps)
+    # return abs(x) < eps
 
 
 def float_equal(x: float, y: float, eps=FLOAT_EQUAL_PRECISION) -> bool:
     """
-    @brief Check if two floating point values are numerically equal
+    Check if two floating point values are numerically equal
 
-    @param[in] x: first value to compare
-    @param[in] y: second value to compare
-    @param[in] eps: threshold for equality
-    @return true iff x - y is numerically zero
+    :param[in] x: first value to compare
+    :param[in] y: second value to compare
+    :param[in] eps: threshold for equality
+    :return: true iff x - y is numerically zero
     """
 
     # NOTE: Use absolute tolerance! Relative tolerance is not suited for our purpose.
     # return np.isclose(x, y, atol=eps)
     return math.isclose(x, y, abs_tol=eps)
+
+    # XXX: be careful when changing this function. In cases where NaNs are compared, this is
+    # supposed to return true. i.e. x = NaN, y = NaN, return true.
+    # return float_equal_zero(x - y, eps)
 
 
 def vector_equal(v: np.ndarray, w: np.ndarray, eps: float = FLOAT_EQUAL_PRECISION) -> bool:
@@ -524,7 +529,7 @@ def screenshot_mesh(V: MatrixXf,
         polyscope.str_to_projection_mode("orthographic")
     else:
         polyscope.str_to_projection_mode("perspective")
-    polyscope.screenshot(filename)
+    polyscope.screenshot(str(filename))
     polyscope.remove_all_structures()
     return
 
