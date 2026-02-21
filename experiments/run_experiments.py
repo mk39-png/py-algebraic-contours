@@ -8,6 +8,7 @@ import logging
 import pathlib
 import subprocess
 import sys
+from datetime import datetime
 from typing import Any
 
 from skimage.metrics import mean_squared_error
@@ -78,12 +79,14 @@ pyac_generate_similiarity_metrics: pathlib.Path = metrics_scripts_dir / "generat
 # 2. Logging setup
 # -----------------
 logger: logging.Logger = logging.getLogger(__name__)
-log_file: pathlib.Path = experiments_dir / "experiments.log"
+timestamp: str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+log_filename: str = f"experiments_{timestamp}.log"
+log_filepath: pathlib.Path = experiments_dir / log_filename
 logging.basicConfig(
     level=logging.NOTSET,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
-        logging.FileHandler(log_file, mode="w"),  # Overwriting runs
+        logging.FileHandler(log_filepath, mode="w"),  # Overwriting runs
     ]
 )
 
@@ -106,10 +109,10 @@ NUM_CAMERA_MATRICES = 26
 # -----------------
 # 4. Generate camera matrices
 # -----------------
-subprocess.run([sys.executable, utils_scripts_dir / "generate_camera_matrices.py",
-                "-o", str(cameras_dir),
-                "--num_matrices", f"{NUM_CAMERA_MATRICES}"],
-               check=True)
+# subprocess.run([sys.executable, utils_scripts_dir / "generate_camera_matrices.py",
+#                 "-o", str(cameras_dir),
+#                 "--num_matrices", f"{NUM_CAMERA_MATRICES}"],
+#                check=True)
 
 # TODO: have this script to make sure that directory exists?
 # result_dir.mkdir(parents=True, exist_ok=True)
@@ -200,7 +203,7 @@ def run_timing_script(script_filepath: pathlib.Path,
 
             # If Python script, prepend sys.executable
             if script_filepath.suffix == ".py":
-                args.insert(0, "-OO")  # prepend optimization flag first, removes asserts
+                # args.insert(0, "-OO")  # prepend optimization flag first, removes asserts
                 args.insert(0, sys.executable)  # prepend executable flag
 
             # Printing to console what script has been ran
@@ -299,7 +302,7 @@ def compare_similarity(_mesh_filenames: list[str],
 # results_pyac_dir: pathlib.Path = results_dir / "pyac/"
 # results_pyac_dir.mkdir(parents=True, exist_ok=True)
 # run_similarity_script(pyac_generate_similiarity_metrics,
-#                       results_asoc_dir,
+#                       results_pyac_dir,
 #                       mesh_filenames,
 #                       camera_filenames)
 
