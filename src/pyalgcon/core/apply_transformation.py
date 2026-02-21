@@ -163,6 +163,9 @@ def apply_camera_matrix_transformation_to_vertices(input_V: MatrixNx3f,
                                                    ) -> MatrixNx3f:
     """
     Used in generate_algebraic_contours.
+    Applies transformation onto the vertices themselves. 
+    Used to create an orthographic projection that is equivalent to the original perspective
+    projection.
 
     :param input_V:          [in] mesh vertices before the transformation
     :param camera_matrix:    [in] translation matrixs @ frame rotation matrix

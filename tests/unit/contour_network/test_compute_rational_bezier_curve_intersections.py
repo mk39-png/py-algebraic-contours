@@ -21,6 +21,11 @@ from pyalgcon.core.common import (FIND_INTERSECTIONS_BEZIER_CLIPPING_PRECISION,
 def test_find_intersections_bezier_clipping(testing_fileinfo) -> None:
     """
     Tests semi black box function find intersections bezier clipping.
+
+    NOTE: this test is *not* designed to fail. Rather, it will have some 
+    "FloatingPointError: divide by zero encountered in scalar divide" cases, but that is expected
+    to match ASOC
+
     """
     # Retrieve parameters
     base_data_folderpath: pathlib.Path
@@ -51,6 +56,10 @@ def test_find_intersections_bezier_clipping(testing_fileinfo) -> None:
 def test_clipfatline(testing_fileinfo) -> None:
     """
     Tests black box function clipfatline
+
+    NOTE: this test is *not* designed to fail. Rather, it will have some 
+    "FloatingPointError: divide by zero encountered in scalar divide" cases, but that is expected
+    to match ASOC
     """
     # Retrieve parameters
     base_data_folderpath: pathlib.Path

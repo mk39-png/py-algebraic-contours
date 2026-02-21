@@ -8,13 +8,10 @@ from venv import logger
 
 import numpy as np
 
-from pyalgcon.core.common import (ROWS, Index, Matrix2x2f,
-                                  Matrix3x2f, MatrixNx3f,
-                                  MatrixNx3i, PlanarPoint,
-                                  PlanarPoint1d, Vector1D,
-                                  Vector3f, float_equal,
-                                  generate_linspace,
-                                  unreachable)
+from pyalgcon.core.common import (ROWS, Index, Matrix2x2f, Matrix3x2f,
+                                  MatrixNx3f, MatrixNx3i, PlanarPoint,
+                                  PlanarPoint1d, Vector1D, Vector3f,
+                                  float_equal, generate_linspace, unreachable)
 from pyalgcon.core.interval import Interval
 from pyalgcon.core.line_segment import LineSegment
 
@@ -364,8 +361,8 @@ class ConvexPolygon:
         num_vertices: int = self.m_vertices.shape[ROWS]
         for i in range(num_vertices):
             line_segment: LineSegment = compute_parametric_line_between_points(
-                self.m_vertices[i, :],
-                self.m_vertices[((i + 1) % num_vertices), :])
+                self.m_vertices[i, :],  # row
+                self.m_vertices[((i + 1) % num_vertices), :])  # row
             patch_boundaries.append(line_segment)
 
         # Double checking that we indeed only have 3 elements inside patch_boundaries as per

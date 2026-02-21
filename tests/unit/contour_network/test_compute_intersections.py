@@ -228,6 +228,8 @@ def test_compute_intersections_simple_linear_functions() -> None:
     """
     Test case from original Algebraic Contours code.
     Simple Linear Functions.
+
+    NOTE: this is designed to fail. Or at least, this was not originally working.
     """
     first_P_coeffs: Matrix5x2f = np.array([[1, 0],
                                            [2, 1],

@@ -5,8 +5,7 @@ Used for contour_network.
 
 import logging
 
-from pyalgcon.core.common import (CHECK_VALIDITY, NodeIndex,
-                                  SegmentIndex,
+from pyalgcon.core.common import (CHECK_VALIDITY, NodeIndex, SegmentIndex,
                                   vector_contains)
 
 logger: logging.Logger = logging.getLogger(__name__)
