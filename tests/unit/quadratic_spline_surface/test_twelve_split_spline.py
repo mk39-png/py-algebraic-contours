@@ -273,6 +273,22 @@ def test_view_mesh(twelve_split_spline_raw) -> None:
     spline_surface.view(color, num_subdivisions)
 
 
+def test_view_mesh_transformed(twelve_split_spline_transformed) -> None:
+    """
+    This is used to test and view the mesh after applying the 
+    camera matrix and its projection onto the mesh vertices..
+    """
+    color: tuple[float, float, float] = SKY_BLUE
+    num_subdivisions: int = DISCRETIZATION_LEVEL
+
+    # Generate quadratic spline
+    # NOTE: must input a mesh that is already UV unwrapped.
+    spline_surface: TwelveSplitSplineSurface = twelve_split_spline_transformed
+
+    # View the mesh
+    spline_surface.view(color, num_subdivisions)
+
+
 def test_patches(testing_fileinfo,
                  parsed_control_mesh,
                  quadratic_spline_surface_control_from_file) -> None:
