@@ -30,22 +30,23 @@ import sys
 import igl
 import numpy as np
 from cholespy import CholeskySolverD
-from contour_network.compute_intersections import IntersectionParameters
-from contour_network.contour_network import (ContourNetwork,
-                                             InvisibilityParameters)
-from core.affine_manifold import AffineManifold
-from core.apply_transformation import (
-    apply_transformation_to_vertices,
-    apply_transformation_to_vertices_in_place)
-from core.common import (Matrix4x4f, MatrixNx3f, MatrixXi,
-                         deserialize_eigen_matrix_csv_to_numpy)
-from core.generate_transformation import origin_to_infinity_projective_matrix
-from quadratic_spline_surface.optimize_spline_surface import \
-    OptimizationParameters
-from quadratic_spline_surface.twelve_split_spline import (
-    TwelveSplitSplineSurface, compute_twelve_split_spline_patch_boundary_edges)
 from scipy.sparse import csr_matrix
-from utils.projected_curve_networks_utils import SVGOutputMode
+
+from pyalgcon.contour_network.compute_intersections import \
+    IntersectionParameters
+from pyalgcon.contour_network.contour_network import (ContourNetwork,
+                                                      InvisibilityParameters)
+from pyalgcon.core.affine_manifold import AffineManifold
+from pyalgcon.core.apply_transformation import apply_transformation_to_vertices
+from pyalgcon.core.common import (Matrix4x4f, MatrixNx3f, MatrixXi,
+                                  deserialize_eigen_matrix_csv_to_numpy)
+from pyalgcon.core.generate_transformation import \
+    origin_to_infinity_projective_matrix
+from pyalgcon.quadratic_spline_surface.optimize_spline_surface import \
+    OptimizationParameters
+from pyalgcon.quadratic_spline_surface.twelve_split_spline import (
+    TwelveSplitSplineSurface, compute_twelve_split_spline_patch_boundary_edges)
+from pyalgcon.utils.projected_curve_networks_utils import SVGOutputMode
 
 logger: logging.Logger = logging.getLogger(__name__)
 
