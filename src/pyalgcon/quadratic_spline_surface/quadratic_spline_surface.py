@@ -444,7 +444,7 @@ class QuadraticSplineSurface:
             polyscope.set_view_projection_mode("orthographic")
         else:
             polyscope.set_view_projection_mode("perspective")
-        polyscope.screenshot(filename)
+        polyscope.screenshot(str(filename))
         logger.info("Screenshot saved to %s", filename)
         polyscope.remove_all_structures()
 

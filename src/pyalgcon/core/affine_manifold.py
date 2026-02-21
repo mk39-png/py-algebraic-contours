@@ -717,10 +717,10 @@ class AffineManifold:
 
         if use_orthographic:
             # TODO: is this the right interaction?
-            ps.set_view_projection_mode("Orthographic")
+            ps.set_view_projection_mode("orthographic")
 
         # Take the screenshot
-        ps.screenshot(filename)
+        ps.screenshot(str(filename))
         logger.info("Screenshot saved to %s", filename)
         ps.remove_all_structures()
 
