@@ -20,15 +20,10 @@ from pyalgcon.contour_network.contour_network import (ContourNetwork,
                                                       InvisibilityMethod,
                                                       InvisibilityParameters)
 from pyalgcon.core.affine_manifold import AffineManifold
-from pyalgcon.core.apply_transformation import (
-    apply_camera_frame_transformation_to_vertices,
-    apply_transformation_to_vertices)
-from pyalgcon.core.common import (Matrix3x3f, Matrix4x4f, MatrixNx3f, MatrixXf,
-                                  MatrixXi,
+from pyalgcon.core.apply_transformation import \
+    apply_camera_matrix_transformation_to_vertices
+from pyalgcon.core.common import (Matrix3x3f, Matrix4x4f, MatrixNx3f, MatrixXi,
                                   deserialize_eigen_matrix_csv_to_numpy)
-from pyalgcon.core.generate_transformation import (
-    x_axis_rotation_projective_matrix, y_axis_rotation_projective_matrix,
-    z_axis_rotation_projective_matrix)
 from pyalgcon.quadratic_spline_surface.optimize_spline_surface import \
     OptimizationParameters
 from pyalgcon.quadratic_spline_surface.twelve_split_spline import (
@@ -52,7 +47,7 @@ def main(args: argparse.Namespace) -> None:
 
     # Get input mesh
     initial_V: MatrixNx3f
-    V: MatrixNx3f
+    V_transformed: MatrixNx3f
     uv: np.ndarray
     N: np.ndarray
     F: MatrixXi
@@ -64,7 +59,7 @@ def main(args: argparse.Namespace) -> None:
     timer_start: float = time.perf_counter()
     camera_matrix: Matrix4x4f = deserialize_eigen_matrix_csv_to_numpy(camera_filename)
     assert camera_matrix.shape == (4, 4)
-    V = apply_transformation_to_vertices(initial_V, camera_matrix)
+    V_transformed = apply_camera_matrix_transformation_to_vertices(initial_V, camera_matrix)
     timer_end: float = time.perf_counter()
     transformation_time: float = timer_end - timer_start
 
@@ -77,7 +72,10 @@ def main(args: argparse.Namespace) -> None:
     optimization_params: OptimizationParameters = OptimizationParameters()
     affine_manifold: AffineManifold = AffineManifold(F, uv, FT)
     spline_surface: TwelveSplitSplineSurface = TwelveSplitSplineSurface(
-        V, affine_manifold, optimization_params)
+        V_transformed,
+        affine_manifold,
+        optimization_params
+    )
 
     # Retrieve values from twelve split spline
     face_to_patch_indices: list[list[int]] = spline_surface.face_to_patch_indices
