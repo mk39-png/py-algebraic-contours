@@ -10,12 +10,10 @@ import numpy as np
 
 from pyalgcon.core.bivariate_quadratic_function import \
     formatted_bivariate_linear_mapping
-from pyalgcon.core.common import (Matrix3x2r, Vector2D,
-                                  unreachable)
+from pyalgcon.core.common import Matrix3x2r, Vector2D, unreachable
 from pyalgcon.core.conic import Conic
 from pyalgcon.core.interval import Interval
-from pyalgcon.core.polynomial_function import \
-    formatted_polynomial
+from pyalgcon.core.polynomial_function import formatted_polynomial
 from pyalgcon.core.rational_function import RationalFunction
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -25,10 +23,18 @@ class LineSegment(Conic):
     # ************
     # Constructors
     # ************
-    def __init__(self, numerator_coeffs: np.ndarray = None, input_domain: Interval = None) -> None:
+    def __init__(self,
+                 numerator_coeffs: np.ndarray | None = None,
+                 input_domain: Interval | None = None) -> None:
         # TODO: call Conic super() constructor...
+        # NOTE: these numbers are inherited from Conic, which has these numbers as the default.
+        # TODO: do I call the default constructor for Conic?
+        self.degree = 2
+        self.dimension = 2
+        # super().__init__()
 
-        # There's not much logic going on for the constructor in the C++ code, so just going to put them all here for simplicity.
+        # There's not much logic going on for the constructor in the C++ code,
+        #   so just going to put them all here for simplicity.
         if (numerator_coeffs is None) and (input_domain is None):
             unreachable(
                 "Attempted LineSegment constructions with no parameters.")
@@ -37,14 +43,10 @@ class LineSegment(Conic):
             self.__init_conic_coefficients(numerator_coeffs)
 
         if input_domain is not None:
-            self.m_domain: Interval = input_domain
+            self.domain: Interval = input_domain
 
-        # NOTE: these numbers are inherited from Conic, which has these numbers as the default.
-        # TODO: do I call the default constructor for Conic?
-        self.m_degree = 2
-        self.m_dimension = 2
-
-    def pullback_linear_function(self, dimension: int,
+    def pullback_linear_function(self,
+                                 dimension: int,
                                  F_coeffs: np.ndarray) -> RationalFunction:
         """
         Pulles back line segment by linear function.
@@ -85,16 +87,16 @@ class LineSegment(Conic):
         # Compute the pulled back rational function numerator
         logger.info("Linear coefficient matrix:\n%s", F_coeffs)
         pullback_coeffs = monomial_coeffs * F_coeffs
-        assert pullback_coeffs.shape == (2, self.m_dimension)
+        assert pullback_coeffs.shape == (2, self.__dimension)
         logger.info("Pullback function: %s",
-                    formatted_polynomial(2, self.m_dimension, pullback_coeffs))
+                    formatted_polynomial(2, self.__dimension, pullback_coeffs))
 
         pullback_function = RationalFunction(
-            1, self.m_dimension, pullback_coeffs, Q_coeffs, self.m_domain)
+            1, self.__dimension, pullback_coeffs, Q_coeffs, self.domain)
 
         return pullback_function
 
-    def __init_conic_coefficients(self, numerator_coeffs: np.ndarray):
+    def __init_conic_coefficients(self, numerator_coeffs: np.ndarray) -> None:
         # Build conic numerator with trivial quadratic term
         # TODO: typedef matrix3x2r
         conic_numerator_coeffs: Matrix3x2r = np.ndarray(shape=(3, 2))
@@ -106,14 +108,14 @@ class LineSegment(Conic):
         conic_numerator_coeffs[2, :2] = 0
 
         # Build constant 1 denominator
-        # XXX: conic_denominator_coeffs MUST be [3, 1] since it is used in discretize_patch_boundaries() loop, which
-        # is then used in RationalFunction.sample_point(), which then called __evaluate(), which *then* relies on conic_denominator_coeffs
-        # to have shape (m_degree + 1, 1) to work. Since LineSegment inherits from Conic, it has m_degree = 2 and m_dimension = 2
-        conic_denominator_coeffs: Vector2D = np.array([[1.0], [0.0], [0.0]], dtype=np.float64)
+        # XXX: conic_denominator_coeffs MUST be [3, 1] since it is used in
+        # discretize_patch_boundaries() loop, which is then used in RationalFunction.sample_point(),
+        # which then called __evaluate(), which *then* relies on conic_denominator_coeffs
+        # to have shape (m_degree + 1, 1) to work. Since LineSegment inherits from Conic, it has
+        # m_degree = 2 and m_dimension = 2
+        # conic_denominator_coeffs: Vector2D = np.array([[1.0], [0.0], [0.0]], dtype=np.float64)
+        conic_denominator_coeffs: Vector2D = np.array([1.0, 0.0, 0.0], dtype=np.float64)
 
         # Set conic coefficients
-        self.m_numerator_coeffs = conic_numerator_coeffs
-        self.m_denominator_coeffs = conic_denominator_coeffs
-
-        # self.set_numerators(conic_numerator_coeffs)
-        # self.set_denominator(conic_denominator_coeffs)
+        self.numerator_coeffs = conic_numerator_coeffs
+        self.denominator_coeffs = conic_denominator_coeffs

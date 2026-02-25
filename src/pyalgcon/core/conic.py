@@ -9,10 +9,8 @@ import numpy as np
 
 from pyalgcon.core.bivariate_quadratic_function import \
     formatted_bivariate_quadratic_mapping
-from pyalgcon.core.common import (COLS, Matrix2x2f,
-                                  Matrix3x2f, Matrix6xNi,
-                                  PlanarPoint1d, Vector1D,
-                                  Vector2D, Vector3f)
+from pyalgcon.core.common import (COLS, Matrix2x2f, Matrix3x2f, Matrix6xNi,
+                                  PlanarPoint1d, Vector1D, Vector2D, Vector3f)
 from pyalgcon.core.interval import Interval
 from pyalgcon.core.polynomial_function import (
     compute_polynomial_mapping_product, formatted_polynomial)
@@ -221,7 +219,7 @@ class Conic(RationalFunction):
         """
         if self.numerator_coeffs.shape[1] == 0:
             return False
-        if self.m_denominator_coeffs.size == 0:
+        if self.denominator_coeffs.size == 0:
             return False
 
         return True
@@ -231,17 +229,17 @@ class Conic(RationalFunction):
         Return the string representation of the Conic object.
         """
         conic_string: str = "1/("
-        conic_string += formatted_polynomial(2, 1, self.m_denominator_coeffs)
+        conic_string += formatted_polynomial(2, 1, self.__denominator_coeffs)
         conic_string += ") [\n  "
 
         # Going through rows of m_numerator_coeffs
-        for i in range(self.m_numerator_coeffs.shape[COLS]):
+        for i in range(self.__numerator_coeffs.shape[COLS]):
             # conic_string += f"{self.m_numerator_coeffs[:, i]}"
-            conic_string += formatted_polynomial(2, 1, self.m_numerator_coeffs[:, i])
+            conic_string += formatted_polynomial(2, 1, self.__numerator_coeffs[:, i])
             conic_string += ",\n  "
 
         conic_string += "], t in "
-        conic_string += self.m_domain.formatted_interval()
+        conic_string += self.__domain.formatted_interval()
 
         return conic_string
 

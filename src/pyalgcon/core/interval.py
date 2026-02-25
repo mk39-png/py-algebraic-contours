@@ -11,31 +11,29 @@ class Interval:
     """
 
     def __init__(self,
-                 lower_bound: float = -float("inf"),
-                 upper_bound: float = float("inf")) -> None:
+                 lower_bound: float | None = None,
+                 upper_bound: float | None = None) -> None:
         """
         Constructor for Interval class.
         Which also has support for constructor where user passes in lower_bound and upper_bound.
         """
-
         # *****************
         # Private Members
         # *****************
-        self.__t0: float = lower_bound
-        self.__t1: float = upper_bound
-        self.m_bounded_below: bool = False
-        self.m_bounded_above: bool = False
-        self.m_open_below: bool = True
-        self.m_open_above: bool = True
 
-        # Case where values are passed into the constructor, calls special functions
-        if lower_bound != -float("inf"):
+        if lower_bound is None:
+            self.__t0: float = float("-inf")
+            self.__bounded_below: bool = False
+            self.__open_below: bool = True
+        else:
             self.set_lower_bound(lower_bound)
-        if upper_bound != float("inf"):
-            self.set_upper_bound(upper_bound)
 
-        # TODO: do I really need reset_bounds after everything above?
-        # self.reset_bounds()
+        if upper_bound is None:
+            self.__t1: float = float("inf")
+            self.__bounded_above: bool = False
+            self.__open_above: bool = True
+        else:
+            self.set_upper_bound(upper_bound)
 
     def set_lower_bound(self, lower_bound: float,  is_open: bool = False) -> None:
         """
@@ -44,8 +42,8 @@ class Interval:
         Sets open_below to is_open.
         """
         self.__t0 = lower_bound
-        self.m_bounded_below = True
-        self.m_open_below = is_open
+        self.__bounded_below = True
+        self.__open_below = is_open
 
     def set_upper_bound(self, upper_bound: float, is_open: bool = False) -> None:
         """
@@ -54,57 +52,58 @@ class Interval:
         Sets open_above to is_open.
         """
         self.__t1 = upper_bound
-        self.m_bounded_above = True
-        self.m_open_above = is_open
+        self.__bounded_above = True
+        self.__open_above = is_open
 
     def trim_lower_bound(self, trim_amount: float) -> None:
         """Adds self.t0 by trim_amount"""
         # Don't trim if the interval is not bounded or has length of order trim amount
-        if ((not self.m_bounded_below) or (2.0 * abs(trim_amount) > self.get_length())):
+        if ((not self.__bounded_below) or (2.0 * abs(trim_amount) > self.get_length())):
             return
         self.__t0 += trim_amount
 
     def trim_upper_bound(self, trim_amount: float) -> None:
         """Subtracts self.t1 by trim_amount"""
         # Don't trim if the interval is not bounded or has length of order trim amount
-        if ((not self.m_bounded_above) or (2.0 * abs(trim_amount) > self.get_length())):
+        if ((not self.__bounded_above) or (2.0 * abs(trim_amount) > self.get_length())):
             return
         self.__t1 -= trim_amount
 
     def pad_lower_bound(self, pad_amount: float) -> None:
         """Subtracts self.t0 by pad_amount"""
         #  Don't trim if the interval is not bounded or has length of order trim amount
-        if ((not self.m_bounded_below) or (pad_amount < 0)):
+        if ((not self.__bounded_below) or (pad_amount < 0)):
             return
         self.__t0 -= pad_amount
 
     def pad_upper_bound(self, pad_amount: float) -> None:
         """Adds self.t1 by pad_amount"""
         # Don't trim if the interval is not bounded or has length of order trim amount
-        if ((not self.m_bounded_above) or (pad_amount < 0)):
+        if ((not self.__bounded_above) or (pad_amount < 0)):
             return
         self.__t1 += pad_amount
 
     # TODO: float("inf") may be wrong...
     def reset_bounds(self) -> None:
-        self.__t0 = -float("inf")
+        self.__t0 = float("-inf")
         self.__t1 = float("inf")
-        self.m_bounded_below = False
-        self.m_bounded_above = False
-        self.m_open_below = True
-        self.m_open_above = True
+        self.__bounded_below = False
+        self.__bounded_above = False
+        self.__open_below = True
+        self.__open_above = True
 
     def is_bounded_above(self) -> bool:
-        return self.m_bounded_above
+        # TODO: check if t1 is infinity or not
+        return self.__bounded_above
 
     def is_bounded_below(self) -> bool:
-        return self.m_bounded_below
+        return self.__bounded_below
 
     def is_open_above(self) -> bool:
-        return self.m_open_above
+        return self.__open_above
 
     def is_open_below(self) -> bool:
-        return self.m_open_below
+        return self.__open_below
 
     def is_finite(self) -> bool:
         return (self.is_bounded_above() and self.is_bounded_below())
@@ -136,25 +135,25 @@ class Interval:
     def contains(self, t: float) -> bool:
         """Checks if Interval contains t."""
 
-        if ((not self.m_bounded_below) and (not self.m_bounded_above)):
+        if (not self.__bounded_below) and (not self.__bounded_above):
             return True
 
-        if ((not self.m_bounded_below) and (t <= self.__t1)):
+        if (not self.__bounded_below) and (t <= self.__t1):
             return True
 
-        if ((not self.m_bounded_above) and (t >= self.__t0)):
+        if (not self.__bounded_above) and (t >= self.__t0):
             return True
 
-        if ((t < self.__t0) and (not self.m_open_below)):
+        if (t < self.__t0) and (not self.__open_below):
             return False
 
-        if ((t <= self.__t0) and (self.m_open_below)):
+        if (t <= self.__t0) and (self.__open_below):
             return False
 
-        if ((t > self.__t1) and (not self.m_open_above)):
+        if (t > self.__t1) and (not self.__open_above):
             return False
 
-        if ((t >= self.__t1) and (self.m_open_above)):
+        if (t >= self.__t1) and (self.__open_above):
             return False
 
         return True

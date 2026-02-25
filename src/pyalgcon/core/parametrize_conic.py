@@ -160,9 +160,10 @@ def parametrize_hyperbola(conic_standard_form: Vector6f, conics_ref: list[Conic]
     conics_ref.append(hyperbola_branch)
 
     # Parametrize other branch
-    hyperbola_branch_2 = Conic(ConicType.HYPERBOLA, -np.copy(P_coeffs), np.copy(Q_coeffs))
+    hyperbola_branch_2 = Conic(ConicType.HYPERBOLA, np.copy(P_coeffs), np.copy(Q_coeffs))
     hyperbola_branch_2.domain.set_lower_bound(-1.0, True)
     hyperbola_branch_2.domain.set_upper_bound(1.0, True)
+    hyperbola_branch_2.numerators = -np.copy(P_coeffs)
     conics_ref.append(hyperbola_branch_2)
 
 
@@ -192,7 +193,7 @@ def parametrize_intersecting_lines(conic_standard_form: Vector6f) -> list[Conic]
     Add the intersecting lines as four rays with consistent orientation.
     """
     assert conic_standard_form.shape == (6, )
-    result = identify_conic(conic_standard_form)
+    result: ConicType = identify_conic(conic_standard_form)
     assert result == ConicType.INTERSECTING_LINES
     conics: list[Conic] = []
 

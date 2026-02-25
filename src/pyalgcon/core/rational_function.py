@@ -38,7 +38,6 @@ class RationalFunction:
     # Constructors
     # ************
     # FIXME: is there ever a scenario where the default RationalFunction constructor is NOT used?
-    # AS in,
 
     def __init__(self,
                  degree: int,
@@ -63,36 +62,36 @@ class RationalFunction:
             denominator_coeffs shape (degree + 1, )
         :param domain (Interval): [in] domain interval for the mapping
         """
-        self.m_degree: int = degree
-        self.m_dimension: int = dimension
-        self.m_numerator_coeffs: Vector2D
-        self.m_denominator_coeffs: Vector1D
-        self.m_domain: Interval
+        self.__degree: int = degree
+        self.__dimension: int = dimension
+        self.__numerator_coeffs: Vector2D
+        self.__denominator_coeffs: Vector1D
+        self.__domain: Interval
         # TODO: assert the shape for numerator_coeffs and denominator_coeffs
 
         if (degree is None) or (dimension is None):
             raise ValueError("degree and dimension cannot be None.")
 
         if numerator_coeffs is None:
-            self.m_numerator_coeffs = np.zeros(
+            self.__numerator_coeffs = np.zeros(
                 shape=(degree+1, dimension), dtype='float64')
         else:
-            self.m_numerator_coeffs = numerator_coeffs
+            self.__numerator_coeffs = numerator_coeffs
 
         if denominator_coeffs is None:
-            self.m_denominator_coeffs = np.zeros(
+            self.__denominator_coeffs = np.zeros(
                 shape=(degree+1, ), dtype='float64')
-            self.m_denominator_coeffs[0] = 1.0
+            self.__denominator_coeffs[0] = 1.0
         else:
-            self.m_denominator_coeffs = denominator_coeffs
+            self.__denominator_coeffs = denominator_coeffs
 
         if domain is None:
-            self.m_domain = Interval()
+            self.__domain = Interval()
         else:
-            self.m_domain = domain
+            self.__domain = domain
 
-        assert self.m_numerator_coeffs.shape == (degree + 1, dimension)
-        assert self.m_denominator_coeffs.shape == (degree + 1, )
+        assert self.__numerator_coeffs.shape == (degree + 1, dimension)
+        assert self.__denominator_coeffs.shape == (degree + 1, )
         assert self.__is_valid()
 
     # *******************
@@ -105,7 +104,7 @@ class RationalFunction:
         of the numerator and denominator degrees.
         :return: degree of the rational mapping
         """
-        return self.m_degree
+        return self.__degree
 
     @property
     def dimension(self) -> int:
@@ -113,22 +112,51 @@ class RationalFunction:
         Compute the dimension of the rational mapping.
         :return: dimension of the rational mapping
         """
-        return self.m_dimension
+        return self.__dimension
 
     @property
     def domain(self) -> Interval:
         """Retrives domain of rational function"""
-        return self.m_domain
+        return self.__domain
 
     @property
     def numerator_coeffs(self) -> np.ndarray:
         """Retrives numerator coefficients"""
-        return self.m_numerator_coeffs
+        return self.__numerator_coeffs
 
     @property
     def denominator_coeffs(self) -> np.ndarray:
         """Retrieves denominator coefficients"""
-        return self.m_denominator_coeffs
+        return self.__denominator_coeffs
+
+    @degree.setter
+    def degree(self, value: int) -> None:
+        """Sets degree"""
+        assert value > 0
+        self.__degree = value
+
+    @dimension.setter
+    def dimension(self, value: int) -> None:
+        """Sets dimension"""
+        assert value > 0
+        self.__dimension = value
+
+    @domain.setter
+    def domain(self, domain: Interval) -> None:
+        """Sets domain"""
+        self.__domain = domain
+
+    @numerator_coeffs.setter
+    def numerator_coeffs(self, coeffs: np.ndarray) -> None:
+        """Sets numerator coefficients (by deepcopy value)"""
+        assert coeffs.shape == (self.__degree + 1, self.__dimension)
+        self.__numerator_coeffs = np.copy(coeffs)
+
+    @denominator_coeffs.setter
+    def denominator_coeffs(self, coeffs: np.ndarray) -> None:
+        """Sets numerator coefficients (by deepcopy value)"""
+        assert coeffs.shape == (self.__degree + 1, )
+        self.__denominator_coeffs = np.copy(coeffs)
 
     # ***************
     # Utility Methods
@@ -143,56 +171,56 @@ class RationalFunction:
             function.
         """
         # Compute the derivatives of the numerator and denominator polynomials
-        logger.info("Taking derivative of rational function")
-        logger.info("Numerator:\n%s", self.m_numerator_coeffs)
-        logger.info("Denominator:\n%s", self.m_denominator_coeffs)
+        logger.debug("Taking derivative of rational function")
+        logger.debug("Numerator:\n%s", self.__numerator_coeffs)
+        logger.debug("Denominator:\n%s", self.__denominator_coeffs)
         numerator_deriv_coeffs: MatrixXf = compute_polynomial_mapping_derivative(
-            self.m_degree, self.m_dimension, self.m_numerator_coeffs)
-        assert numerator_deriv_coeffs.shape == (self.m_degree, self.m_dimension)
+            self.__degree, self.__dimension, self.__numerator_coeffs)
+        assert numerator_deriv_coeffs.shape == (self.__degree, self.__dimension)
 
         denominator_deriv_coeffs: Vector1D = compute_polynomial_mapping_derivative(
-            self.m_degree, 1, self.m_denominator_coeffs).flatten()
-        assert denominator_deriv_coeffs.shape == (self.m_degree, )
-        logger.info("Numerator derivative:\n%s", numerator_deriv_coeffs)
-        logger.info("Denominator derivative:\n%s", denominator_deriv_coeffs)
+            self.__degree, 1, self.__denominator_coeffs).flatten()
+        assert denominator_deriv_coeffs.shape == (self.__degree, )
+        logger.debug("Numerator derivative:\n%s", numerator_deriv_coeffs)
+        logger.debug("Denominator derivative:\n%s", denominator_deriv_coeffs)
 
         # FIXME (ASOC): 0 degree case?
 
         # Compute the derivative numerator and denominator from the quotient rule
-        term_0: MatrixXf = compute_polynomial_mapping_scalar_product(self.m_degree,
-                                                                     self.m_degree - 1,
-                                                                     self.m_dimension,
-                                                                     self.m_denominator_coeffs,
+        term_0: MatrixXf = compute_polynomial_mapping_scalar_product(self.__degree,
+                                                                     self.__degree - 1,
+                                                                     self.__dimension,
+                                                                     self.__denominator_coeffs,
                                                                      numerator_deriv_coeffs)
-        assert term_0.shape == (2 * self.m_degree, self.m_dimension)
+        assert term_0.shape == (2 * self.__degree, self.__dimension)
 
-        term_1: MatrixXf = compute_polynomial_mapping_scalar_product(self.m_degree - 1,
-                                                                     self.m_degree,
-                                                                     self.m_dimension,
+        term_1: MatrixXf = compute_polynomial_mapping_scalar_product(self.__degree - 1,
+                                                                     self.__degree,
+                                                                     self.__dimension,
                                                                      denominator_deriv_coeffs,
-                                                                     self.m_numerator_coeffs)
-        assert term_1.shape == (2 * self.m_degree, self.m_dimension)
+                                                                     self.__numerator_coeffs)
+        assert term_1.shape == (2 * self.__degree, self.__dimension)
 
-        logger.info("First term: \n%s", term_0)
-        logger.info("Second term: \n%s", term_1)
+        logger.debug("First term: \n%s", term_0)
+        logger.debug("Second term: \n%s", term_1)
 
-        num_coeffs: MatrixXf = np.zeros(shape=(2 * self.m_degree + 1, self.m_dimension),
+        num_coeffs: MatrixXf = np.zeros(shape=(2 * self.__degree + 1, self.__dimension),
                                         dtype=np.float64)
         # FIXME: something might go wrong with the slicing.
-        num_coeffs[0:2 * self.m_degree, 0:self.m_dimension] = term_0 - term_1
+        num_coeffs[0:2 * self.__degree, 0:self.__dimension] = term_0 - term_1
 
-        denom_coeffs: Vector1D = compute_polynomial_mapping_product(self.m_degree,
-                                                                    self.m_degree,
-                                                                    self.m_denominator_coeffs,
-                                                                    self.m_denominator_coeffs)
-        assert denom_coeffs.shape == (2 * self.m_degree + 1, )
+        denom_coeffs: Vector1D = compute_polynomial_mapping_product(self.__degree,
+                                                                    self.__degree,
+                                                                    self.__denominator_coeffs,
+                                                                    self.__denominator_coeffs)
+        assert denom_coeffs.shape == (2 * self.__degree + 1, )
 
         # Build the derivative
-        derivative = RationalFunction(2 * self.m_degree,
-                                      self.m_dimension,
+        derivative = RationalFunction(2 * self.__degree,
+                                      self.__dimension,
                                       num_coeffs,
                                       denom_coeffs,
-                                      self.m_domain)
+                                      self.__domain)
 
         return derivative
 
@@ -207,15 +235,15 @@ class RationalFunction:
         assert one_form.shape == (self.dimension, )
 
         # Compute the scalar polynomial numerator coefficients
-        numerator_coeffs = self.m_numerator_coeffs @ one_form
+        numerator_coeffs = self.__numerator_coeffs @ one_form
         assert numerator_coeffs.shape == (self.degree + 1, )
 
         # Create a scalar rational function with the same domain and denominator
         # but the new numerator
-        scalar_function = RationalFunction(self.m_degree, 1,
+        scalar_function = RationalFunction(self.__degree, 1,
                                            numerator_coeffs,
-                                           self.m_denominator_coeffs,
-                                           self.m_domain)
+                                           self.__denominator_coeffs,
+                                           self.__domain)
 
         return scalar_function
 
@@ -233,25 +261,25 @@ class RationalFunction:
         :return upper_segment: [out] rational function with upper domain
         """
         #  Build lower segment
-        t0: float = self.m_domain.lower_bound
+        t0: float = self.__domain.lower_bound
         assert t0 <= knot
 
         # TODO: when  building interval, need to set is_upper_bound and is_lower_bound
         lower_domain = Interval(t0, knot)
-        lower_segment = RationalFunction(self.m_degree,
-                                         self.m_dimension,
-                                         self.m_numerator_coeffs,
-                                         self.m_denominator_coeffs,
+        lower_segment = RationalFunction(self.__degree,
+                                         self.__dimension,
+                                         self.__numerator_coeffs,
+                                         self.__denominator_coeffs,
                                          lower_domain)
 
         # Build upper segment
-        t1: float = self.m_domain.upper_bound
+        t1: float = self.__domain.upper_bound
         assert knot <= t1
         upper_domain = Interval(knot, t1)
-        upper_segment = RationalFunction(self.m_degree,
-                                         self.m_dimension,
-                                         self.m_numerator_coeffs,
-                                         self.m_denominator_coeffs,
+        upper_segment = RationalFunction(self.__degree,
+                                         self.__dimension,
+                                         self.__numerator_coeffs,
+                                         self.__denominator_coeffs,
                                          upper_domain)
 
         return lower_segment, upper_segment
@@ -266,7 +294,7 @@ class RationalFunction:
         :return points: [out] vector of sampled points.
         """
         # Get sample of the domain
-        t_samples: list[float] = self.m_domain.sample_points(num_points)
+        t_samples: list[float] = self.__domain.sample_points(num_points)
         points: list[Vector1D] = []
 
         for i in range(num_points):
@@ -356,7 +384,7 @@ class RationalFunction:
 
         :return: true iff t is in the domain
         """
-        return self.m_domain.contains(t)
+        return self.__domain.contains(t)
 
     def is_in_domain_interior(self, t: float) -> bool:
         """
@@ -365,7 +393,7 @@ class RationalFunction:
 
         :return: true iff t is in the domain interior
         """
-        return self.m_domain.is_in_interior(t)
+        return self.__domain.is_in_interior(t)
 
     def discretize(self, curve_disc_params: CurveDiscretizationParameters
                    ) -> tuple[list[Vector2D], list[int]]:
@@ -396,7 +424,7 @@ class RationalFunction:
 
         :param curve_name: [in] name to assign the curve in the viewer
         """
-        if (self.m_dimension != 3):
+        if (self.__dimension != 3):
             logger.error("Cannot view nonspatial curve")
 
         # Generate curve discretization
@@ -434,16 +462,16 @@ class RationalFunction:
     def numerators(self) -> Vector2D:
         """Retrieves numerator of RationalFunction"""
 
-        assert self.m_numerator_coeffs.shape == (
-            self.m_degree + 1, self.m_dimension)
-        return self.m_numerator_coeffs
+        assert self.__numerator_coeffs.shape == (
+            self.__degree + 1, self.__dimension)
+        return self.__numerator_coeffs
 
     @numerators.setter
     def numerators(self, numerator: np.ndarray) -> None:
         """Sets numerator of RationalFunction"""
 
-        assert numerator.shape == (self.m_degree + 1, self.m_dimension)
-        self.m_numerator_coeffs = numerator
+        assert numerator.shape == (self.__degree + 1, self.__dimension)
+        self.__numerator_coeffs = numerator
 
     @property
     def denominator(self) -> Vector2D:
@@ -451,15 +479,14 @@ class RationalFunction:
         Retrieves denominator of RationalFunction
         NOTE: denominator is 1-dimensional
         """
-
-        assert self.m_denominator_coeffs.shape == (self.m_degree + 1, )
-        return self.m_denominator_coeffs
+        assert self.__denominator_coeffs.shape == (self.__degree + 1, )
+        return self.__denominator_coeffs
 
     @denominator.setter
     def denominator(self, denominator: np.ndarray) -> None:
         """Sets denominator of RationalFunction"""
-        assert denominator.shape == (self.m_degree + 1, 1)
-        self.m_denominator_coeffs = denominator
+        assert denominator.shape == (self.__degree + 1, 1)
+        self.__denominator_coeffs = denominator
 
     # TODO: then have the domain accessible.
     # TODO: do equivalent to "friend class Conic;"
@@ -473,11 +500,11 @@ class RationalFunction:
 
         # This ensures that we're still dealing with matrices.
         # Because numerator can be shape (n, m) and not (n, )
-        if self.m_numerator_coeffs.shape[COLS] == 0:
+        if self.__numerator_coeffs.shape[COLS] == 0:
             return False
 
         # Making sure that denominator is NOT empty.
-        if self.m_denominator_coeffs.size == 0:
+        if self.__denominator_coeffs.size == 0:
             return False
 
         return True
@@ -513,17 +540,17 @@ class RationalFunction:
 
         # FIXME: Wait a minute... why is numerator all 0s with test_unit_pullback_case?
         # FIXME: inheriting degree from
-        Pt: np.ndarray = evaluate_polynomial(degree=self.m_degree,
-                                             dimension=self.m_dimension,
-                                             polynomial_coeffs_ref=self.m_numerator_coeffs,
+        Pt: np.ndarray = evaluate_polynomial(degree=self.__degree,
+                                             dimension=self.__dimension,
+                                             polynomial_coeffs_ref=self.__numerator_coeffs,
                                              t=t)
 
-        Qt: np.ndarray = evaluate_polynomial(degree=self.m_degree,
+        Qt: np.ndarray = evaluate_polynomial(degree=self.__degree,
                                              dimension=1,
-                                             polynomial_coeffs_ref=self.m_denominator_coeffs,
+                                             polynomial_coeffs_ref=self.__denominator_coeffs,
                                              t=t)
 
-        assert Pt.shape == (self.m_dimension, )
+        assert Pt.shape == (self.__dimension, )
         assert Qt.shape == (1, )
 
         point: np.ndarray = Pt / Qt[0]
@@ -535,15 +562,15 @@ class RationalFunction:
     def __repr__(self) -> str:
         rational_function_string: str = "1/("
         rational_function_string += (
-            formatted_polynomial(self.m_degree, 1, self.m_denominator_coeffs, 17))
+            formatted_polynomial(self.__degree, 1, self.__denominator_coeffs, 17))
         rational_function_string += ") [\n  "
 
         # for each column in m_numerator_coeffs
-        for i in range(self.m_numerator_coeffs.shape[COLS]):
+        for i in range(self.__numerator_coeffs.shape[COLS]):
             rational_function_string += (
-                formatted_polynomial(self.m_degree, 1, self.m_numerator_coeffs[:, i], 17))
+                formatted_polynomial(self.__degree, 1, self.__numerator_coeffs[:, i], 17))
             rational_function_string += ",\n  "
 
-        rational_function_string += "], t in " + self.m_domain.formatted_interval()
+        rational_function_string += "], t in " + self.__domain.formatted_interval()
 
         return rational_function_string
