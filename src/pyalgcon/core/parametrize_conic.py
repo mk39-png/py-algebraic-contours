@@ -380,6 +380,7 @@ def check_orientation(conic: Conic, conic_coeffs: Vector6f) -> bool:
     u_derivative: Vector3f = u_derivative_matrix() @ conic_coeffs
     assert u_derivative.shape == (3, )
     v_derivative: Vector3f = v_derivative_matrix() @ conic_coeffs
+    assert v_derivative.shape == (3, )
 
     # HACK: flattening potentially 2D array
     point: PlanarPoint1d = conic(t).flatten()
