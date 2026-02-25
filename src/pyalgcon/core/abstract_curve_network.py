@@ -559,7 +559,7 @@ class AbstractCurveNetwork():
         is_in_segment: list[bool] = [False] * self.num_segments
         for ni in range(self.num_nodes):
             # Check the outgoing segment comes from the node if it exists
-            if self._is_valid_segment_index(self.out(self.in_(ni))):
+            if self._is_valid_segment_index(self.out(ni)):
                 if self.from_(self.out(ni)) != ni:
                     logger.error(
                         "from(out(n)) is not the identity for nonterminal node %s", ni)
