@@ -29,9 +29,9 @@ def compute_symmetric_matrix_eigen_decomposition(A: Matrix2x2f) -> tuple[Vector2
 
     # Compute eigenvalues sigma_1, sigma_2
     # FIXME Remove pow everywhere trace^2 - 4 det
-    discriminant: float = pow(A[0, 0] - A[1, 1], 2) + 4 * A[0, 1] * A[1, 0]
-    sigma_1: float = 0.5 * (A[0, 0] + A[1, 1] + math.sqrt(discriminant))
-    sigma_2: float = 0.5 * (A[0, 0] + A[1, 1] - math.sqrt(discriminant))
+    discriminant: float = np.power(A[0, 0] - A[1, 1], 2) + 4 * A[0, 1] * A[1, 0]
+    sigma_1: float = 0.5 * (A[0, 0] + A[1, 1] + np.sqrt(discriminant))
+    sigma_2: float = 0.5 * (A[0, 0] + A[1, 1] - np.sqrt(discriminant))
     assert sigma_1 >= sigma_2
     eigenvalues: Vector2f = np.array([sigma_1, sigma_2], dtype=np.float64)
 

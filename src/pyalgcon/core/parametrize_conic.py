@@ -88,8 +88,8 @@ def parametrize_ellipse(conic_standard_form: Vector6f, conics_ref: list[Conic]) 
     c: float = conic_standard_form[0]
     sigma_1: float = conic_standard_form[4]
     sigma_2: float = conic_standard_form[5]
-    k1: float = math.sqrt(abs(c / sigma_1))
-    k2: float = math.sqrt(abs(c / sigma_2))
+    k1: float = np.sqrt(abs(c / sigma_1))
+    k2: float = np.sqrt(abs(c / sigma_2))
 
     # Determine sign of c used for orientation
     sign: float = np.sign(c)
@@ -130,8 +130,8 @@ def parametrize_hyperbola(conic_standard_form: Vector6f, conics_ref: list[Conic]
     c: float = conic_standard_form[0]
     sigma_1: float = conic_standard_form[4]
     sigma_2: float = conic_standard_form[5]
-    k1: float = math.sqrt(abs(c / sigma_1))
-    k2: float = math.sqrt(abs(c / sigma_2))
+    k1: float = np.sqrt(abs(c / sigma_1))
+    k2: float = np.sqrt(abs(c / sigma_2))
 
     # FIXME (ASOC): Clean up
     # Parametrize ellipse as (1/(1 - t^2)) * [k1 (1 + t^2), 2 k2 t]
@@ -244,8 +244,8 @@ def parametrize_parallel_lines(conic_standard_form: Vector6f) -> list[Conic]:
     b1: float = conic_standard_form[1]
     sigma: float = conic_standard_form[4]
     discriminant: float = compute_discriminant(sigma, b1, c)
-    x0: float = (0.5 / sigma) * (-b1 - math.sqrt(discriminant))
-    x1: float = (0.5 / sigma) * (-b1 + math.sqrt(discriminant))
+    x0: float = (0.5 / sigma) * (-b1 - np.sqrt(discriminant))
+    x1: float = (0.5 / sigma) * (-b1 + np.sqrt(discriminant))
 
     # Parametrize ellipse as (1/(1 - t^2)) * [k1 (1 + t^2), 2 k2 t]
     P_coeffs: Matrix3x2f = np.array([
