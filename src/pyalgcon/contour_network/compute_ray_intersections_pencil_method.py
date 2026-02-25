@@ -331,7 +331,6 @@ def pencil_first_part(coeff_F: Vector6f,
         E = e * x + p
         F = f * x + q
 
-        # FIXME: MISSING BIG ELSE STATEMENT WHAT
         if abs(A) < abs(B):
             A /= B
             C /= B
@@ -339,8 +338,8 @@ def pencil_first_part(coeff_F: Vector6f,
             E /= B
             F /= B
             B = 1.0
-            sqrtA: float = math.sqrt(D * D - A)
-            sqrtC: float = math.sqrt(F * F - C)
+            sqrtA: float = np.sqrt(D * D - A)
+            sqrtC: float = np.sqrt(F * F - C)
             la1: float = D + sqrtA
             la2: float = D - sqrtA
             lc1: float = F + sqrtC
