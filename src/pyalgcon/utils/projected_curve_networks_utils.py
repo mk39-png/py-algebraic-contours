@@ -10,8 +10,8 @@ from typing import Any
 
 from pyalgcon.contour_network.intersection_data import IntersectionData
 from pyalgcon.core.abstract_curve_network import AbstractCurveNetwork
-from pyalgcon.core.common import (NodeIndex, SegmentIndex, arange, load_json,
-                                  vector_equal)
+from pyalgcon.core.common import (NodeIndex, SegmentIndex, arange, float_equal,
+                                  load_json, vector_equal)
 from pyalgcon.core.conic import Conic
 from pyalgcon.core.rational_function import RationalFunction
 from pyalgcon.utils.conic_testing_utils import (compare_conics,
@@ -199,17 +199,25 @@ class SegmentGeometry():
         t0: float = self.__planar_curve.domain.lower_bound
         t1: float = self.__planar_curve.domain.upper_bound
 
-        if self.spatial_curve.domain.lower_bound != t0:
-            logger.error("Lower bound error")
+        if not float_equal(self.spatial_curve.domain.lower_bound, t0):
+            logger.error("Spatial Curve Lower bound error: spatial %s, planar %s",
+                         self.spatial_curve.domain.lower_bound,
+                         t0)
             return False
-        if self.parameter_curve.domain.lower_bound != t0:
-            logger.error("Lower bound error")
+        if not float_equal(self.parameter_curve.domain.lower_bound, t0):
+            logger.error("Parameter Curve Lower bound error: parameter %s, planar %s",
+                         self.parameter_curve.domain.lower_bound,
+                         t0)
             return False
-        if self.spatial_curve.domain.upper_bound != t1:
-            logger.error("Upper bound error")
+        if not float_equal(self.spatial_curve.domain.upper_bound, t1):
+            logger.error("Spatial Curve Upper bound error: spatial %s, planar %s",
+                         self.spatial_curve.domain.upper_bound,
+                         t1)
             return False
-        if self.parameter_curve.domain.upper_bound != t1:
-            logger.error("Upper bound error")
+        if not float_equal(self.parameter_curve.domain.upper_bound, t1):
+            logger.error("Parameter Curve Upper bound error: parameter %s, planar %s",
+                         self.parameter_curve.domain.upper_bound,
+                         t1)
             return False
 
         return True
