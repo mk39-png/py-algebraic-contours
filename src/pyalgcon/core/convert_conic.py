@@ -202,7 +202,8 @@ def convert_conic_to_standard_form(conic_coeffs: Vector6f) -> tuple[Vector6f,
         # Compute standard form coefficients for the conic
         # FIXME: potentially incompatible C++ translation below
         # shape below: (2, ) @ (2, 2) @ (1, 2) --> (2, ) ....
-        conic_standard_form[0] = c - 0.5 * (translation @ A) @ translation.T
+        # conic_standard_form[0] = c - 0.5 * (translation @ A) @ translation.T
+        conic_standard_form[0] = c - 0.5 * (translation @ A) @ translation
         conic_standard_form[4] = 0.5 * singular_values[0]
         conic_standard_form[5] = 0.5 * singular_values[1]
         # todo("double check the matmul above")
