@@ -209,7 +209,10 @@ class Conic(RationalFunction):
         return pullback_function
 
     def __is_valid(self) -> bool:
-        if self.m_numerator_coeffs.shape[1] == 0:
+        """
+        For internal use. Performs shape checking.
+        """
+        if self.numerator_coeffs.shape[1] == 0:
             return False
         if self.m_denominator_coeffs.size == 0:
             return False

@@ -227,7 +227,7 @@ def u_derivative_matrix() -> Matrix3x6r:
     Build matrix from quadratic coefficients to linear coefficients representing
     the derivative in the u direction
 
-    @return u derivative matrix
+    :return: u derivative matrix
     """
     D_u: Matrix3x6r = np.zeros(shape=(3, 6), dtype=np.float64)
 
@@ -246,7 +246,7 @@ def v_derivative_matrix() -> Matrix3x6r:
     Build matrix from quadratic coefficients to linear coefficients representing
     the derivative in the v direction
 
-    @return v derivative matrix
+    :return: v derivative matrix
     """
     D_v: Matrix3x6r = np.zeros(shape=(3, 6), dtype=np.float64)
 
