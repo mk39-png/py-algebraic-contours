@@ -294,27 +294,27 @@ def parametrize_standard_form_conic(conic_standard_form: Vector6f) -> list[Conic
     assert conic_type == identify_standard_form_conic(-1 * conic_standard_form)
 
     if conic_type == ConicType.ELLIPSE:
-        logger.info("Parametrizing ellipse")
+        logger.debug("Parametrizing ellipse")
         parametrize_ellipse(conic_standard_form, conics)
     elif conic_type == ConicType.HYPERBOLA:
-        logger.info("Parametrizing hyperbola")
+        logger.debug("Parametrizing hyperbola")
         parametrize_hyperbola(conic_standard_form, conics)
     elif conic_type == ConicType.PARABOLA:
-        logger.info("Parametrizing parabola")
+        logger.debug("Parametrizing parabola")
         conics = parametrize_parabola(conic_standard_form)
     elif conic_type == ConicType.PARALLEL_LINES:
-        logger.info("Parametrizing parallel lines")
+        logger.debug("Parametrizing parallel lines")
         conics = parametrize_parallel_lines(conic_standard_form)
     elif conic_type == ConicType.INTERSECTING_LINES:
-        logger.info("Parametrizing intersecting lines")
+        logger.debug("Parametrizing intersecting lines")
         conics = parametrize_intersecting_lines(conic_standard_form)
     elif conic_type == ConicType.LINE:
-        logger.info("Parametrizing line")
+        logger.debug("Parametrizing line")
         conics = parametrize_line()
     elif conic_type == ConicType.POINT:
-        logger.info("Skipping degenerate point")
+        logger.debug("Skipping degenerate point")
     elif conic_type == ConicType.EMPTY:
-        logger.info("Skipping degenerate empty set")
+        logger.debug("Skipping degenerate empty set")
     elif conic_type == ConicType.PLANE:
         logger.error("Entire plane is the solution")
         raise ValueError("Entire plane is the solution")
@@ -409,7 +409,7 @@ def parametrize_conic(conic_coeffs: Vector6f) -> list[Conic]:
     :param conic_coeffs: [in] implicit conic equation
     :return conics: segments of the parametrized conic
     """
-    logger.info("Parametrizing conic with equation: %s", conic_coeffs)
+    logger.debug("Parametrizing conic with equation: %s", conic_coeffs)
     conics: list[Conic] = []
 
     # Get standard form with rotation and translation
