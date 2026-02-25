@@ -136,6 +136,13 @@ class Conic(RationalFunction):
         u_coeffs: Vector3f = P_coeffs[:, 0]
         v_coeffs: Vector3f = P_coeffs[:, 1]
         Q_coeffs: Vector3f = self.denominator
+
+        # HACK: flatten Q_coeffs in case calling pullback_quadratic_function() from LineSegment
+        #       subclass, which requires its denominator parameter to be (3, 1) shape for
+        #       looping purposes.
+        # TODO: fix everything to be a consistent shape later.
+        Q_coeffs = Q_coeffs.flatten()
+
         # Asserting to make sure we are getting the shape we want.
         assert u_coeffs.shape == (3, )
         assert v_coeffs.shape == (3, )
