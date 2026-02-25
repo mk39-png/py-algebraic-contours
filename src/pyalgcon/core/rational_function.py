@@ -332,11 +332,12 @@ class RationalFunction:
         :return point: rational function evaluated at normalized coordinate t
         """
         # Check if domain is bounded
-        # FIXME: potential issue returning (0, 0) shape array...
+        # NOTE: need to throw value error since ASOC code has this always bounded when calling
+        #       evaluate_normalized_coordinate
         if not self.domain.is_bounded_below():
-            return np.ndarray(shape=(0, 0))
+            raise ValueError(f"ATTEMPTED TO PASS IN UNBOUNDED DOMAIN {self.domain}")
         if not self.domain.is_bounded_above():
-            return np.ndarray(shape=(0, 0))
+            raise ValueError(f"ATTEMPTED TO PASS IN UNBOUNDED DOMAIN {self.domain}")
 
         # Linearly interpolate the coordinate
         t0: float = self.domain.lower_bound
