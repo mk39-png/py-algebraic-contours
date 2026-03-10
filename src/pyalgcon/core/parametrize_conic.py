@@ -171,7 +171,7 @@ def parametrize_parabola(conic_standard_form: Vector6f) -> list[Conic]:
     """
     Parametrize parabola conics for parametrize_standard_form_conic()
     """
-    assert identify_conic(conic_standard_form) == ConicType.INTERSECTING_LINES
+    assert identify_conic(conic_standard_form) == ConicType.PARABOLA
 
     # Get parabolic coefficient
     sigma: float = conic_standard_form[4]
