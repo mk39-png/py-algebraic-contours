@@ -314,11 +314,6 @@ def compare_similarity(_mesh_filenames: list[str],
             # TODO: save to file
 
 
-#
-# DISABLE LOGGING
-#
-
-
 # -------------------------------
 #
 # ASOC VALIDITY EXPERIMENTS
@@ -326,21 +321,21 @@ def compare_similarity(_mesh_filenames: list[str],
 # -------------------------------
 # TODO: use generate_example_figure since that makes everything we need...
 # And make directories and subdirectories depending on the mesh testing + ASOC vs PYAC...
-# results_asoc_dir: pathlib.Path = results_dir / "asoc/"
-# results_asoc_dir.mkdir(parents=True, exist_ok=True)
-# run_similarity_script(asoc_generate_similarity_metrics,
-#                       results_asoc_dir,
-#                       mesh_filenames,
-#                       camera_filenames)
+results_asoc_dir: pathlib.Path = results_dir / "asoc/"
+results_asoc_dir.mkdir(parents=True, exist_ok=True)
+run_similarity_script(asoc_generate_similarity_metrics,
+                      results_asoc_dir,
+                      mesh_filenames,
+                      camera_filenames)
 
 
 # TODO: have script check if stuff runs OK or not....
-# results_pyac_dir: pathlib.Path = results_dir / "pyac/"
-# results_pyac_dir.mkdir(parents=True, exist_ok=True)
-# run_similarity_script(pyac_generate_similiarity_metrics,
-#                       results_pyac_dir,
-#                       mesh_filenames,
-#                       camera_filenames)
+results_pyac_dir: pathlib.Path = results_dir / "pyac/"
+results_pyac_dir.mkdir(parents=True, exist_ok=True)
+run_similarity_script(pyac_generate_similiarity_metrics,
+                      results_pyac_dir,
+                      mesh_filenames,
+                      camera_filenames)
 
 
 #
@@ -370,19 +365,19 @@ run_timing_script(asoc_generate_timing_metrics,
                   mesh_filenames,
                   camera_filenames)
 
-# # Run PYAC timing metrics
-# results_pyac_dir: pathlib.Path = results_dir / "pyac/"
-# results_pyac_dir.mkdir(parents=True, exist_ok=True)
-# run_script_with_logging([sys.executable,
-#                          str(utils_scripts_dir / "add_header_to_similarity_csv.py"),
-#                          results_pyac_dir])
-# run_script_with_logging([sys.executable,
-#                          str(utils_scripts_dir / "add_header_to_timing_csv.py"),
-#                          results_pyac_dir])
-# run_timing_script(pyac_generate_timing_metrics,
-#                   results_pyac_dir,
-#                   mesh_filenames,
-#                   camera_filenames,
-#                   True)
+# Run PYAC timing metrics
+results_pyac_dir: pathlib.Path = results_dir / "pyac/"
+results_pyac_dir.mkdir(parents=True, exist_ok=True)
+run_script_with_logging([sys.executable,
+                         str(utils_scripts_dir / "add_header_to_similarity_csv.py"),
+                         results_pyac_dir])
+run_script_with_logging([sys.executable,
+                         str(utils_scripts_dir / "add_header_to_timing_csv.py"),
+                         results_pyac_dir])
+run_timing_script(pyac_generate_timing_metrics,
+                  results_pyac_dir,
+                  mesh_filenames,
+                  camera_filenames,
+                  True)
 
 exit(0)
