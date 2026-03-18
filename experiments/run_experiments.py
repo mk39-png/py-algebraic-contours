@@ -11,8 +11,6 @@ import sys
 from datetime import datetime
 from typing import Any
 
-from skimage.metrics import structural_similarity as ssim
-
 #
 # DEV NOTES
 #
