@@ -447,7 +447,7 @@ def float_equal_zero(x: float, eps=FLOAT_EQUAL_PRECISION) -> bool:
     """
 
     # NOTE: Use absolute tolerance! Relative tolerance is not suited for our purpose.
-    return math.isclose(x, 0.0, abs_tol=eps)
+    return math.isclose(x, 0.0, rel_tol=0.0, abs_tol=eps)
     # return abs(x) < eps
 
 
@@ -463,7 +463,7 @@ def float_equal(x: float, y: float, eps=FLOAT_EQUAL_PRECISION) -> bool:
 
     # NOTE: Use absolute tolerance! Relative tolerance is not suited for our purpose.
     # return np.isclose(x, y, atol=eps)
-    return math.isclose(x, y, abs_tol=eps)
+    return math.isclose(x, y, rel_tol=0.0, abs_tol=eps)
 
     # XXX: be careful when changing this function. In cases where NaNs are compared, this is
     # supposed to return true. i.e. x = NaN, y = NaN, return true.
