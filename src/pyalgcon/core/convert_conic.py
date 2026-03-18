@@ -138,9 +138,12 @@ def convert_conic_to_standard_form(conic_coeffs: Vector6f) -> tuple[Vector6f,
         # Ensure the y coordinate is singular
         if (float_equal(singular_values[0], 0.0)):
             # FIXME: potentially incompatible C++ translation
-            singular_values[0], singular_values[1] = singular_values[1], singular_values[0]
-            rotation[0, 0], rotation[1, 0] = rotation[1, 0], rotation[0, 0]
-            rotation[0, 1], rotation[1, 1] = rotation[1, 1], rotation[0, 1]
+            # singular_values[0], singular_values[1] = singular_values[1], singular_values[0]
+            singular_values[[0, 1]] = singular_values[[1, 0]]
+
+            rotation[[0, 1]] = rotation[[1, 0]]
+            # rotation[0, 0], rotation[1, 0] = rotation[1, 0], rotation[0, 0]
+            # rotation[0, 1], rotation[1, 1] = rotation[1, 1], rotation[0, 1]
 
             # Ensure the rotation is still orientation preserving
             rotation[1, :] *= -1
