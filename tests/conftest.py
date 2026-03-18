@@ -140,7 +140,7 @@ def projection_matrix_on_vertices(request,
 
     # FIXME: remove the projection matrix
     V_transformed: MatrixNx3f = apply_camera_matrix_transformation_to_vertices(
-        V_raw, camera_matrix, np.zeros(4))
+        V_raw, camera_matrix)
 
     return V_transformed
 
