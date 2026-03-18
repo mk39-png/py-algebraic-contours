@@ -286,7 +286,7 @@ def compute_spline_surface_contours(spline_surface: QuadraticSplineSurface,
         patch_contour_segments: list[RationalFunction]  # <4, 3>
         patch_line_intersection_indices: list[tuple[int, int]]
         if spline_surface_patch.has_cone():
-            logger.info("Parametrizing cone patch %s", patch_index)
+            logger.debug("Parametrizing cone patch %s", patch_index)
             (patch_contour_domain_curve_segments,
              patch_contour_segments,
              patch_line_intersection_indices) = _compute_spline_surface_cone_patch_contours(

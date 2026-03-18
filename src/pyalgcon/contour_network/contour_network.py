@@ -369,7 +369,7 @@ class ContourNetwork(ProjectedCurveNetwork):
         polyscope.remove_all_structures()
 
     def write_rasterized_contours(self,
-                                  filename: str,
+                                  filename: pathlib.Path,
                                   camera_position: tuple[float, float, float] = (0, 0, 2),
                                   camera_target: tuple[float, float, float] = (0, 0, 0)) -> None:
         """

@@ -42,7 +42,7 @@ def compute_symmetric_matrix_eigen_decomposition(A: Matrix2x2f) -> tuple[Vector2
     # A(1,1))
     eigenvector_1: PlanarPoint1d
     if not float_equal(A[0, 1], 0.0):
-        eigenvector_1 = np.array([A[0, 1], sigma_1 - A[0, 0]])
+        eigenvector_1 = np.array([A[0, 1], sigma_1 - A[0, 0]], dtype=np.float64)
         assert not float_equal(np.linalg.norm(eigenvector_1), 0.0)
         eigenvector_1 /= np.linalg.norm(eigenvector_1)
     # This can be removed
