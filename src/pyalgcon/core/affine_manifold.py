@@ -975,6 +975,7 @@ class AffineManifold:
         # Build the next point
         next_point: PlanarPoint1d = (a * p0) + (b * p0_perp)
         assert not vector_contains_nan(next_point)
+        # WARNING: below assert triggered in ASOC debug compiled version
         assert float_equal(np.linalg.norm(next_point), prev_edge_length)
         assert next_point.ndim == 1
         return next_point
