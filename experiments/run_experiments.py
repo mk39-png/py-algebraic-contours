@@ -321,7 +321,8 @@ results_asoc_dir.mkdir(parents=True, exist_ok=True)
 run_similarity_script(asoc_generate_similarity_metrics,
                       results_asoc_dir,
                       mesh_filenames,
-                      camera_filenames)
+                      camera_filenames,
+                      False)
 
 
 # TODO: have script check if stuff runs OK or not....
@@ -330,7 +331,8 @@ results_pyac_dir.mkdir(parents=True, exist_ok=True)
 run_similarity_script(pyac_generate_similiarity_metrics,
                       results_pyac_dir,
                       mesh_filenames,
-                      camera_filenames)
+                      camera_filenames,
+                      False)
 
 
 #
@@ -358,7 +360,8 @@ run_script_with_logging([sys.executable,
 run_timing_script(asoc_generate_timing_metrics,
                   results_asoc_dir,
                   mesh_filenames,
-                  camera_filenames)
+                  camera_filenames,
+                  False)
 
 # Run PYAC timing metrics
 results_pyac_dir: pathlib.Path = results_dir / "pyac/"
@@ -373,6 +376,6 @@ run_timing_script(pyac_generate_timing_metrics,
                   results_pyac_dir,
                   mesh_filenames,
                   camera_filenames,
-                  True)
+                  False)
 
 exit(0)
