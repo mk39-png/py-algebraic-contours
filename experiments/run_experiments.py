@@ -103,18 +103,15 @@ logger.info("asoc generate similarity metrics dir: %s", asoc_generate_timing_met
 # -----------------
 # 3. Other variables
 # -----------------
-NUM_CAMERA_MATRICES = 26
+NUM_CAMERA_MATRICES = 0
 
 # -----------------
 # 4. Generate camera matrices
 # -----------------
-# subprocess.run([sys.executable, utils_scripts_dir / "generate_camera_matrices.py",
-#                 "-o", str(cameras_dir),
-#                 "--num_matrices", f"{NUM_CAMERA_MATRICES}"],
-#                check=True)
-
-# TODO: have this script to make sure that directory exists?
-# result_dir.mkdir(parents=True, exist_ok=True)
+subprocess.run([sys.executable, utils_scripts_dir / "generate_camera_matrices.py",
+                "-o", str(cameras_dir),
+                "--num_matrices", f"{NUM_CAMERA_MATRICES}"],
+               check=True)
 
 # -----------------
 # 5. Get mesh and camera list
