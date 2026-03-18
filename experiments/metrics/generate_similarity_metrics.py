@@ -37,7 +37,8 @@ from pyalgcon.contour_network.compute_intersections import \
 from pyalgcon.contour_network.contour_network import (ContourNetwork,
                                                       InvisibilityParameters)
 from pyalgcon.core.affine_manifold import AffineManifold
-from pyalgcon.core.apply_transformation import apply_transformation_to_vertices
+from pyalgcon.core.apply_transformation import (
+    apply_normalization_to_vertices, apply_transformation_to_vertices)
 from pyalgcon.core.common import (Matrix4x4f, MatrixNx3f, MatrixXi,
                                   deserialize_eigen_matrix_csv_to_numpy)
 from pyalgcon.core.generate_transformation import \
@@ -61,8 +62,10 @@ def main(args):
     output_dir: pathlib.Path = pathlib.Path(args.output)
     camera_filename: pathlib.Path = pathlib.Path(args.camera)
 
+    # TODO: add optioonal param to have everything in 1 folder...
+
     # Set logger level
-    logger.setLevel(logging.NOTSET)
+    logger.setLevel(logging.CRITICAL)
 
     # Get input mesh
     initial_V: MatrixNx3f
@@ -79,10 +82,13 @@ def main(args):
     camera_matrix: Matrix4x4f = deserialize_eigen_matrix_csv_to_numpy(camera_filename)
     logger.info("Using camera matrix:\n%s", camera_matrix)
 
+    # Normalize the vertices
+    normalized_V: MatrixNx3f = apply_normalization_to_vertices(initial_V)
+
     # Apply camera and perspective projection transformations
     projection_matrix: Matrix4x4f = origin_to_infinity_projective_matrix(camera_to_plane_distance)
     projection_matrix = projection_matrix @ camera_matrix
-    V = apply_transformation_to_vertices(initial_V, projection_matrix)
+    V = apply_transformation_to_vertices(normalized_V, projection_matrix)
 
     # Generate quadratic spline
     logger.info("Computing spline surface")
@@ -124,6 +130,11 @@ def main(args):
         (0, 0, -1),
         (0, 0, 0),
         True
+    )
+    contour_network.write_rasterized_contours(
+        output_dir / "contours.png",
+        (0, 0, -1),
+        (0, 0, 0)
     )
     contour_network.write(
         output_dir / "full_contours.svg",

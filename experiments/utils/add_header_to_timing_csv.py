@@ -21,7 +21,7 @@ def main(args):
     # Write view independent timing data header
     with open(output_dir / "view_independent.csv", "w", encoding="utf-8") as out_view_independent:
         out_view_independent.write("mesh name, camera filename, num triangles, time spline surface,"
-                                   " time patch boundary edges\n")
+                                   " time patch boundary edges, vertex normalization time\n")
 
     # Write view dependent timing data header
     with open(output_dir / "per_view.csv", "w", encoding="utf-8") as out_per_view:
@@ -30,7 +30,8 @@ def main(args):
                            "total time per view, surface update, "
                            "compute contour, compute cusps, compute intersections, compute "
                            "visibility, graph building, num segments, num int cusps, num bound "
-                           "cusps, num intersection call, num ray inter call, num patches\n")
+                           "cusps, num intersection call, num ray inter call, num patches, "
+                           "vector contour write time, raster contour write time\n")
     return 0
 
 

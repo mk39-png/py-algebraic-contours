@@ -11,7 +11,6 @@ import sys
 from datetime import datetime
 from typing import Any
 
-from skimage.metrics import mean_squared_error
 from skimage.metrics import structural_similarity as ssim
 
 #
@@ -54,7 +53,7 @@ experiments_dir: pathlib.Path = pathlib.Path(__file__).parent
 # Data directories
 meshes_dir: pathlib.Path = experiments_dir / "data" / "meshes"
 cameras_dir: pathlib.Path = experiments_dir / "data" / "cameras"
-results_dir: pathlib.Path = experiments_dir / "results/"
+results_dir: pathlib.Path = experiments_dir / "results"
 
 # Make results directory if it does not exist.
 cameras_dir.mkdir(parents=True, exist_ok=True)
@@ -81,7 +80,9 @@ pyac_generate_similiarity_metrics: pathlib.Path = metrics_scripts_dir / "generat
 logger: logging.Logger = logging.getLogger(__name__)
 timestamp: str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 log_filename: str = f"experiments_{timestamp}.log"
-log_filepath: pathlib.Path = experiments_dir / log_filename
+log_filepath: pathlib.Path = results_dir / "logs" / log_filename
+log_filepath.parent.mkdir(parents=True, exist_ok=True)  # make log directory forcefully
+
 logging.basicConfig(
     level=logging.NOTSET,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -146,11 +147,12 @@ logger.info("camera filenames: %s", camera_filenames)
 # -------------------------------
 
 
-def run_script_with_logging(args: list[Any]) -> None:
+def run_script_with_logging(args: list[Any]) -> bool:
     """
     Utility wrapper that calls subprocess with logging to file.
 
     :param args: list of arguments for subprocess.run()
+    :return: true upon success, otherwise false
     """
     try:
         proc: subprocess.CompletedProcess[str] = subprocess.run(
@@ -162,6 +164,8 @@ def run_script_with_logging(args: list[Any]) -> None:
             logger.info(proc.stdout.rstrip())
         if proc.stderr:
             logger.warning(proc.stderr.rstrip())
+
+        return True
     except subprocess.CalledProcessError as e:
         logger.error(
             "SCRIPT %s FAILED (return code %s)",
@@ -171,11 +175,14 @@ def run_script_with_logging(args: list[Any]) -> None:
         logger.error("STDOUT:\n%s", e.stdout)
         logger.error("STDERR:\n%s", e.stderr)
 
+        return False
+
 
 def run_timing_script(script_filepath: pathlib.Path,
                       output_dir: pathlib.Path,
                       _mesh_filenames: list[str],
-                      _camera_filenames: list[str]) -> None:
+                      _camera_filenames: list[str],
+                      debug: bool = True) -> None:
     """
     Utility wrapper method that runs timing_data tests.
     Accepts script_filepath since needs to call ASOC or PYAC
@@ -185,7 +192,14 @@ def run_timing_script(script_filepath: pathlib.Path,
     :parma output_dir: path to output directory
     :param _mesh_filenames: list of mesh filename strings
     :param _camera_filenames: list of camera filename strings
+    :param debug: determines if Python script runs with "assert" statements and logging.
+                  Disable when measuring timing results.
     """
+    # Tracker variables to see the progress made so far.
+    success_counter: int = 0
+    num_meshes: int = len(_mesh_filenames)
+    num_cameras: int = len(_camera_filenames)
+
     # Run experiments themselves
     for mesh_filename in _mesh_filenames:
         for camera_filename in _camera_filenames:
@@ -203,7 +217,8 @@ def run_timing_script(script_filepath: pathlib.Path,
 
             # If Python script, prepend sys.executable
             if script_filepath.suffix == ".py":
-                # args.insert(0, "-OO")  # prepend optimization flag first, removes asserts
+                if not debug:
+                    args.insert(0, "-OO")  # prepend optimization flag first, removes asserts
                 args.insert(0, sys.executable)  # prepend executable flag
 
             # Printing to console what script has been ran
@@ -212,13 +227,17 @@ def run_timing_script(script_filepath: pathlib.Path,
             logger.info("script ran: %s", " ".join(args))
 
             # Execute actual script itself
-            run_script_with_logging(args)
+            if run_script_with_logging(args):
+                success_counter += 1
+            logger.info("%s out of %s meshes successfully ran using camera %s",
+                        success_counter, num_meshes, camera_filepath)
 
 
 def run_similarity_script(script_filepath: pathlib.Path,
                           output_dir: pathlib.Path,
                           _mesh_filenames: list[str],
-                          _camera_filenames: list[str]) -> None:
+                          _camera_filenames: list[str],
+                          debug: bool = True) -> None:
     """
     Utility wrapper method that runs similarity metric experiments.
     Accepts script_filepath since needs to call ASOC or PYAC
@@ -228,7 +247,14 @@ def run_similarity_script(script_filepath: pathlib.Path,
     :parma output_dir: path to output directory
     :param _mesh_filenames: list of mesh filename strings
     :param _camera_filenames: list of camera filename strings
+    :param debug: determines if Python script runs with "assert" statements and logging. 
+                  Disable when measuring timing results.
     """
+    # Tracker variables to see the progress made so far.
+    success_counter: int = 0
+    num_meshes: int = len(_mesh_filenames)
+    num_cameras: int = len(_camera_filenames)
+
     # Run experiments themselves
     for mesh_filename in _mesh_filenames:
         for camera_filename in _camera_filenames:
@@ -249,8 +275,8 @@ def run_similarity_script(script_filepath: pathlib.Path,
 
             # If Python script, prepend sys.executable
             if script_filepath.suffix == ".py":
-                # TODO: re-add the assert remover
-                # args.insert(0, "-OO")  # prepened optimization flag first, removes asserts
+                if not debug:
+                    args.insert(0, "-OO")  # prepend optimization flag first, removes asserts
                 args.insert(0, sys.executable)  # prepend executable flag
 
             # Printing to console what script has been ran
@@ -259,13 +285,16 @@ def run_similarity_script(script_filepath: pathlib.Path,
             logger.info("script ran: %s", " ".join(args))
 
             # Execute actual script itself
-            run_script_with_logging(args)
+            if run_script_with_logging(args):
+                success_counter += 1
+            logger.info("%s out of %s meshes successfully ran using camera %s",
+                        success_counter, num_meshes, camera_filepath)
 
 
 def compare_similarity(_mesh_filenames: list[str],
                        _camera_filenames: list[str]) -> None:
     """
-    Loop through all pairs of mesh and camera and performs SSIM and MSE metrics on the following:
+    Loop through all pairs of mesh and camera and performs SSIM metrics on the following:
     * contours.png
     * mesh.png
     * spline_surface.png
@@ -285,6 +314,11 @@ def compare_similarity(_mesh_filenames: list[str],
             # TODO: save to file
 
 
+#
+# DISABLE LOGGING
+#
+
+
 # -------------------------------
 #
 # ASOC VALIDITY EXPERIMENTS
@@ -299,6 +333,8 @@ def compare_similarity(_mesh_filenames: list[str],
 #                       mesh_filenames,
 #                       camera_filenames)
 
+
+# TODO: have script check if stuff runs OK or not....
 # results_pyac_dir: pathlib.Path = results_dir / "pyac/"
 # results_pyac_dir.mkdir(parents=True, exist_ok=True)
 # run_similarity_script(pyac_generate_similiarity_metrics,
@@ -320,33 +356,33 @@ def compare_similarity(_mesh_filenames: list[str],
 # -------------------------------
 
 # Run ASOC timing metrics
-# results_asoc_dir: pathlib.Path = results_dir / "asoc/"
-# results_asoc_dir.mkdir(parents=True, exist_ok=True)
-# run_script_with_logging([sys.executable,
-#                          str(utils_scripts_dir / "add_header_to_similarity_csv.py"),
-#                          results_asoc_dir])
-# run_script_with_logging([sys.executable,
-#                          str(utils_scripts_dir / "add_header_to_timing_csv.py"),
-#                          results_asoc_dir])
-# # TODO: perhaps clear directories before starting to write into them...
-# run_timing_script(asoc_generate_timing_metrics,
-#                   results_asoc_dir,
-#                   mesh_filenames,
-#                   camera_filenames)
-
-
-# Run PYAC timing metrics
-results_pyac_dir: pathlib.Path = results_dir / "pyac/"
-results_pyac_dir.mkdir(parents=True, exist_ok=True)
+results_asoc_dir: pathlib.Path = results_dir / "asoc/"
+results_asoc_dir.mkdir(parents=True, exist_ok=True)
 run_script_with_logging([sys.executable,
                          str(utils_scripts_dir / "add_header_to_similarity_csv.py"),
-                         results_pyac_dir])
+                         results_asoc_dir])
 run_script_with_logging([sys.executable,
                          str(utils_scripts_dir / "add_header_to_timing_csv.py"),
-                         results_pyac_dir])
-run_timing_script(pyac_generate_timing_metrics,
-                  results_pyac_dir,
+                         results_asoc_dir])
+# TODO: perhaps clear directories before starting to write into them...
+run_timing_script(asoc_generate_timing_metrics,
+                  results_asoc_dir,
                   mesh_filenames,
                   camera_filenames)
+
+# # Run PYAC timing metrics
+# results_pyac_dir: pathlib.Path = results_dir / "pyac/"
+# results_pyac_dir.mkdir(parents=True, exist_ok=True)
+# run_script_with_logging([sys.executable,
+#                          str(utils_scripts_dir / "add_header_to_similarity_csv.py"),
+#                          results_pyac_dir])
+# run_script_with_logging([sys.executable,
+#                          str(utils_scripts_dir / "add_header_to_timing_csv.py"),
+#                          results_pyac_dir])
+# run_timing_script(pyac_generate_timing_metrics,
+#                   results_pyac_dir,
+#                   mesh_filenames,
+#                   camera_filenames,
+#                   True)
 
 exit(0)
