@@ -412,6 +412,13 @@ def parametrize_conic(conic_coeffs: Vector6f) -> list[Conic]:
     :param conic_coeffs: [in] implicit conic equation
     :return conics: segments of the parametrized conic
     """
+
+    # WARNING: IGNORE THE ASSERTS IN THIS FUNCTION. EVEN IN ASOC,
+    # THERE ARE FALSE POSITIVES WITH ALL THE ASSERTS IN THESE FUNCTIONS.
+    # CAUSING THEM TO EXECUTE AND CAUSE PREMATURE FAILURE IN THE
+    # PROPAGATION QUANTITATIVE INVISIBILITY MODE DURING THE
+    # PERFORMANCE EVALUATION EXPERIMENT.
+
     logger.debug("Parametrizing conic with equation: %s", conic_coeffs)
     conics: list[Conic] = []
 
