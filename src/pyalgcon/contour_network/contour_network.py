@@ -387,7 +387,7 @@ class ContourNetwork(ProjectedCurveNetwork):
         polyscope.set_view_projection_mode("orthographic")
 
         # Take the screenshot
-        polyscope.screenshot(filename)
+        polyscope.screenshot(str(filename))
         logger.info("Screenshot saved to %s", filename)
         polyscope.remove_all_structures()
 
