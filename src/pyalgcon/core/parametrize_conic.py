@@ -194,6 +194,8 @@ def parametrize_intersecting_lines(conic_standard_form: Vector6f) -> list[Conic]
     """
     assert conic_standard_form.shape == (6, )
     result: ConicType = identify_conic(conic_standard_form)
+    # FIXME: false positives for Monster Frog and Fertility meshes at this assert below
+    #   as in, the assert gets triggered, stopping the code.
     assert result == ConicType.INTERSECTING_LINES
     conics: list[Conic] = []
 
