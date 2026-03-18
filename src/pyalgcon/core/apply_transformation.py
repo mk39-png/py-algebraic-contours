@@ -186,6 +186,37 @@ def apply_camera_matrix_transformation_to_vertices(input_V: MatrixNx3f,
     return output_V
 
 
+def apply_normalization_to_vertices(input_V: MatrixNx3f) -> MatrixNx3f:
+    """
+    Normalized vertices in a mesh according to its bounding box.
+
+    :param input_V: vertex matrix to normalize
+    :return output_V: normalized vertex matrix
+    """
+    # Setup output vertices
+    output_V = np.zeros_like(input_V, dtype=np.float64)
+
+    # Compute mesh midpoint and bounding box diagonal
+    min_point: SpatialVector1d
+    max_point: SpatialVector1d
+    min_point, max_point = compute_point_cloud_bounding_box(input_V)
+    mesh_midpoint: SpatialVector1d = 0.5 * (max_point + min_point)
+    bounding_box_diagonal: SpatialVector1d = max_point - min_point
+    logger.info("Initial mesh bounding box: %s, %s", min_point, max_point)
+    logger.info("Initial mesh midpoint: %s", mesh_midpoint)
+
+    # Normalize the vertices
+    scale_factor: float = bounding_box_diagonal.max()
+    num_vertices: int = input_V.shape[ROWS]
+    output_V: MatrixNx3f = np.zeros((num_vertices, 3))
+
+    # TODO: implement numpy vectorization
+    for i in range(num_vertices):
+        output_V[i, :] = 2.0 * (input_V[i, :] - mesh_midpoint) / scale_factor
+
+    return output_V
+
+
 def apply_camera_frame_transformation_to_vertices(input_V: MatrixNx3f,
                                                   frame: Matrix3x3f,
                                                   orthographic: bool = True,
