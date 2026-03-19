@@ -748,8 +748,13 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
                     write_planar_point(
                         node_point, svg_elements, 800, 400, (58, 107, 53, 1))  # Green
 
+        # HACK: mirror image vertically to match output as ASOC (and the rasterized vers)
+        transform: list[svg.Transform] = [svg.Scale(1, -1), svg.Translate(0, -800)]
+        svg_elements_flipped_vertically: list[svg.Element] = [svg.G(elements=[svg_elements],
+                                                                    transform=transform)]
+
         # Write SVG
-        svg_writer = svg.SVG(viewBox=viewport, elements=svg_elements)
+        svg_writer = svg.SVG(viewBox=viewport, elements=svg_elements_flipped_vertically)
         with open(output_path, 'w', encoding='utf-8') as output_file:
             output_file.write(svg_writer.as_str())
             output_file.close()
