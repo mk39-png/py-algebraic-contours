@@ -311,23 +311,20 @@ def compare_similarity(_mesh_filenames: list[str],
 
 # -------------------------------
 #
-# ASOC VALIDITY EXPERIMENTS
+# ASOC + PYAC VALIDITY EXPERIMENTS
 #
 # -------------------------------
 # TODO: use generate_example_figure since that makes everything we need...
 # And make directories and subdirectories depending on the mesh testing + ASOC vs PYAC...
-results_asoc_dir: pathlib.Path = results_dir / "asoc/"
+results_asoc_dir: pathlib.Path = results_dir / f"asoc_{timestamp}/"
 results_asoc_dir.mkdir(parents=True, exist_ok=True)
+results_pyac_dir: pathlib.Path = results_dir / f"pyac_{timestamp}/"
+results_pyac_dir.mkdir(parents=True, exist_ok=True)
 run_similarity_script(asoc_generate_similarity_metrics,
                       results_asoc_dir,
                       mesh_filenames,
                       camera_filenames,
                       False)
-
-
-# TODO: have script check if stuff runs OK or not....
-results_pyac_dir: pathlib.Path = results_dir / "pyac/"
-results_pyac_dir.mkdir(parents=True, exist_ok=True)
 run_similarity_script(pyac_generate_similiarity_metrics,
                       results_pyac_dir,
                       mesh_filenames,
@@ -348,8 +345,6 @@ run_similarity_script(pyac_generate_similiarity_metrics,
 # -------------------------------
 
 # Run ASOC timing metrics
-results_asoc_dir: pathlib.Path = results_dir / "asoc/"
-results_asoc_dir.mkdir(parents=True, exist_ok=True)
 run_script_with_logging([sys.executable,
                          str(utils_scripts_dir / "add_header_to_similarity_csv.py"),
                          results_asoc_dir])
@@ -364,8 +359,6 @@ run_timing_script(asoc_generate_timing_metrics,
                   False)
 
 # Run PYAC timing metrics
-results_pyac_dir: pathlib.Path = results_dir / "pyac/"
-results_pyac_dir.mkdir(parents=True, exist_ok=True)
 run_script_with_logging([sys.executable,
                          str(utils_scripts_dir / "add_header_to_similarity_csv.py"),
                          results_pyac_dir])
