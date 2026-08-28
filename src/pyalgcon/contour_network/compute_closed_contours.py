@@ -75,8 +75,8 @@ def _get_starting_contour_segment(used_segments: list[bool]) -> int:
     Get unused contour segment
     """
     # Find free segment
-    for i, _ in enumerate(used_segments):
-        if not used_segments[i]:
+    for i, used_seg in enumerate(used_segments):
+        if not used_seg:
             return i
 
     # Return -1 if no free segment
