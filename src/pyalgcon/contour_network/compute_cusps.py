@@ -275,7 +275,7 @@ def _compute_cusp_by_one_patch(spline_surface_patch: QuadraticSplineSurfacePatch
                 # Solve pu(t) = u * q(t)
                 t_conic: Vector1D = polynomial_real_roots(pu - u * q)
                 # Check which t is correct
-                for _, t in enumerate(t_conic):
+                for t in t_conic:
                     if float_equal(pv[0] + pv[1] * t + pv[2] * t * t,
                                    (q[0] + q[1] * t + q[2] * t * t) * v,
                                    1e-9):
@@ -286,7 +286,7 @@ def _compute_cusp_by_one_patch(spline_surface_patch: QuadraticSplineSurfacePatch
                 # Solve pv(t) = v * q(t)
                 t_conic: Vector1D = polynomial_real_roots(pv - v * q)
                 # Check which t is correct
-                for _, t in enumerate(t_conic):
+                for t in t_conic:
                     if float_equal(pu[0] + pu[1] * t + pu[2] * t * t,
                                    (q[0] + q[1] * t + q[2] * t * t) * u,
                                    1e-9):
@@ -297,7 +297,7 @@ def _compute_cusp_by_one_patch(spline_surface_patch: QuadraticSplineSurfacePatch
             if not linear_pu:
                 t_conic: Vector1D = polynomial_real_roots(pu - u * q)
                 # Check which t is correct
-                for _, t in enumerate(t_conic):
+                for t in t_conic:
                     if float_equal(pv[0] + pv[1] * t + pv[2] * t * t,
                                    (q[0] + q[1] * t + q[2] * t * t) * v,
                                    1e-9):
@@ -308,7 +308,7 @@ def _compute_cusp_by_one_patch(spline_surface_patch: QuadraticSplineSurfacePatch
                 # Solve pv(t) = v * q(t)
                 t_conic = polynomial_real_roots(pv - v * q)
                 # Check which t is correct
-                for _, t in enumerate(t_conic):
+                for t in t_conic:
                     if float_equal(pu[0] + pu[1] * t + pu[2] * t * t,
                                    (q[0] + q[1] * t + q[2] * t * t) * u,
                                    1e-9):
@@ -319,7 +319,7 @@ def _compute_cusp_by_one_patch(spline_surface_patch: QuadraticSplineSurfacePatch
                 if abs(pu[1]) > abs(pu[2]):
                     t_conic: Vector1D = polynomial_real_roots(pu - u * q)
                     # Check which t is correct
-                    for _, t in enumerate(t_conic):
+                    for t in t_conic:
                         if float_equal(pv[0] + pv[1] * t + pv[2] * t * t,
                                        (q[0] + q[1] * t + q[2] * t * t) * v,
                                        1e-9):
@@ -328,7 +328,7 @@ def _compute_cusp_by_one_patch(spline_surface_patch: QuadraticSplineSurfacePatch
                                 break
                 else:
                     t_conic: Vector1D = polynomial_real_roots(pv - v * q)
-                    for _, t in enumerate(t_conic):
+                    for t in t_conic:
                         if float_equal(pu[0] + pu[1] * t + pu[2] * t * t,
                                        (q[0] + q[1] * t + q[2] * t * t) * u,
                                        1e-9):
