@@ -502,16 +502,14 @@ def compute_twelve_split_energy_quadratic(
         assert len(reverse_edge_orientations) == 3
 
         # Mark cone vertices
-        is_cone: list[bool] = []  # length 3
-        for i in range(3):
-            vi: int = F[face_index, i]
-            is_cone.append(manifold.get_vertex_chart(vi).is_cone)
+        # Length 3, F[face_index, i] gets the vertex index
+        is_cone: list[bool] = [manifold.get_vertex_chart(
+            F[face_index, i]).is_cone for i in range(3)]
 
         # Mark cone adjacent vertices
-        is_cone_adjacent: list[bool] = []  # length 3
-        for i in range(3):
-            vi = F[face_index, i]
-            is_cone_adjacent.append(manifold.get_vertex_chart(vi).is_cone_adjacent)
+        # Length 3, F[face_index, i] gets the vertex index
+        is_cone_adjacent: list[bool] = [manifold.get_vertex_chart(
+            F[face_index, i]).is_cone_adjacent for i in range(3)]
 
         # Get global indices of the local vertex and edge DOFs
         face_global_vertex_indices: list[int] = build_face_variable_vector(
@@ -543,11 +541,12 @@ def compute_twelve_split_energy_quadratic(
                 break
 
         # Get normal for the face
-        normal: SpatialVector1d = np.zeros(shape=(3, ))
-        if is_cone_adjacent_face:
-            normal = initial_face_normals[face_index, :]
-            assert normal.shape == (3, )
-            logger.info("Weighting by normal %s", normal.T)
+        normal: SpatialVector1d = np.zeros(
+            shape=(3, )) if is_cone_adjacent_face else initial_face_normals[face_index, :]
+        # if is_cone_adjacent_face:
+        #     normal = initial_face_normals[face_index, :]
+        #     assert normal.shape == (3, )
+        logger.info("Weighting by normal %s", normal)
 
         # Get local to global map
         local_to_global_map: list[int] = generate_twelve_split_local_to_global_map(
