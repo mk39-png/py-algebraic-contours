@@ -6,8 +6,7 @@ import logging
 
 import numpy as np
 
-from pyalgcon.core.common import (PLACEHOLDER_VALUE,
-                                  MatrixNx3i, Vector1D,
+from pyalgcon.core.common import (PLACEHOLDER_VALUE, MatrixNx3i, Vector1D,
                                   contains_vertex)
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -138,16 +137,14 @@ def compute_vertex_one_ring_first_face(
                 current_vertex, F[current_face, :])
 
     # Cycle clockwise to a starting face
-    for i in range(1, len(adjacent_faces)):
+    for _ in range(1, len(adjacent_faces)):
         # Get previous face or return if none exists
         prev_face: int = -1
 
-        for j, face in enumerate(adjacent_faces):
-            f: int = adjacent_faces[j]
-
+        for adj_face in adjacent_faces:
             # Grabs row f
-            if is_right_face(F[f, :], vertex_index, current_vertex):
-                prev_face = f
+            if is_right_face(F[adj_face, :], vertex_index, current_vertex):
+                prev_face = adj_face
                 break
 
         # Return current face if no previous face found
