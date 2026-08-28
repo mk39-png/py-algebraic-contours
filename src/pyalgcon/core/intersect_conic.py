@@ -40,28 +40,27 @@ def intersect_conic_with_line(C_param: Conic,
     c: float = L_coeffs[2]
     I_coeffs: Vector3f = a * Q_coeffs + b * X_coeffs + c * Y_coeffs
 
-    use_stable_quadratic: bool = True
-    if use_stable_quadratic:
-        solutions: Vector2f
-        num_solutions: int
-        solutions, num_solutions = quadratic_real_roots(I_coeffs)
-        if num_solutions == 0:
-            return False
-
-        elif num_solutions == 1:
-            t0: float = solutions[0]
-            if C_param.is_in_domain(t0):
-                intersections_ref.append(t0)
-            return True
-        elif num_solutions == 2:
-            t0: float = min(solutions[0], solutions[1])
-            t1: float = max(solutions[0], solutions[1])
-            assert t0 <= t1
-            if C_param.is_in_domain(t0):
-                intersections_ref.append(t0)
-            if C_param.is_in_domain(t1):
-                intersections_ref.append(t1)
-            return True
+    # use_stable_quadratic: bool = True
+    # if use_stable_quadratic:
+    solutions: Vector2f
+    num_solutions: int
+    solutions, num_solutions = quadratic_real_roots(I_coeffs)
+    if num_solutions == 0:
+        return False
+    elif num_solutions == 1:
+        t0: float = solutions[0]
+        if C_param.is_in_domain(t0):
+            intersections_ref.append(t0)
+        return True
+    elif num_solutions == 2:
+        t0: float = min(solutions[0], solutions[1])
+        t1: float = max(solutions[0], solutions[1])
+        assert t0 <= t1
+        if C_param.is_in_domain(t0):
+            intersections_ref.append(t0)
+        if C_param.is_in_domain(t1):
+            intersections_ref.append(t1)
+        return True
     return False
 
 
