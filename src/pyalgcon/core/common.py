@@ -127,7 +127,10 @@ Matrix12x12r = np.ndarray
 Matrix9x3f = np.ndarray
 Matrix13x3f = np.ndarray
 
+Matrix36x12f = np.ndarray
 Matrix36x36f = np.ndarray
+Matrix12x6x12f = np.ndarray
+Matrix12x3x3f = np.ndarray
 TwelveSplitGradient = np.ndarray  # shape (36, 1)
 TwelveSplitHessian = np.ndarray  # shape (36, 36)
 

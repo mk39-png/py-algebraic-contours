@@ -4,10 +4,10 @@ Methods to operate on bivariate quadratics represented by coefficient vectors.
 import numpy as np
 
 from pyalgcon.core.common import (Matrix2x2f, Matrix3x3r, Matrix3x6r,
-                                  Matrix6x3f, Matrix6x6r, MatrixXf,
-                                  PlanarPoint, PlanarPoint1d, SpatialVector1d,
-                                  Vector1D, Vector2D, Vector3f, Vector6f,
-                                  cross_product, float_equal, unimplemented)
+                                  Matrix6x3f, Matrix6x6r, PlanarPoint,
+                                  PlanarPoint1d, SpatialVector1d, Vector1D,
+                                  Vector2D, Vector3f, Vector6f, cross_product,
+                                  float_equal, unimplemented)
 from pyalgcon.core.polynomial_function import formatted_term
 
 
@@ -276,24 +276,18 @@ def generate_bezier_to_monomial_matrix() -> Matrix6x6r:
     return change_of_basis_matrix
 
 
-def generate_monomial_to_bezier_matrix() -> Matrix6x6r:
-    """
-    /// Generate the matrix to go from quadratic coefficients over the standard u +
-    /// v <= 1 triangle in the positive quadrant to Bezier control points.
-    ///
-    /// @param[out] change_of_basis_matrix: matrix going from monomial coefficients
-    /// to bezier points
-    """
-    change_of_basis_matrix: Matrix6x6r = np.array([
-        [1, 0.5, 0.5, 0.5, 0, 0],
-        [1, 0, 0.5, 0, 0, 0],
-        [1, 0.5, 0, 0, 0, 0],
-        [1, 1, 0, 0, 1, 0],
-        [1, 0, 1, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0]
-    ], dtype=np.float64)
-    assert change_of_basis_matrix.shape == (6, 6)
-    return change_of_basis_matrix
+# Generate the matrix to go from quadratic coefficients over the standard u +
+# v <= 1 triangle in the positive quadrant to Bezier control points.
+# :change_of_basis_matrix: matrix going from monomial coefficients
+# to bezier points
+MONOMIAL_TO_BEZIER_MATRIX: Matrix6x6r = np.array([
+    [1, 0.5, 0.5, 0.5, 0, 0],
+    [1, 0, 0.5, 0, 0, 0],
+    [1, 0.5, 0, 0, 0, 0],
+    [1, 1, 0, 0, 1, 0],
+    [1, 0, 1, 0, 0, 1],
+    [1, 0, 0, 0, 0, 0]
+], dtype=np.float64)
 
 
 # FIXME: This is not fully general.

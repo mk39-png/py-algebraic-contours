@@ -6,10 +6,11 @@ import logging
 
 import numpy as np
 import numpy.linalg as LA
-from pyalgcon.core.common import (Matrix2x2f, Matrix3x2r,
-                                  Matrix12x12r, Vector1D)
+from pyalgcon.core.common import (Matrix2x2f, Matrix3x2r, Matrix12x3x3f,
+                                  Matrix12x12r, Matrix36x12f, Matrix36x36f,
+                                  Vector1D)
 from pyalgcon.quadratic_spline_surface.PS12_patch_coeffs import \
-    PS12_patch_coeffs
+    PS12_PATCH_COEFFS
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -172,6 +173,48 @@ def get_C_gl(uv: Matrix3x2r,
     return C_gl
 
 
+TQUAD_CDER_CSUB: Matrix36x12f = np.array(
+    [
+        [0,    2,   -2,    3., -3.,  3., -2.5, -1.,  0.5,  4,   -2,   -4,],
+        [3,   -1,   -2,    1.5, -0.75,  1.5, -1.75, -0.25, -0.25,  2,   -3,   -1,],
+        [0,    2,   -2,    1.5, -1.5,  1.5, -1.,  0.5, -1.,  2,   -2,   -2,],
+        [2,    0,   -2,    3., -2.5,  3., -3.,  0.5, -1.,  4,   -4,   -2,],
+        [2,    0,   -2,    1.5, -1.,  1.5, -1.5, -1.,  0.5,  2,   -2,   -2,],
+        [-1,    3,   -2,    1.5, -1.75,  1.5, -0.75, -0.25, -0.25,  2,   -1,   -3,],
+        [-2,    0,    2,    2., -2.5,  0.,  0.,  0.5,  0.,  0,    0,   -2,],
+        [-2,    0,    2,    0.5, -1., -1.5,  1.5, -1.,  1.5, -2,    2,   -2,],
+        [-2,    3,   -1,    1.25, -1.75,  0.75,  0., -0.25,  0.,  1,    0,   -3,],
+        [-2,   -4,    6,   -1.,  0.5, -1.,  0.,  1.5,  0., -4,    0,    2,],
+        [-2,   -1,    3,   -0.25, -0.25, -1.75,  1.5, -0.75,  1.5, -3,    2,   -1,],
+        [-2,   -1,    3,   -1.75,  1.25, -0.25,  0.,  0.75,  0., -3,    0,    1,],
+        [-4,   -2,    6,   -1.,  0., -1.,  0.5,  0.,  1.5, -4,    2,    0,],
+        [-1,   -2,    3,   -0.25,  0., -1.75,  1.25,  0.,  0.75, -3,    1,    0,],
+        [-1,   -2,    3,   -1.75,  1.5, -0.25, -0.25,  1.5, -0.75, -3,   -1,    2,],
+        [0,   -2,    2,    0.,  0.,  2., -2.5,  0.,  0.5,  0,   -2,    0,],
+        [3,   -2,   -1,    0.75,  0.,  1.25, -1.75,  0., -0.25,  1,   -3,    0,],
+        [0,   -2,    2,   -1.5,  1.5,  0.5, -1.,  1.5, -1., -2,   -2,    2,],
+        [-2,   -4,    6,   -1.,  0.5, -1.,  0.,  1.5,  0., -4,    0,    2,],
+        [-2,   -1,    3,   -0.75, -0.75, -0.25,  0.,  0.75,  0., -1,    0,    1,],
+        [-2,   -1,    3,   -1.75,  1.25, -0.25,  0.,  0.75,  0., -3,    0,    1,],
+        [-4,   -2,    6,   -1.,  0., -1.,  0.5,  0.,  1.5, -4,    2,    0,],
+        [-1,   -2,    3,   -0.25,  0., -1.75,  1.25,  0.,  0.75, -3,    1,    0,],
+        [-1,   -2,    3,   -0.25,  0., -0.75, -0.75,  0.,  0.75, -1,    1,    0,],
+        [0,   -2,    2,    0.,  0.,  2., -2.5,  0.,  0.5,  0,   -2,    0,],
+        [3,   -2,   -1,    0.75,  0.,  1.25, -1.75,  0., -0.25,  1,   -3,    0,],
+        [0,   -2,    2,    0.,  0.,  0., -1.5,  0.,  0.5,  0,    0,    0,],
+        [0,    2,   -2,    0.,  0.,  0.,  0.5, -2., -0.5,  0,    2,    0,],
+        [3,   -1,   -2,    0.,  0.75,  0., -0.25, -0.75, -0.75,  0,   -1,    1,],
+        [0,    2,   -2,    0.,  0.,  0.,  0.5,  0., -1.5,  0,    0,    0,],
+        [2,    0,   -2,    0.,  0.5,  0.,  0., -0.5, -2.,  0,    0,    2,],
+        [2,    0,   -2,    0.,  0.5,  0.,  0., -1.5,  0.,  0,    0,    0,],
+        [-1,    3,   -2,    0., -0.25,  0.,  0.75, -0.75, -0.75,  0,    1,   -1,],
+        [-2,    0,    2,    2., -2.5,  0.,  0.,  0.5,  0.,  0,    0,   -2,],
+        [-2,    0,    2,    0., -1.5,  0.,  0.,  0.5,  0.,  0,    0,    0,],
+        [-2,    3,   -1,    1.25, -1.75,  0.75,  0., -0.25,  0.,  1,    0,   -3,]],
+    dtype=np.float64
+)
+
+
 def get_Tquad_Cder_Csub() -> np.ndarray:
     """
     Compute the matrix to go from local triangle degrees of freedom
@@ -189,16 +232,16 @@ def get_Tquad_Cder_Csub() -> np.ndarray:
             -> second derivatives in triangle coords
     However, this matrix is constant and is thus hard coded
 
-    @return matrix mapping local dof to second derivatives 
+    :return: matrix mapping local dof to second derivatives
     """
     # Autogenerate matrix entries as 12 subtriangle matrices
     # Note that unused values (first derivatives and constants) are also generated
     # but are unused
-    patch_coeffs: np.ndarray = PS12_patch_coeffs()  # shape (12, 3, 12)
+    patch_coeffs: Matrix12x3x3f = PS12_PATCH_COEFFS  # shape (12, 3, 12)
 
     # Combine 12 subtriangle matrices, flattening the second derivatives per subtriangle
     # TODO: could use numpy indexing somehow or some sort of flattening feature for optimization
-    Tquad_Cder_Csub: np.ndarray = np.ndarray(shape=(36, 12), dtype=np.float64)
+    Tquad_Cder_Csub: Matrix36x12f = np.ndarray(shape=(36, 12), dtype=np.float64)
     for i in range(12):
         for j in range(3):
             for k in range(12):
@@ -260,7 +303,7 @@ def get_S_weighted(A: float) -> np.ndarray:  # FIXME: adjust dtype to something 
 
     Return np.ndarray of shape (36, 36)
     """
-    S: np.ndarray = np.zeros(shape=(36, 36), dtype=float)
+    S: Matrix36x36f = np.zeros(shape=(36, 36), dtype=float)
 
     # TODO: optimize with numpy indexing
     for i in range(36):
@@ -318,8 +361,8 @@ def build_local_smoothness_hessian(uv: Matrix3x2r,
     # FIXME: loss of precision. elements in e-17 becomes 0
     C_gl: Matrix12x12r = get_C_gl(uv, corner_to_corner_uv_positions, reverse_edge_orientations)
     assert C_gl.shape == (12, 12)
-    Tquad_Cder_Csub: np.ndarray = get_Tquad_Cder_Csub()  # NOTE: this is fine
-    assert Tquad_Cder_Csub.shape == (36, 12)
+    Tquad_Cder_Csub_ref: Matrix36x12f = TQUAD_CDER_CSUB  # NOTE: this is fine
+    assert Tquad_Cder_Csub_ref.shape == (36, 12)
     R_quad: np.ndarray = get_R_quad(uv)  # NOTE: this is fine.
     assert R_quad.shape == (36, 36)
     S: np.ndarray = get_S(uv)
@@ -327,7 +370,7 @@ def build_local_smoothness_hessian(uv: Matrix3x2r,
 
     # Assemble matrices into the Hessian
     # G shape (36, 12) = (36, 36) @ (36, 12) @ (12, 12)
-    G: np.ndarray = R_quad @ Tquad_Cder_Csub @ C_gl
+    G: np.ndarray = R_quad @ Tquad_Cder_Csub_ref @ C_gl
     assert G.shape == (36, 12)  # FIXME: may be loss of precision because of C_gl
 
     # hessian shape (12, 12) = (12, 36) @ (36, 36) @ (36, 12)

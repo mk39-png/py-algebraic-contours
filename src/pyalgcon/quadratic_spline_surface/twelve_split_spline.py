@@ -27,9 +27,9 @@ from pyalgcon.quadratic_spline_surface.position_data import (
     TriangleCornerData, TriangleMidpointData, generate_corner_data_matrices,
     generate_midpoint_data_matrices)
 from pyalgcon.quadratic_spline_surface.PS12_patch_coeffs import \
-    PS12_patch_coeffs
+    PS12_PATCH_COEFFS
 from pyalgcon.quadratic_spline_surface.PS12tri_bounds_coeffs import \
-    PS12tri_bounds_coeffs
+    PS12TRI_BOUNDS_COEFFS
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface import \
     QuadraticSplineSurface
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface_patch import \
@@ -332,8 +332,11 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         num_patches: int = patches_per_face * num_faces  # NOTE: num_patches used for reserving __patches
 
         # Get general patch domains to use for all faces
-        patch_boundaries: list[list[Vector3f]]
-        patch_boundaries = generate_twelve_split_spline_patch_patch_boundaries()
+        # patch_boundaries: list[list[Vector3f]]
+        # Shape (12, 3, 3)
+        patch_boundaries: np.ndarray = PS12TRI_BOUNDS_COEFFS
+
+        # patch_boundaries = generate_twelve_split_spline_patch_patch_boundaries()
         assert len(patch_boundaries) == 12
         assert len(patch_boundaries[0]) == 3
         assert patch_boundaries[0][0].shape == (3, )
@@ -512,7 +515,7 @@ def generate_twelve_split_spline_patch_patch_boundaries() -> list[list[Vector3f]
     assert patch_boundaries[0][0].ndim == 1
 
     # Get boundary coefficients
-    bound_coeffs: np.ndarray = PS12tri_bounds_coeffs()
+    bound_coeffs: np.ndarray = PS12TRI_BOUNDS_COEFFS
 
     # Reorganize boundary coefficients
     for i in range(num_patches):
@@ -558,7 +561,7 @@ def generate_twelve_split_data_to_monomial_matrices() -> list[np.ndarray]:
     :rtype: list[np.ndarray]
     """
 
-    patch_coeffs: np.ndarray = PS12_patch_coeffs()  # shape (12, 6, 12)
+    patch_coeffs: np.ndarray = PS12_PATCH_COEFFS  # shape (12, 6, 12)
     coefficient_matrices: list[np.ndarray] = [np.zeros(shape=(6, 12), dtype=np.float64)
                                               for _ in range(12)]
 
@@ -635,8 +638,8 @@ def generate_twelve_split_spline_patch_surface_mapping(
     assert len(midpoint_data) == 3
 
     # Generate matrices to go from the position data to surface coefficients
-    coefficient_matrices: list[Matrix6x12f]  # list of size 12 with matrices shape (6, 12)
-    coefficient_matrices = generate_twelve_split_data_to_monomial_matrices()
+    # Shape = (12, 6, 12)
+    coefficient_matrices = PS12_PATCH_COEFFS
 
     # Combine position data into a matrix
     twelve_split_data: Matrix12x3f  # matrix of float with shape (12, 3)

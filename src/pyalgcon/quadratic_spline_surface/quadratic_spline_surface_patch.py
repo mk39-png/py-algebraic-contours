@@ -11,14 +11,14 @@ import numpy as np
 import polyscope as ps
 
 from pyalgcon.core.bivariate_quadratic_function import (
-    evaluate_quadratic_mapping, generate_monomial_to_bezier_matrix,
+    MONOMIAL_TO_BEZIER_MATRIX, evaluate_quadratic_mapping,
     generate_quadratic_coordinate_domain_triangle_normalization_matrix)
 from pyalgcon.core.common import (ROWS, Matrix2x2f, Matrix3x2r, Matrix6x3f,
                                   Matrix6x3r, Matrix6x6r, MatrixNx2f,
                                   PlanarPoint1d, SpatialVector,
                                   SpatialVector1d, Vector3f,
                                   compute_point_cloud_bounding_box, load_json,
-                                  todo, unimplemented)
+                                  unimplemented)
 from pyalgcon.core.convex_polygon import ConvexPolygon
 from pyalgcon.core.evaluate_surface_normal import \
     generate_quadratic_surface_normal_coeffs
@@ -57,8 +57,7 @@ def compute_bezier_points(normalized_surface_mapping_coeffs: Matrix6x3r) -> Matr
     """
     Compute bezier points.
     """
-    monomial_to_bezier_matrix: Matrix6x6r = generate_monomial_to_bezier_matrix()
-
+    monomial_to_bezier_matrix: Matrix6x6r = MONOMIAL_TO_BEZIER_MATRIX
     # shape (6, 3) = (6, 6) @ (6, 3)
     bezier_points: Matrix6x3r = monomial_to_bezier_matrix @ normalized_surface_mapping_coeffs
     return bezier_points
