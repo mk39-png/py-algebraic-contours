@@ -15,13 +15,9 @@ from pyalgcon.contour_network.contour_network import (ContourNetwork,
                                                       InvisibilityMethod,
                                                       InvisibilityParameters)
 from pyalgcon.core.affine_manifold import AffineManifold
-from pyalgcon.core.apply_transformation import (
-    apply_camera_frame_transformation_to_vertices,
-    apply_camera_matrix_transformation_to_vertices,
-    apply_transformation_to_vertices)
+from pyalgcon.core.apply_transformation import \
+    apply_camera_matrix_transformation_to_vertices
 from pyalgcon.core.common import Matrix4x4f, MatrixNx3f
-from pyalgcon.core.generate_transformation import \
-    origin_to_infinity_projective_matrix
 from pyalgcon.quadratic_spline_surface.optimize_spline_surface import \
     OptimizationParameters
 from pyalgcon.quadratic_spline_surface.twelve_split_spline import (
@@ -37,7 +33,7 @@ def generate_algebraic_contours(camera_matrix: Matrix4x4f,
     Runs end-to-end pipeline of contour generation from mesh parsing to contour generation itself.
 
     :param camera_matrix: 4x4 matrix containing the rotation frame and translation vector
-    :param filepath: output filepath 
+    :param filepath: input path to .obj file
     :return: None
     """
     # TODO: implement some ability for the user to change these parameters
@@ -55,42 +51,14 @@ def generate_algebraic_contours(camera_matrix: Matrix4x4f,
     FT: ArrayLike
     FN: ArrayLike
     V, uv, N, F, FT, FN = igl.readOBJ(filepath)
-    # print(projection_matrix)
 
     # Set up the camera
-    # FIXME: probably using the WRONG PROJECTION MATRIX, hence we get missclassification.
-    # Though, export .obj to original ASOC code to see how it runs
-    # FIXME: also run with matrix to compare in ASOC code.
-    # frame = np.array([[1, 0, 0],
-    #                   [0, 1, 0],
-    #                   [0, 0, 1]])
-    # V_transformed: MatrixNx3f = apply_camera_frame_transformation_to_vertices(V, frame)
-    # print(projection_matrix)
-
-    # Utilize the origin to infinity projection matrix to see if that changes anything
-    # camera_distance_to_plane: float = 1.0
-    # camera_matrix: Matrix4x4f = projection_matrix  # alias for debugging
-    # projection_matrix_ASOC: Matrix4x4f = origin_to_infinity_projective_matrix(
-    #     camera_distance_to_plane)
-    # print("prjection matrix asoc")
-    # print(projection_matrix_ASOC)
-    # projection_matrix_ASOC = projection_matrix_ASOC @ camera_matrix
-    # V_transformed: MatrixNx3f = apply_transformation_to_vertices(V, projection_matrix_ASOC)
-
     V_transformed: MatrixNx3f = apply_camera_matrix_transformation_to_vertices(
         V, camera_matrix)
-
-    # Preparing mesh data for use in contours calculation
-    # TODO: will this work? The whole conversion of the MathUtils matrix to NumPy matrix?
-    # TODO: maybe filter out non-numbers like 8.22e-16 and set to 0
-    # V_transformed: MatrixNx3f = apply_transformation_to_vertices(V, projection_matrix)
-    # print(V_transformed)
-    # print(V_transformed.shape)
 
     # Generate quadratic spline
     logger.info("Computing spline surface...")
     affine_manifold: AffineManifold = AffineManifold(F, uv, FT)
-    # TODO: should cache this result somewhere since the camera can be
     spline_surface: TwelveSplitSplineSurface = TwelveSplitSplineSurface(V_transformed,
                                                                         affine_manifold,
                                                                         optimization_params)
@@ -110,12 +78,10 @@ def generate_algebraic_contours(camera_matrix: Matrix4x4f,
 
     # Save the contours to file
     logger.info("Saving contours")
-    # contour_network_filename: str = "contours.svg"
-    # contour_network_filepath: pathlib.Path = directory_temp / f"{contour_network_filename}"
     try:
         # Write to SVG file
-        # contour_network.write(directory_temp.parent / "contours.svg", svg_output_mode, show_nodes)
-        contour_network.write(filepath, svg_output_mode, show_nodes)
+        contour_network.write(filepath.parent / "contours.svg",
+                              svg_output_mode, show_nodes)
 
         # Write to png
         # contour_network.write_rasterized_contours("contours.png")
