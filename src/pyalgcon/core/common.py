@@ -3,7 +3,6 @@ import csv
 import json  # for testing
 import logging
 import math
-import os
 import pathlib  # used for testing
 from io import StringIO
 from typing import Any
@@ -12,7 +11,6 @@ import igl
 import numpy as np
 import numpy.linalg as LA
 import numpy.testing as npt
-import numpy.typing as npty
 import polyscope
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -29,16 +27,9 @@ ADJACENT_CONTOUR_PRECISION: float = 1e-6
 # Epsilon for curve-curve bounding box padding
 PLANAR_BOUNDING_BOX_PRECISION: float = 0
 # Epsilon for Bezier clipping intersections
-# Particular precision below was chosen since it gave satisfactory results (as in, number of intersections closer to C++ code)
-# Though, confidence in this statement is varying...
-# FIND_INTERSECTIONS_BEZIER_CLIPPING_PRECISION: float = 8.250000000e-7
+# Particular precision below was chosen since it gave satisfactory results
+#   (as in, number of intersections closer to C++ code)
 FIND_INTERSECTIONS_BEZIER_CLIPPING_PRECISION: float = 1e-7
-
-# FIND_INTERSECTIONS_BEZIER_CLIPPING_PRECISION: float = np.nextafter(1e-7, 0)  # 1e-7
-# FIND_INTERSECTIONS_BEZIER_CLIPPING_PRECISION: float = 9.999999999995e-8
-# FIND_INTERSECTIONS_BEZIER_CLIPPING_PRECISION: float = 9.999999999995e-8
-
-
 # Spline surface discretization level
 DISCRETIZATION_LEVEL: int = 2
 # Size of spline surface hash table
@@ -48,12 +39,9 @@ HASH_TABLE_SIZE: int = 70
 
 # Including typing here for better code.
 # https://stackoverflow.com/questions/71109838/numpy-typing-with-specific-shape-and-datatype
-OneFormXr = np.ndarray  # TODO: what shape is this... I forget
 PlanarPoint = np.ndarray[tuple[int, int], np.dtype[np.float64]]  # shape (1, 2)
-# PlanarPoint1d = np.ndarray[tuple[int], np.dtype[np.float64]]  # shape (2, )
 PlanarPoint1d = np.ndarray  # shape (2, )
-SpatialVector = np.ndarray[tuple[int, int],
-                           np.dtype[np.float64]]  # shape (1, 3)
+SpatialVector = np.ndarray[tuple[int, int], np.dtype[np.float64]]  # shape (1, 3)
 SpatialVector1d = np.ndarray  # shape (3, )
 Index = int
 FaceIndex = int
@@ -64,8 +52,7 @@ PatchIndex = int
 NodeIndex = int
 SegmentIndex = int
 
-
-# NOTE: Since NumPu does not have typing, it has been done so as below for readability reasons.
+# NOTE: Since NumPy does not have typing, it has been done so as below for readability reasons.
 Color = tuple[float, float, float, float]
 Vector3i = np.ndarray
 Vector2f = np.ndarray
@@ -76,31 +63,19 @@ Vector6f = np.ndarray
 Vector9f = np.ndarray
 Vector12f = np.ndarray
 Vector13f = np.ndarray
+Vector27f = np.ndarray
 Vector36f = np.ndarray
-# shape (n, )... sometimes. Oftentimes it's shape (n, 1) or (1, n)...
-VectorX = np.ndarray
-# shape (1, n) (or sometimes shape (n, 1) as in the case of optimize_spline_surface)... might just be easier to flatten and use Vector1D... I don't see the point of having Vector2D if it will just be more confusing.
+
+VectorX = np.ndarray  # shape (n, )... sometimes. Oftentimes it's shape (n, 1) or (1, n)...
+# shape (1, n) (or sometimes shape (n, 1) as in the case of optimize_spline_surface)...
+# might just be easier to flatten and use Vector1D...
+# I don't see the point of having Vector2D if it will just be more confusing.
 Vector2D = np.ndarray
 Vector1D = np.ndarray  # shape (n, )
 MatrixNx2f = np.ndarray
 MatrixNx3 = np.ndarray[tuple[int, int], np.dtype[np.float64]]
 Matrix6xNi = np.ndarray
 Matrix3x6r = np.ndarray
-# Matrix2x2r = np.ndarray[tuple[int, int], np.dtype[np.float64]]  # shape (2, 2)
-# Matrix2x3r = np.ndarray[tuple[int, int], np.dtype[np.float64]]  # shape (2, 3)
-# Matrix2x3f = np.ndarray[tuple[int, int], np.dtype[np.float64]]  # shape (2, 3)
-# Matrix3x1r = np.ndarray[tuple[int, int], np.dtype[np.float64]]  # shape (3, 1)
-# Matrix3x2r = np.ndarray[tuple[int, int], np.dtype[np.float64]]  # shape (3, 2)
-# Matrix3x2f = np.ndarray[tuple[int, int], np.dtype[np.float64]]
-# Matrix3x3r = np.ndarray[tuple[int, int], np.dtype[np.float64]]  # shape (3, 3)
-# Matrix6x3r = np.ndarray[tuple[int, int], np.dtype[np.float64]]  # shape (6, 3)
-# Matrix6x3f = np.ndarray[tuple[int, int], np.dtype[np.float64]]  # shape (6, 3)
-# Matrix6x6r = np.ndarray[tuple[int, int], np.dtype[np.float64]]
-# Matrix6x12f = np.ndarray[tuple[int, int], np.dtype[np.float64]]
-# Matrix12x3f = np.ndarray[tuple[int, int], np.dtype[np.float64]]
-# Matrix12x12r = np.ndarray[tuple[int, int], np.dtype[np.float64]]
-# TwelveSplitGradient = np.ndarray[tuple[int, int], np.dtype[np.float64]]  # shape (36, 1)
-# TwelveSplitHessian = np.ndarray[tuple[int, int], np.dtype[np.float64]]  # shape (36, 36)
 Matrix2x2f = np.ndarray  # shape (2, 2)
 Matrix2x3r = np.ndarray  # shape (2, 3)
 Matrix2x3f = np.ndarray  # shape (2, 3)
@@ -134,7 +109,6 @@ Matrix12x6x12f = np.ndarray
 Matrix12x3x3f = np.ndarray
 TwelveSplitGradient = np.ndarray  # shape (36, 1)
 TwelveSplitHessian = np.ndarray  # shape (36, 36)
-
 
 MatrixXi = np.ndarray[tuple[int, int], np.dtype[np.int64]]
 MatrixXf = np.ndarray[tuple[int, int], np.dtype[np.float64]]
@@ -597,21 +571,6 @@ def convert_index_vector_to_boolean_array(index_vector: list[int], num_indices: 
     return boolean_array
 
 
-def convert_boolean_array_to_index_vector(boolean_array: list[bool]) -> list[int]:
-    """
-    @brief From a boolean array, build a vector of the indices that are true.
-    @param[in] boolean_array: array of boolean values
-    @param[out] index_vector: indices where the array is true
-    """
-    num_indices: int = len(boolean_array)
-    index_vector: list[int] = []
-    for i in range(num_indices):
-        if (boolean_array[i]):
-            index_vector.append(i)
-
-    return index_vector
-
-
 def index_vector_complement(index_vector: list[int], num_indices: int) -> list[int]:
     """
     Returns the complement of the index_vector as a list of int.
@@ -677,12 +636,11 @@ def write_float_vector():
 
 def nested_vector_size(v: list[list]) -> int:
     """
+    Counting size of sublists
     """
     count: int = 0
-
     for inner_v in v:
         count += len(inner_v)
-
     return count
 
 
