@@ -1,7 +1,6 @@
 """
-
+Conic class
 """
-import copy
 import logging
 from enum import Enum
 
@@ -10,7 +9,7 @@ import numpy as np
 from pyalgcon.core.bivariate_quadratic_function import \
     formatted_bivariate_quadratic_mapping
 from pyalgcon.core.common import (COLS, Matrix2x2f, Matrix3x2f, Matrix6xNi,
-                                  PlanarPoint1d, Vector1D, Vector2D, Vector3f)
+                                  PlanarPoint1d, Vector1D, Vector3f)
 from pyalgcon.core.interval import Interval
 from pyalgcon.core.polynomial_function import (
     compute_polynomial_mapping_product, formatted_polynomial)
@@ -42,7 +41,7 @@ class Conic(RationalFunction):
     # Constructors
     # ************
     def __init__(self,
-                 m_type=ConicType.UNKNOWN,
+                 __type=ConicType.UNKNOWN,
                  numerator_coeffs: Matrix3x2f | None = None,
                  denominator_coeffs: Vector3f | None = None,
                  domain: Interval | None = None) -> None:
@@ -53,7 +52,7 @@ class Conic(RationalFunction):
         :param numerator_coeffs: shape (3, 2)
         :param denominator_coeffs: shape (3, ) 
         """
-        self.__type: ConicType = m_type
+        self.__type: ConicType = __type
         super().__init__(2, 2, numerator_coeffs, denominator_coeffs, domain)
         assert self.__is_valid()
 
