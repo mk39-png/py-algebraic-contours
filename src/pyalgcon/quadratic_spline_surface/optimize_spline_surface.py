@@ -622,26 +622,16 @@ def compute_twelve_split_energy_quadratic(
     # TODO: fix hessian inverse csr matrix
     # NOTE: hessian is not used anywhere else but optimize_spline_surface...
     # in the original ASOC code... which is no longer needed with the Cholespy module.
-    # hessian_coo: coo_matrix = coo_matrix((data, (rows, cols)),
-    #                                      #  shape=(num_independent_variables, num_independent_variables),
-    #                                      dtype=np.float64)
     hessian_csr: csr_matrix = csr_matrix((data, (rows, cols)), shape=(
         num_independent_variables, num_independent_variables), dtype=np.float64)
     assert derivatives.shape == (num_independent_variables, )
 
     # Build the inverse.
-    # TODO: This is very finicky with CSR sparse matrices...
     hessian_inverse_csr: CholeskySolverD = CholeskySolverD(num_independent_variables,
                                                            hessian_csr.indptr,
                                                            hessian_csr.indices,
                                                            hessian_csr.data,
                                                            MatrixType.CSR)
-    # hessian_inverse_coo: CholeskySolverD = CholeskySolverD(num_independent_variables,
-    #                                                        rows,
-    #                                                        cols,
-    #                                                        data,
-    #                                                        MatrixType.COO)
-    # Both of the above should be the same, with coo being the control/baseline.
 
     return energy, derivatives, hessian_csr, hessian_inverse_csr
 

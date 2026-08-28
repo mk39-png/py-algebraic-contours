@@ -4,10 +4,8 @@ compute_ray_intersections_pencil_method.py
 Methodds to assist with computiong cusps.
 """
 
-import ctypes
 import logging
 import math
-import sys
 
 import numpy as np
 
@@ -412,10 +410,8 @@ def pencil_first_part(coeff_F: Vector6f,
             E /= A
             F /= A
             A = 1.0
-            # sqrtB: float = math.sqrt(D * D - B)
+            # NOTE: need np.sqrt and not math.sqrt here since PYAC expects NaN values
             sqrtB: float = np.sqrt(D * D - B)
-
-            # sqrtC = math.sqrt(E * E - C)
             sqrtC = np.sqrt(E * E - C)
             lb1: float = D + sqrtB
             lb2: float = D - sqrtB
@@ -457,21 +453,9 @@ def pencil_first_part(coeff_F: Vector6f,
                             num_intersections += 1
                             intersection_flag = True
                 else:
-                    # FIXME: precision problem with floating points
-                    # Call C pow()
-                    # Autogen
-                    # a = ctypes.c_double(c1)
-                    # b = ctypes.c_double(c1)
-                    # res = libc.pow(c1, c1)
-
-                    # discriminant = math.pow(c1, 2) - (4.0 * (c0 * c2))  # FIXME: discriminant is wrong for 1046
-                    # FIXME: discriminant is wrong for 1046
+                    # NOTE: precision problem with floating points appears down below
+                    # So, expect test cases to fail here when comparing results with ASOC
                     discriminant = (c1 * c1) - (4.0 * (c0 * c2))
-
-                    # discriminant = math.pow(c1, 2) - (4.0 * (c0 * c2))  # FIXME: discriminant is wrong for 1046
-                    # discriminant = ((ctypes.c_double(c1) * ctypes.c_double(c1)) -
-                    # (ctypes.c_double4.0 * (c0 * c2)))  # FIXME: discriminant is wrong for 1046
-                    # if
 
                     if 0.0 <= discriminant:
                         # if 1 <= discriminant:

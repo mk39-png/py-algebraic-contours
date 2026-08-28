@@ -54,7 +54,9 @@ def compute_spline_surface_ray_intersections(spline_surface: QuadraticSplineSurf
                 ray_mapping_coeffs)
 
     # NOTE: below line is a translation from Eigen's .block() function
+    # TODO: simplify to just ray_mapping_coeffs[0, 0:2].flatten()
     ray_plane_point: PlanarPoint1d = ray_mapping_coeffs[0:1, 0:2].flatten()
+
     assert ray_plane_point.shape == (2, )
     hash_indices: tuple[int, int] = spline_surface.compute_hash_indices(ray_plane_point)
 
