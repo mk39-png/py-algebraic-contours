@@ -429,9 +429,9 @@ def float_equal(x: float, y: float, eps=FLOAT_EQUAL_PRECISION) -> bool:
     """
     Check if two floating point values are numerically equal
 
-    :param[in] x: first value to compare
-    :param[in] y: second value to compare
-    :param[in] eps: threshold for equality
+    :param x: first value to compare
+    :param y: second value to compare
+    :param eps: threshold for equality
     :return: true iff x - y is numerically zero
     """
 
@@ -446,13 +446,13 @@ def float_equal(x: float, y: float, eps=FLOAT_EQUAL_PRECISION) -> bool:
 
 def vector_equal(v: np.ndarray, w: np.ndarray, eps: float = FLOAT_EQUAL_PRECISION) -> bool:
     """
-    @brief Check if two row vectors of floating point values are numerically
+    Check if two row vectors of floating point values are numerically
     equal
 
-    @param[in] v: first vector of values to compare
-    @param[in] w: second vector of values to compare
-    @param[in] eps: threshold for equality
-    @return true iff v - w is numerically the zero vector
+    :param v: first vector of values to compare
+    :param w: second vector of values to compare
+    :param eps: threshold for equality
+    :return: true iff v - w is numerically the zero vector
     """
     return np.allclose(v, w, atol=eps)
 
@@ -551,14 +551,15 @@ def cross_product(v: Vector3f, w: Vector3f) -> Vector3f:
 
 def reflect_across_x_axis(vector: PlanarPoint1d) -> PlanarPoint1d:
     """
-    @brief  Reflect a vector in the plane across the x-axis.
+    Reflect a vector in the plane across the x-axis.
 
-    @param[in] vector: vector to reflect
-    @return reflected vector of shape (1, 2)
+    :param[in] vector: vector to reflect
+    :return: reflected vector of shape (2, )
     """
     assert vector.shape == (2, )
     reflected_vector: PlanarPoint1d = np.array(
         [vector[0], -vector[1]], dtype=np.float64)
+    assert reflected_vector.shape == (2, )
     return reflected_vector
 
 
@@ -576,6 +577,18 @@ def vector_contains(vec: list, item: Any) -> bool:
 
 
 def convert_index_vector_to_boolean_array(index_vector: list[int], num_indices: int) -> list[bool]:
+    # TODO: fix summary/explanation inside docstring
+    """ 
+    From a vector of indices, build a boolean array settings elements at index_vector 
+    indices to true
+
+    :param index_vector: indices where the array is true
+    :type index_vector: list[int]
+    :param num_indices: length of boolean array to construct
+    :type num_indices: int
+    :return: array of boolean values
+    :rtype: list[bool]
+    """
     boolean_array: list[bool] = [False for _ in range(num_indices)]
 
     for i, _ in enumerate(index_vector):
@@ -811,12 +824,12 @@ def is_manifold(F: MatrixXi) -> bool:
 #  *******************
 def area_from_length(l0: float, l1: float, l2: float) -> float:
     """
-    @brief Compute the area of a triangle from the edge lengths.
+    Compute the area of a triangle from the edge lengths.
 
-    @param[in] l0: first edge length
-    @param[in] l1: second edge length
-    @param[in] l2: third edge length
-    @return area of the triangle
+    :param l0: first edge length
+    :param l1: second edge length
+    :param l2: third edge length
+    :return: area of the triangle
     """
     # Return the area (or zero if there is a triangle inequality violation)
     s: float = 0.5 * (l0 + l1 + l2)  # semi-perimeter
@@ -886,7 +899,7 @@ def interval_lerp(t_min_0: float,
     :param t_min_1: [in] minimum of the image interval
     :param t_max_1: [in] maximum of the domain interval
     :param t_0:     [in] point in the domain interval
-    :return mapped point in the iamge
+    :return: mapped point in the iamge
     """
     # Return the midpoint of the image if the input domain is trivial
     if float_equal(t_min_0, t_max_0):
@@ -907,7 +920,7 @@ def compute_point_cloud_bounding_box(points: MatrixNx3f) -> tuple[Vector1D, Vect
     :param points: points to compute the bounding box for.
     :type points: np.ndarray
 
-    :return (min_point, max_point): tuple of (point with minimum coordinates for the bounding box,
+    :return: tuple of (point with minimum coordinates for the bounding box,
     point with maximum coordinates for the bounding box).
     :rtype: tuple[Vector1d, Vector1d]
     """
@@ -931,7 +944,8 @@ def remove_mesh_faces(V: MatrixNx3f,
                       F: MatrixNx3i,
                       faces_to_remove: list[FaceIndex]) -> tuple[MatrixNx3f, MatrixNx3i]:
     """
-    Using igl to remove unreferenced vertices from V using faces_to_remove and updating F accordingly.
+    Using igl to remove unreferenced vertices from V using faces_to_remove and updating F 
+    accordingly.
 
     :param V: vertices to remove unreferenced vertices from. np.ndarray of float
     :type V: np.ndarray

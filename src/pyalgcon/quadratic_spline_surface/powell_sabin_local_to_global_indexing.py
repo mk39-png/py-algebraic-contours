@@ -239,12 +239,12 @@ def generate_global_vertex_gradient_variable_index(num_variable_vertices: int,
     i.e. Get the index of the gradient variable indices for a given matrix index pair
     and vertex index
 
-    @param[in] num_variable_vertices: number of variable vertices for the optimization
-    @param[in] vertex_index: index of the vertex in the mesh
-    @param[in] row: row of the gradient matrix variable
-    @param[in] col: column of the gradient matrix variable
-    @param[in] dimension: number of coordinate dimensions
-    @return index of the variable in the global DOF vector
+    :param num_variable_vertices: [in] number of variable vertices for the optimization
+    :param vertex_index:          [in] index of the vertex in the mesh
+    :param row:                   [in] row of the gradient matrix variable
+    :param col:                   [in] column of the gradient matrix variable
+    :param dimension:             [in] number of coordinate dimensions
+    :return: index of the variable in the global DOF vector
     """
     start_index: int = generate_global_vertex_gradient_variables_start_index(
         num_variable_vertices, vertex_index, dimension)
@@ -294,9 +294,10 @@ def generate_six_split_variable_value_vector(vertex_positions: list[SpatialVecto
     NOTE: keeping variable_values as 1D array since generate_twelve_split_variable_value_vector() 
     expects 1D array back.
 
-    :param vertex_positions:  (in) list of vertex position values. SpatialVector shape (1, 3)
-    :param vertex_gradients:  (in) list of vertex gradient matrices 
-    :param variable_vertices: (in)  list of variable vertex indices
+    :param vertex_positions:  [in] list of vertex position values.
+    :type vertex_positions: list[SpatialVector1d]
+    :param vertex_gradients:  [in] list of vertex gradient matrices 
+    :param variable_vertices: [in]  list of variable vertex indices
     :return variable_values: vertex DOF vector of shape (n, )
     """
     num_variable_vertices: int = len(variable_vertices)
@@ -525,9 +526,9 @@ def update_independent_variable_vector(variable_values: Vector1D,
         passed into this method. optimized_variable_values is generated from hessian_inverse.solve,  
         which "returns" a 1D array.
 
-    :param variable_values: (in)
-    :param variable_vector_ref: (out)
-    :param start_index: (in)
+    :param variable_values:      [in]
+    :param variable_vector_ref: [out]
+    :param start_index:          [in]
     """
     assert variable_values.ndim == 1
     assert variable_vector_ref.shape == (3, )
@@ -569,8 +570,8 @@ def update_position_variables(variable_values: Vector1D,
     i.e. Update all position variables
     NOTE: modifies vertex_positions_ref by reference.
 
-    :param variable_values:   [in] twelve-split DOF vector
-    :param variable_vertices: [in] list of variable vertex indices
+    :param variable_values:       [in] twelve-split DOF vector
+    :param variable_vertices:     [in] list of variable vertex indices
     :param vertex_positions_ref: [out] list of vertex position values
     """
     if len(vertex_positions_ref) == 0:
@@ -600,8 +601,8 @@ def update_vertex_gradient_variables(variable_values: Vector1D,
 
     NOTE: modifies vertex_gradients by reference.
 
-    :param variable_values:   [in] twelve-split DOF vector
-    :param variable_vertices: [in] list of variable vertex indices
+    :param variable_values:       [in] twelve-split DOF vector
+    :param variable_vertices:     [in] list of variable vertex indices
     :param vertex_gradients_ref: [out] list of vertex gradient values
     """
     num_variable_vertices: int = len(variable_vertices)
@@ -630,12 +631,12 @@ def update_edge_gradient_variables(variable_values: Vector1D,
 
     NOTE: modifies edge_gradients_ref by reference.
 
-    @param[in] variable_values: twelve-split DOF vector
-    @param[in] variable_vertices: list of variable vertex indices
-    @param[in] variable_edges: list of variable edge indices
-    @param[in] halfedge: halfedge data structure
-    @param[in] he_to_corner: map from halfedges to opposite triangle corners
-    @param[out] edge_gradients: list of edge gradient values (element arrays of length 3)
+    :param variable_values:   [in] twelve-split DOF vector
+    :param variable_vertices: [in] list of variable vertex indices
+    :param variable_edges:    [in] list of variable edge indices
+    :param halfedge:          [in] halfedge data structure
+    :param he_to_corner:      [in] map from halfedges to opposite triangle corners
+    :param edge_gradients:   [out] list of edge gradient values (element arrays of length 3)
     """
     dimension: int = 3
     num_variable_vertices: int = len(variable_vertices)
@@ -678,9 +679,9 @@ def build_variable_vertex_indices_map(num_vertices: int, variable_vertices: list
     Generate a map from all vertices to a list of variable vertices or -1 for
     vertices that are not variable.
 
-    @param[in] num_vertices: total number of vertices
-    @param[in] variable_vertices: list of variable vertex indices
-    @param[out] global_vertex_indices: map from vertex indices to variable vertices
+    :param num_vertices: total number of vertices
+    :param variable_vertices: list of variable vertex indices
+    :return: map from vertex indices to variable vertices
     """
     # Get variable vertex indices
     global_vertex_indices: list[int] = [PLACEHOLDER_VALUE for _ in range(num_vertices)]

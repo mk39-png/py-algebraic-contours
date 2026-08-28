@@ -27,6 +27,8 @@ def _solve_quadratic(q: Vector3f, threshold: float) -> tuple[int, Vector2f]:
     """
     Solves quadratic.
     Returns number of solutions and solution.
+    So, going from highest degree to lowest degree
+    ax^2 + bx + c
     """
     discr: float
     num_solution: int = 0

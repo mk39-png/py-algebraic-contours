@@ -169,14 +169,12 @@ def compute_vertex_one_ring(F: np.ndarray,
     """
     Compute the vertex one ring for a vertex index using adjacent faces.
 
-    Args:
-        F: [in].
-        vertex_index: [in].
-        adjacent_faces: [in].
+    :param F:
+    :param vertex_index:
+    :param adjacent_faces:
 
-    Returns:
-        vertex_one_ring: [out].
-        face_one_ring: [out].
+    :return vertex_one_ring: 
+    :return face_one_ring: 
     """
     # TODO: double check logic of this method and if it makes sense to return a new value
     num_faces:       int = len(adjacent_faces)
@@ -259,12 +257,10 @@ class VertexCirculator:
         boundary. For interior vertices, an arbitrary start face is chosen, and
         the vertex one ring is closed so that v_0 = v_n.
 
-        Args:
-            vertex_index:    [in]  index of the vertex to get the one ring for
+        :param vertex_index: index of the vertex to get the one ring for
 
-        Returns:
-            vertex_one_ring: [out] vertices ccw around the one ring
-            face_one_ring:   [out] faces ccw around the one ring
+        :return vertex_one_ring: vertices ccw around the one ring
+        :return face_one_ring:   faces ccw around the one ring
         """
 
         # TODO: maybe just use a list of list of ints rather than a 2D NumPy array...

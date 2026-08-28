@@ -6,6 +6,7 @@ import logging
 
 import numpy as np
 import numpy.linalg as LA
+
 from pyalgcon.core.common import (Matrix2x2f, Matrix3x2r, Matrix12x3x3f,
                                   Matrix12x12r, Matrix36x12f, Matrix36x36f,
                                   Vector1D)
@@ -27,10 +28,10 @@ def get_C_gl(uv: Matrix3x2r,
     Here, dij is the derivative of f in the direction of edge eij and
     hij is the derivative of f from the edge midpoint to the opposite vertex
 
-    :param[in] uv: global uv vertex positions of shape (3, 2)
-    :param[in] corner_to_corner_uv_positions: per vertex matrices with the
+    :param uv: global uv vertex positions of shape (3, 2)
+    :param corner_to_corner_uv_positions: per vertex matrices with the
     local vertex chart edge directions as rows. Length = 3
-    :param[in] reverse_edge_orientations: per edge booleans indicating if the
+    :param reverse_edge_orientations: per edge booleans indicating if the
     edge midpoint needs to be flipped from frame orientation consistency. Length = 3
 
     :return: matrix mapping global to local degrees of freedom of shape (12, 12)
@@ -259,8 +260,8 @@ def get_R_quad(uv: np.ndarray) -> np.ndarray:
     the domain triangle to the second derivatives with respect to a 
     parametric domain triangle defined by uv
 
-    @param[in] uv: uv coordinates of the domain triangle
-    @return matrix mapping second derivatives wrt barycentric coordinates
+    :param uv: uv coordinates of the domain triangle
+    :return: matrix mapping second derivatives wrt barycentric coordinates
         to second derivatives wrt uv coordinates
     """
     assert uv.shape == (3, 2)
@@ -325,8 +326,8 @@ def get_S(uv: np.ndarray) -> np.ndarray:
     """
     Compute the diagonal uv triangle area weighting matrix for the Hessian
 
-    @param[in] uv: uv coordinates of the domain triangle
-    @return diagonal Hessian weight matrix
+    :param uv: [in] uv coordinates of the domain triangle
+    :return: diagonal Hessian weight matrix
     """
     # Compute the area of the uv triangle
     tri: np.ndarray = np.array(
@@ -346,12 +347,12 @@ def build_local_smoothness_hessian(uv: Matrix3x2r,
     Compute the thin plate energy Hessian matrix for a single 12-split 
     Powell-Sabin element
 
-    @param[in] uv: uv coordinates of the domain triangle
-    @param[in] corner_to_corner_uv_positions: per vertex matrices with the
+    :param uv: uv coordinates of the domain triangle
+    :param corner_to_corner_uv_positions: per vertex matrices with the
     local vertex chart edge directions as rows
-    @param[in] reverse_edge_orientations: per edge booleans indicating if the
+    :param reverse_edge_orientations: per edge booleans indicating if the
     edge midpoint needs to be flipped from frame orientation consistency
-    @return Hessian matrix in terms of Powell-Sabin degrees of freedom
+    :return: Hessian matrix in terms of Powell-Sabin degrees of freedom
     """
     assert uv.shape == (3, 2)
     assert len(corner_to_corner_uv_positions) == 3

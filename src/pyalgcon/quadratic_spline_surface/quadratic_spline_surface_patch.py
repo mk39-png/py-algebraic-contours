@@ -235,6 +235,8 @@ class QuadraticSplineSurfacePatch:
         Get the surface mapping coefficients with normalized domain.
 
         Compute them if they haven't been computed yet.
+        NOTE: returns property that should really be readonly, but can be 
+        accidentally modified.
 
         :return: reference to the normalized surface mapping. shape==(6,3)
         :rtype: np.ndarray

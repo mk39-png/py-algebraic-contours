@@ -845,15 +845,15 @@ def build_twelve_split_spline_energy_system(initial_V: MatrixNx3f,
     Build the quadratic energy system for the twelve-split spline with thin
     plate, fitting, and planarity energies.
 
-    :param[in] initial_V: initial vertex positions
-    :param[in] initial_face_normals: initial vertex normals
-    :param[in] affine_manifold: mesh topology and affine manifold structure
-    :param[in] optimization_params: parameters for the spline optimization
+    :param initial_V:            [in] initial vertex positions
+    :param initial_face_normals: [in] initial vertex normals
+    :param affine_manifold:      [in] mesh topology and affine manifold structure
+    :param optimization_params:  [in] parameters for the spline optimization
 
-    :param[out] energy: energy value (i.e., constant term)
-    :param[out] derivatives: energy gradient (i.e., linear term)
-    :param[out] hessian: energy Hessian (i.e., quadratic term)
-    :param[out] hessian_inverse: solver for inverting the Hessian
+    :param energy:          [out] energy value (i.e., constant term)
+    :param derivatives:     [out] energy gradient (i.e., linear term)
+    :param hessian:         [out] energy Hessian (i.e., quadratic term)
+    :param hessian_inverse: [out] solver for inverting the Hessian
     """
     # Builds parameters for compute_twelve_split_energy_quadratic
     vertex_positions:     list[SpatialVector1d]
@@ -1085,8 +1085,8 @@ def generate_zero_vertex_gradients(num_vertices: int) -> list[Matrix2x3r]:
     Generate zero value gradients for a given number of vertices.
     Helper function.
 
-    @param[in] num_vertices: number of vertices |V|
-    @param[out] gradients: |V| trivial vertex gradient matrices
+    :param num_vertices: [in] number of vertices |V|
+    :return: |V| trivial vertex gradient matrices
     """
     gradients: list[Matrix2x3r] = []
 
@@ -1102,8 +1102,8 @@ def generate_zero_edge_gradients(num_faces: int) -> list[list[SpatialVector1d]]:
     Generate zero value gradients for a given number of halfedges.
     Helper function.
 
-    @param[in] num_faces: number of faces |F|
-    @param[out] gradients: 3|F| trivial edge gradient matrices
+    :param num_faces: [in] number of faces |F|
+    :return: 3|F| trivial edge gradient matrices
     """
 
     # Set the zero gradient for each vertex
@@ -1149,7 +1149,7 @@ def convert_reduced_edge_gradients_to_full(reduced_edge_gradients: list[list[Spa
 
     :param affine_manifold: [in] mesh topology and affine manifold structure
 
-    :param edge_gradients: [out] edge and corner directed gradients per edge midpoints with 
+    :return: edge and corner directed gradients per edge midpoints with 
         list[Matrix2x3r] of length 3
     """
     F: MatrixXi = affine_manifold.faces

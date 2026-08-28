@@ -255,13 +255,12 @@ def quadratic_real_roots(quadratic_coeffs: Vector3f,
                          eps: float = 1e-10) -> tuple[Vector2f, int]:
     """
     Compute the real roots of a quadratic polynomial.
-
+    In order of lowest to highest degree. c + bx + ax^2
     :param quadratic_coeffs: [in] coefficients of the polynomial
     :param eps: [in] threshold for zero comparisons
 
-    Return:
-        solutions (list): [out] real roots of the polynomial
-        num_solutions (int): [out] solution count
+    :return solutions (list): [out] real roots of the polynomial
+    :return num_solutions (int): [out] solution count
     """
     assert quadratic_coeffs.shape == (3, )
 

@@ -400,7 +400,7 @@ class RationalFunction:
         """
         Discretize the given rational curve as a polyline curve network
 
-        :param[in] curve_disc_params: parameters for the curve discretization
+        :param curve_disc_params: parameters for the curve discretization
         :return points: points of the curve network
         :return polyline: polyline indices of the curve network
         """
@@ -517,11 +517,9 @@ class RationalFunction:
         """
         Evaluate the rational mapping at domain point t.
 
-        Args:
-            t (float): [in] domain point to evaluate at.
-
-        Returns:
-            evaluated point.
+        :param t: domain point to evaluate at.
+        :type t: float
+        :return:evaluated point.
         """
         return self.evaluate(t)
 
