@@ -39,8 +39,8 @@ class IntersectionData():
     def check_if_tip(self, domain_ref: Interval, eps: float) -> None:
         """
         Check if the knot is the tip of an oriented curve
-        @param[in] domain: domain for the curve
-        @param[in] eps: epsilon tolerance for the check
+        :param domain: domain for the curve
+        :param eps:    epsilon tolerance for the check
         """
         self.is_tip = float_equal(domain_ref.upper_bound, self.knot, eps)
 
