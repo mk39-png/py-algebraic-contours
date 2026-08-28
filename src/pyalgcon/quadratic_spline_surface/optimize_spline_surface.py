@@ -377,7 +377,12 @@ def shift_array(arr_ref: list, shift: int) -> None:
     NOTE: performs DEEP copy and then shifts. So good for basic 
     datatypes but not something like list[np.ndarray] for performance reasons.
     """
-    arr_copy: list = copy.deepcopy(arr_ref)
+    # If shifting isnt moving anything, then early return to avoid deepcopy
+    if shift == 0:
+        return
+
+    arr_copy:  list = copy.deepcopy(arr_ref)
+    assert (shift >= 0), f"negative shift detected: {shift}"
     for i in range(3):
         arr_ref[i] = arr_copy[(i + shift) % 3]
 
@@ -400,6 +405,11 @@ def shift_local_energy_quadratic_vertices(
     for triangle vertex values.
     NOTE: all array arguments/parameters for this function should be size 3.
     """
+    # 0 shift would not do anything.
+    # Return early to avoid unnecessary function calls
+    if shift == 0:
+        return
+
     shift_array(vertex_positions_T_ref, shift)
     shift_array(vertex_gradients_T_ref, shift)
     shift_array(edge_gradients_T_ref, shift)
