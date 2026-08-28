@@ -155,12 +155,12 @@ class Conic(RationalFunction):
         # formatted_polynomial(self.get_degree, self.get_dimension, Q_coeffs))
 
         # Compute (homogenized) polynomial coefficients for the quadratic terms
-        QQ_coeffs: Vector1D = np.ndarray(shape=(5, ))
-        Qu_coeffs: Vector1D = np.ndarray(shape=(5, ))
-        Qv_coeffs: Vector1D = np.ndarray(shape=(5, ))
-        uv_coeffs: Vector1D = np.ndarray(shape=(5, ))
-        uu_coeffs: Vector1D = np.ndarray(shape=(5, ))
-        vv_coeffs: Vector1D = np.ndarray(shape=(5, ))
+        QQ_coeffs: Vector1D  # shape (5, )
+        Qu_coeffs: Vector1D  # shape (5, )
+        Qv_coeffs: Vector1D  # shape (5, )
+        uv_coeffs: Vector1D  # shape (5, )
+        uu_coeffs: Vector1D  # shape (5, )
+        vv_coeffs: Vector1D  # shape (5, )
 
         # TODO: change the  function below to reemove the dimension parameter... maybe...
         QQ_coeffs = compute_polynomial_mapping_product(
@@ -180,12 +180,13 @@ class Conic(RationalFunction):
         # NOTE: need to flatten the NP matrices into vectors from (5,1) to (5,)
         # shape for broadcasting to work
         # NOTE: Also transposing with .T to be shape (5,6) rather than (6,5)
-        monomial_coeffs = np.array([QQ_coeffs,
-                                    Qu_coeffs,
-                                    Qv_coeffs,
-                                    uv_coeffs,
-                                    uu_coeffs,
-                                    vv_coeffs]).T
+        monomial_coeffs = np.column_stack([QQ_coeffs,
+                                           Qu_coeffs,
+                                           Qv_coeffs,
+                                           uv_coeffs,
+                                           uu_coeffs,
+                                           vv_coeffs])
+
         assert monomial_coeffs.shape == (5, 6)
         logger.debug("Monomial coefficients matrix:\n%s", monomial_coeffs)
 
