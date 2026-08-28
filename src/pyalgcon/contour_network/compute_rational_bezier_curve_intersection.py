@@ -10,7 +10,8 @@ import math
 import numpy as np
 
 from pyalgcon.core.common import (Matrix5x3f, SpatialVector1d, Vector2f,
-                                  Vector3f, Vector5f, float_equal)
+                                  Vector3f, Vector5f, cross_product,
+                                  float_equal)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -235,21 +236,6 @@ def _dot3(v: Vector3f, w: Vector3f) -> float:
     return (v[0] * w[0] + v[1] * w[1] + v[2] * w[2])
 
 
-def _cross3(v: Vector3f,  w: Vector3f) -> Vector3f:
-    """
-    Returns cross product.
-    NOTE: for some reason, this implementation is preferred by the C++ code over the numpy.cross 
-    method
-    """
-    assert v.shape == (3, )
-    assert w.shape == (3, )
-    res: Vector3f = np.zeros(shape=(3, ), dtype=np.float64)
-    res[0] = v[1] * w[2] - v[2] * w[1]
-    res[1] = -v[0] * w[2] + v[2] * w[0]
-    res[2] = v[0] * w[1] - v[1] * w[0]
-
-    return res
-
 # *****************
 # Clip fatline
 # *****************
@@ -267,7 +253,7 @@ def _fatline(Q: Matrix5x3f,
     nQ: int = 5
     L: Vector3f = np.zeros(shape=(3, ), dtype=np.float64)
     # L = np.cross(Q[0], Q[nQ - 1])
-    L = _cross3(Q[0], Q[nQ - 1])
+    L = cross_product(Q[0], Q[nQ - 1])
 
     assert L.shape == (3, )
     cmin: float = L[2]
@@ -312,15 +298,15 @@ def _clipline(P: Matrix5x3f,
         Ei[0] = float(i - 1) / nPf
         Ei[1] = _dot3(L, P[i - 1])
         Ei[2] = 1
-        L0i = _cross3(E0, Ei)
-        Lni = _cross3(En, Ei)
+        L0i = cross_product(E0, Ei)
+        Lni = cross_product(En, Ei)
 
         if 1 < i:
-            V0i = _cross3(L0i, ey)
+            V0i = cross_product(L0i, ey)
             v0x[i - 1] = V0i[0] / V0i[2]
         if i < nP:
             # NOTE: division by 0 is fine as that's to be expected in the C++ code as well
-            Vni = _cross3(Lni, ey)
+            Vni = cross_product(Lni, ey)
             vnx[i - 1] = Vni[0] / Vni[2]
 
     if 0.0e0 <= E0[1]:

@@ -537,7 +537,8 @@ def cross_product(v: Vector3f, w: Vector3f) -> Vector3f:
     assert v.size == 3
     assert w.size == 3
 
-    # TODO: use NumPy's version of cross products
+    # NOTE: for some reason, this implementation is preferred by the C++ code over the numpy.cross
+    # method. Since trying to use np.cross will cause some parts of PYAC to fail.
     n: Vector3f = np.array([
         (v[1] * w[2] - v[2] * w[1]),
         (-(v[0] * w[2] - v[2] * w[0])),
