@@ -163,8 +163,8 @@ class ConvexPolygon:
         # *******
         # Private
         # *******
-        self.m_boundary_segments_coeffs: list[Vector3f] = boundary_segments_coeffs
-        self.m_vertices: Matrix3x2f = vertices
+        self.__boundary_segments_coeffs: list[Vector3f] = boundary_segments_coeffs
+        self.__vertices: Matrix3x2f = vertices
 
     # TODO: make a method to serialize to JSON... or something like that.
     # def serialize_to_json_str(self) -> str:
@@ -266,14 +266,12 @@ class ConvexPolygon:
         # FIXME: if not done already, rework method to utilize 1D PlanarPoint type
         assert point.shape == (2, )
 
-        for _, L_coeffs in enumerate(self.m_boundary_segments_coeffs):
+        for L_coeffs in self.__boundary_segments_coeffs:
             # NOTE: redundant check
-            assert L_coeffs.shape == (3, )
-
             # NOTE: index accessing was wrong beforehand...
+            assert L_coeffs.shape == (3, )
             if (L_coeffs[0] + L_coeffs[1] * point[0] + L_coeffs[2] * point[1]) < 0.0:
                 return False
-
         return True
 
     @staticmethod
@@ -336,17 +334,17 @@ class ConvexPolygon:
         # HACK: flattening this accessor to return list[Vector3f] rather than
         # a list of (3, 1) matrices
         boundary_segments_coeffs_flattened: list[Vector3f] = []
-        for boundary_segment_coeffs in self.m_boundary_segments_coeffs:
+        for boundary_segment_coeffs in self.__boundary_segments_coeffs:
             boundary_segments_coeffs_flattened.append(boundary_segment_coeffs.flatten())
         assert (np.array(boundary_segments_coeffs_flattened).shape ==
-                np.array(self.m_boundary_segments_coeffs).squeeze().shape)
+                np.array(self.__boundary_segments_coeffs).squeeze().shape)
 
         return boundary_segments_coeffs_flattened
 
     @property
     def vertices(self) -> Matrix3x2f:
         """Gets vertices from Convex Polygon"""
-        return self.m_vertices
+        return self.__vertices
 
     def parametrize_patch_boundaries(self) -> list[LineSegment]:
         """
@@ -358,11 +356,11 @@ class ConvexPolygon:
 
         # Get rows of m_vertices.
         # NOTE: num_verices should be 3
-        num_vertices: int = self.m_vertices.shape[ROWS]
+        num_vertices: int = self.__vertices.shape[ROWS]
         for i in range(num_vertices):
             line_segment: LineSegment = compute_parametric_line_between_points(
-                self.m_vertices[i, :],  # row
-                self.m_vertices[((i + 1) % num_vertices), :])  # row
+                self.__vertices[i, :],  # row
+                self.__vertices[((i + 1) % num_vertices), :])  # row
             patch_boundaries.append(line_segment)
 
         # Double checking that we indeed only have 3 elements inside patch_boundaries as per
@@ -382,7 +380,7 @@ class ConvexPolygon:
         :return: tuple of V (shape (3, 2)) and F (shape (1, 3))
         :rtype: tuple[np.ndarray, np.ndarray]
         """
-        V: MatrixNx3f = self.m_vertices
+        V: MatrixNx3f = self.__vertices
         F: MatrixNx3i = np.array([[0, 1, 2]], dtype=np.int64)
         # NOTE: keep F as shape (1, 3) since F can have any number of rows and should not be 1D
         assert F.shape == (1, 3)
