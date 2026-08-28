@@ -88,18 +88,23 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         fit_derivatives: Vector1D
         fit_matrix: csr_matrix
         fit_matrix_inverse: CholeskySolverD
-        # Make a deep since we don't want the same parameters between
+
         # Fit vs Non-fit 12-split-splines
-        optimization_params_fit: OptimizationParameters = copy.deepcopy(optimization_params)
-        optimization_params_fit.parametrized_quadratic_surface_mapping_factor = 0.0
+        # NOTE: remembering what this was set before.
+        # Want it to 0.0 to find the "fit" energy system
+        factor_temp: float = optimization_params.parametrized_quadratic_surface_mapping_factor
+        optimization_params.parametrized_quadratic_surface_mapping_factor = 0.0
         fit_energy, fit_derivatives, fit_matrix, fit_matrix_inverse = (
-            build_twelve_split_spline_energy_system(V, N, affine_manifold, optimization_params_fit))
+            build_twelve_split_spline_energy_system(V, N, affine_manifold, optimization_params))
 
         # Build full energy hessian system
         energy: float
         derivatives: Vector1D
         energy_hessian: csr_matrix
         energy_hessian_inverse: CholeskySolverD
+
+        # NOTE: now after finding the "fit" energy system, restore back to normal
+        optimization_params.parametrized_quadratic_surface_mapping_factor = factor_temp
         energy, derivatives, energy_hessian, energy_hessian_inverse = (
             build_twelve_split_spline_energy_system(V, N, affine_manifold, optimization_params))
 
@@ -127,10 +132,8 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
             is_cone_corner)
 
         # This initializes the following:
-        # TODO: debug through and see if these local variables are changed after calling super()
-        # This shows that Python's super class and subclass behavior of inheritance.
-        self._patches: list[QuadraticSplineSurfacePatch]
-        self._hash_table: list[list[list[int]]]
+        # self._patches: list[QuadraticSplineSurfacePatch]
+        # self._hash_table: list[list[list[int]]]
         super().__init__(patches)
 
         # Saving everything into the class
