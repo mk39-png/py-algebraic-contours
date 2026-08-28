@@ -62,9 +62,10 @@ def compute_symmetric_matrix_eigen_decomposition(A: Matrix2x2f) -> tuple[Vector2
     assert rotation.shape == (2, 2)
 
     # FIXME: potentially incorrect C++ translation
-    npt.assert_allclose(
-        A,
-        rotation.T @ np.diag([eigenvalues[0], eigenvalues[1]]) @ rotation, atol=1e-5)
+    if __debug__:
+        npt.assert_allclose(
+            A,
+            rotation.T @ np.diag([eigenvalues[0], eigenvalues[1]]) @ rotation, atol=1e-5)
     assert float_equal(np.linalg.det(rotation), 1.0)
 
     return eigenvalues, rotation
