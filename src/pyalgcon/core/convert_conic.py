@@ -53,13 +53,12 @@ def compute_symmetric_matrix_eigen_decomposition(A: Matrix2x2f) -> tuple[Vector2
 
     # Second column of rotation matrix is the first eigenvector rotated 90
     # degrees
-    eigenvector_2: PlanarPoint1d
-    eigenvector_2 = np.array([-eigenvector_1[1], eigenvector_1[0]], dtype=np.float64)
+    eigenvector_2: PlanarPoint1d = np.array([-eigenvector_1[1], eigenvector_1[0]], dtype=np.float64)
 
     # Assemble rotation matrix
-    rotation: Matrix2x2f = np.array(
-        [eigenvector_1,
-         eigenvector_2], dtype=np.float64)
+    rotation: Matrix2x2f = np.array([
+        eigenvector_1,
+        eigenvector_2], dtype=np.float64)
     assert rotation.shape == (2, 2)
 
     # FIXME: potentially incorrect C++ translation
@@ -86,9 +85,11 @@ def convert_conic_to_matrix_form(conic_coeffs: Vector6f) -> tuple[Matrix2x2f,
     assert conic_coeffs.shape == (6, )
 
     #  Compute A
-    A: Matrix2x2f = np.array([[2.0 * conic_coeffs[4], conic_coeffs[3]],
-                              [conic_coeffs[3], 2.0 * conic_coeffs[5]]],
-                             dtype=np.float64)
+    A: Matrix2x2f = np.array([
+        [2.0 * conic_coeffs[4], conic_coeffs[3]],
+        [conic_coeffs[3], 2.0 * conic_coeffs[5]]],
+        dtype=np.float64
+    )
 
     #  Compute b
     b: Vector2f = np.array([conic_coeffs[1], conic_coeffs[2]], dtype=np.float64)
