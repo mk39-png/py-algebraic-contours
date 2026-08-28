@@ -222,12 +222,12 @@ def _compute_cusp_by_one_patch(spline_surface_patch: QuadraticSplineSurfacePatch
     """
     conics: list[float] = []
 
-    normalized_surface_mapping_coeffs: Matrix6x3f
-    normalized_surface_mapping_coeffs = spline_surface_patch.get_normalized_surface_mapping()
-    assert normalized_surface_mapping_coeffs.shape == (6, 3)
+    normalized_surface_mapping_coeffs_ref: Matrix6x3f
+    normalized_surface_mapping_coeffs_ref = spline_surface_patch.normalized_surface_mapping
+    assert normalized_surface_mapping_coeffs_ref.shape == (6, 3)
 
-    px: Vector6f = normalized_surface_mapping_coeffs[:, 0]
-    py: Vector6f = normalized_surface_mapping_coeffs[:, 1]
+    px: Vector6f = normalized_surface_mapping_coeffs_ref[:, 0]
+    py: Vector6f = normalized_surface_mapping_coeffs_ref[:, 1]
     assert px.shape == (6, )
     assert py.shape == (6, )
 

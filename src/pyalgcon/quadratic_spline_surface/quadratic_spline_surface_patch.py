@@ -90,7 +90,7 @@ class QuadraticSplineSurfacePatch:
         Constructor for QuadraticSplineSurfacePatch
         """
         # -- Core independent data --
-        self.m_surface_mapping_coeffs: Matrix6x3r = surface_mapping_coeffs
+        self.__surface_mapping_coeffs: Matrix6x3r = surface_mapping_coeffs
         self.m_domain: ConvexPolygon = domain
 
         # If any none, then do normal calculation
@@ -104,17 +104,17 @@ class QuadraticSplineSurfacePatch:
                 cone_index)):
 
             # -- Inferred dependent data --
-            self.m_normal_mapping_coeffs: Matrix6x3r = np.zeros(shape=(6, 3), dtype=np.float64)
-            self.m_normalized_surface_mapping_coeffs: Matrix6x3r = np.zeros(
+            self.__normal_mapping_coeffs: Matrix6x3r = np.zeros(shape=(6, 3), dtype=np.float64)
+            self.__normalized_surface_mapping_coeffs: Matrix6x3r = np.zeros(
                 shape=(6, 3), dtype=np.float64)
             self.m_bezier_points: Matrix6x3r = np.zeros(shape=(6, 3), dtype=np.float64)
             self.m_min_point: SpatialVector1d = np.zeros(shape=(3, ), dtype=np.float64)
             self.m_max_point: SpatialVector1d = np.zeros(shape=(3, ), dtype=np.float64)
 
             # Compute derived mapping information from the surface mapping and domain
-            self.m_normal_mapping_coeffs: Matrix6x3f = (
+            self.__normal_mapping_coeffs: Matrix6x3f = (
                 generate_quadratic_surface_normal_coeffs(surface_mapping_coeffs))
-            self.m_normalized_surface_mapping_coeffs = (
+            self.__normalized_surface_mapping_coeffs = (
                 compute_normalized_surface_mapping(surface_mapping_coeffs, domain))
             self.m_bezier_points = compute_bezier_points(surface_mapping_coeffs)
             (self.m_min_point,
@@ -131,8 +131,8 @@ class QuadraticSplineSurfacePatch:
             assert min_point.shape == (3, )
             assert max_point.shape == (3, )
 
-            self.m_normal_mapping_coeffs = normal_mapping_coeffs
-            self.m_normalized_surface_mapping_coeffs = normalized_surface_mapping_coeffs
+            self.__normal_mapping_coeffs = normal_mapping_coeffs
+            self.__normalized_surface_mapping_coeffs = normalized_surface_mapping_coeffs
             self.m_bezier_points = bezier_points
             self.m_min_point = min_point
             self.m_max_point = max_point
@@ -183,7 +183,7 @@ class QuadraticSplineSurfacePatch:
 
         :return: dimension of the ambient space
         """
-        return self.m_surface_mapping_coeffs.shape[1]
+        return self.__surface_mapping_coeffs.shape[1]
 
     def mark_cone(self, cone_index: int) -> None:
         """Mark one of the vertices as a cone
@@ -218,7 +218,7 @@ class QuadraticSplineSurfacePatch:
         :return: reference to the surface mapping. shape == (6,3)
         :rtype: np.ndarray
         """
-        return self.m_surface_mapping_coeffs
+        return self.__surface_mapping_coeffs
 
     @property
     def normal_mapping(self) -> Matrix6x3f:
@@ -228,9 +228,10 @@ class QuadraticSplineSurfacePatch:
         :return: reference to the surface normal mapping. shape==(6,3)
         :rtype: np.ndarray
         """
-        return self.m_normal_mapping_coeffs
+        return self.__normal_mapping_coeffs
 
-    def get_normalized_surface_mapping(self) -> Matrix6x3r:
+    @property
+    def normalized_surface_mapping(self) -> Matrix6x3r:
         """
         Get the surface mapping coefficients with normalized domain.
 
@@ -238,10 +239,13 @@ class QuadraticSplineSurfacePatch:
         NOTE: returns property that should really be readonly, but can be 
         accidentally modified.
 
+        NOTE: returns a REFERENCE to the NORMALIZED SURFACE MAPPING.
+        Meaning, it SHOULD return a READ ONLY property
+
         :return: reference to the normalized surface mapping. shape==(6,3)
         :rtype: np.ndarray
         """
-        return self.m_normalized_surface_mapping_coeffs
+        return self.__normalized_surface_mapping_coeffs
 
     def get_bezier_points(self) -> Matrix6x3r:
         """
@@ -380,7 +384,7 @@ class QuadraticSplineSurfacePatch:
             normalized_domain_vertices)
 
         # Build the normalized surface patch
-        normalized_surface_mapping_coeffs: Matrix6x3r = self.get_normalized_surface_mapping()
+        normalized_surface_mapping_coeffs: Matrix6x3r = self.normalized_surface_mapping
         normalized_spline_surface_patch = QuadraticSplineSurfacePatch(
             normalized_surface_mapping_coeffs, normalized_domain)
 
@@ -430,7 +434,7 @@ class QuadraticSplineSurfacePatch:
         :rtype: SpatialVector
         """
         assert domain_point.shape == (2, )
-        surface_point: SpatialVector1d = evaluate_quadratic_mapping(self.m_surface_mapping_coeffs,
+        surface_point: SpatialVector1d = evaluate_quadratic_mapping(self.__surface_mapping_coeffs,
                                                                     domain_point)
         assert surface_point.shape == (3, )
         return surface_point
@@ -446,7 +450,7 @@ class QuadraticSplineSurfacePatch:
         :rtype: SpatialVector
         """
         assert domain_point.shape == (2, )
-        surface_normal: SpatialVector1d = evaluate_quadratic_mapping(self.m_normal_mapping_coeffs,
+        surface_normal: SpatialVector1d = evaluate_quadratic_mapping(self.__normal_mapping_coeffs,
                                                                      domain_point)
         assert surface_normal.shape == (3, )
         return surface_normal
@@ -548,20 +552,20 @@ class QuadraticSplineSurfacePatch:
 
         # Serialize x coordinate coefficients
         output_file.write("cx")
-        for i in range(self.m_surface_mapping_coeffs.shape[ROWS]):
-            output_file.write(f" {self.m_surface_mapping_coeffs[i, 0]:.{precision}f}")
+        for i in range(self.__surface_mapping_coeffs.shape[ROWS]):
+            output_file.write(f" {self.__surface_mapping_coeffs[i, 0]:.{precision}f}")
         output_file.write("\n")
 
         # Serialize y coordinate coefficients
         output_file.write("cy")
-        for i in range(self.m_surface_mapping_coeffs.shape[ROWS]):
-            output_file.write(f" {self.m_surface_mapping_coeffs[i, 1]:.{precision}f}")
+        for i in range(self.__surface_mapping_coeffs.shape[ROWS]):
+            output_file.write(f" {self.__surface_mapping_coeffs[i, 1]:.{precision}f}")
         output_file.write("\n")
 
         # Serialize z coordinate coefficients
         output_file.write("cz")
-        for i in range(self.m_surface_mapping_coeffs.shape[ROWS]):
-            output_file.write(f" {self.m_surface_mapping_coeffs[i, 2]:.{precision}f}")
+        for i in range(self.__surface_mapping_coeffs.shape[ROWS]):
+            output_file.write(f" {self.__surface_mapping_coeffs[i, 2]:.{precision}f}")
         output_file.write("\n")
 
         # Serialize domain boundary

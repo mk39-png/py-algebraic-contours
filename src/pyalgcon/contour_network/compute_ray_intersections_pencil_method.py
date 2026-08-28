@@ -597,7 +597,7 @@ def compute_spline_surface_patch_ray_intersections_pencil_method(
 
     # Normalize the spline surface patch to have domain triangle u + v <= 1 in [0, 1]^2
     normalized_surface_mapping_coeffs: Matrix6x3f = (
-        spline_surface_patch.get_normalized_surface_mapping())
+        spline_surface_patch.normalized_surface_mapping)
     logger.info("Coefficients for the surface mapping with normalized domain: %s",
                 normalized_surface_mapping_coeffs)
     assert normalized_surface_mapping_coeffs.shape == (6, 3)
