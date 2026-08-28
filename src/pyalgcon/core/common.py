@@ -565,8 +565,8 @@ def convert_index_vector_to_boolean_array(index_vector: list[int], num_indices: 
     """
     boolean_array: list[bool] = [False for _ in range(num_indices)]
 
-    for i, _ in enumerate(index_vector):
-        boolean_array[index_vector[i]] = True
+    for index in index_vector:
+        boolean_array[index] = True
 
     return boolean_array
 
@@ -615,12 +615,9 @@ def remove_vector_values(indices_to_remove: list[Index], vec: list) -> list:
     # Remove faces adjacent to cones
     indices_to_keep: list[Index] = index_vector_complement(
         indices_to_remove, len(vec))
-    subvec: list = []
 
     # TODO: double check logic here with ASOC code
-    for index_to_keep in indices_to_keep:
-        subvec.append(vec[index_to_keep])
-
+    subvec: list = [vec[index_to_keep] for index_to_keep in indices_to_keep]
     assert len(subvec) == len(indices_to_keep)
 
     return subvec
@@ -689,15 +686,12 @@ def generate_linspace(t_0: float, t_1: float, num_points: int) -> Vector1D:
     return np.linspace(t_0, t_1, num_points)
 
 
-def arange(size: int) -> list:
-    """Equivalent to Python's range."""
-    # TODO: compare this with Python's range method
-    arange_vec: list = []
-
-    for i in range(size):
-        arange_vec.append(i)
-
-    return arange_vec
+def arange(size: int) -> list[int]:
+    """
+    Equivalent to Python's range.
+    Useful when needing scalable list
+    """
+    return [i for i in range(size)]
 
 #  *******************
 #  Basic mesh topology
@@ -1004,7 +998,7 @@ def convert_polylines_to_edges(polylines: list[list[int]]) -> list[tuple[int, in
 
     # TODO: check to see if functionality of NumPy version is the same as the old one.
     edges: list[tuple[int, int]] = []
-    for _, polyline in enumerate(polylines):
+    for polyline in polylines:
         # polyline equivalent to polylines[i]
         edge_length: int = len(polyline)
         for j in range(1, edge_length):
