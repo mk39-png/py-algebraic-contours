@@ -6,6 +6,7 @@ import math
 import os
 import pathlib  # used for testing
 from io import StringIO
+from typing import Any
 
 import igl
 import numpy as np
@@ -164,36 +165,6 @@ MAX_PATCH_RAY_INTERSECTIONS = 4
 # **********************
 # Debug/Helper Methods (keep here for now, especially when comparing later contours code)
 # **********************
-
-
-def initialize_spot_control_mesh() -> tuple[npty.ArrayLike, npty.ArrayLike, npty.ArrayLike, npty.ArrayLike]:
-    """ 
-    Used for testing spot_control mesh in generating 
-    the TwelveSplitSplineSurface.
-    Returns only the parts of the mesh that are needed
-
-    :return: tuple V, uv, F, FT
-    :rtype: tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
-    """
-    # Get input mesh
-    filename: str = "spot_control_mesh-cleaned_conf_simplified_with_uv.obj"
-    filepath: str = os.path.abspath(f"tests\\data\\spot_control\\{filename}")
-
-    V_temp: npty.ArrayLike
-    uv_temp: npty.ArrayLike
-    N_temp: npty.ArrayLike
-    F_temp: npty.ArrayLike  # int
-    FT_temp: npty.ArrayLike  # int
-    FN_temp: npty.ArrayLike  # int
-    V_temp, uv_temp, N_temp, F_temp, FT_temp, FN_temp = igl.readOBJ(filepath)
-
-    # Wrapping inside np.array for typing
-    V: np.ndarray = np.array(V_temp)
-    uv: np.ndarray = np.array(uv_temp)
-    F: np.ndarray = np.array(F_temp)
-    FT: np.ndarray = np.array(FT_temp)
-
-    return V, uv, F, FT
 
 
 def load_json(filepath: pathlib.Path) -> list[dict] | list[list[dict]] | list[list[list]]:
@@ -486,20 +457,6 @@ def vector_equal(v: np.ndarray, w: np.ndarray, eps: float = FLOAT_EQUAL_PRECISIO
     return np.allclose(v, w, atol=eps)
 
 
-def column_vector_equal() -> None:
-    """
-    Method no longer in use.
-    """
-    deprecated()
-
-
-def matrix_equal() -> None:
-    """
-    Method no longer in use.
-    """
-    deprecated()
-
-
 def view_mesh() -> None:
     """
     Method no longer in use.
@@ -539,14 +496,6 @@ def screenshot_mesh(V: MatrixXf,
 # ****************
 # Basic arithmetic
 # ****************
-
-
-def sgn() -> None:
-    todo()
-
-
-def power() -> None:
-    todo()
 
 
 def compute_discriminant(a: float, b: float, c: float) -> float:
@@ -599,18 +548,6 @@ def cross_product(v: Vector3f, w: Vector3f) -> Vector3f:
     return n
 
 
-def triple_product():
-    todo()
-
-
-def normalize():
-    todo()
-
-
-def elementary_basis_vector():
-    todo()
-
-
 def reflect_across_x_axis(vector: PlanarPoint1d) -> PlanarPoint1d:
     """
     @brief  Reflect a vector in the plane across the x-axis.
@@ -624,36 +561,16 @@ def reflect_across_x_axis(vector: PlanarPoint1d) -> PlanarPoint1d:
     return reflected_vector
 
 
-# this is a void.
-def rotate_vector():
-    todo()
+def vector_contains(vec: list, item: Any) -> bool:
+    """ Simply performs O(n) check to see if item is in inputted list
 
-# this returns a SpatialVector class
-# def rotate_vector():
-#     todo()
-
-
-def project_vector_to_plane():
-    todo()
-
-
-def vector_min():
-    todo()
-
-
-def vector_max():
-    todo()
-
-
-def column_vector_min():
-    todo()
-
-
-def column_vector_max():
-    todo()
-
-
-def vector_contains(vec: list, item) -> bool:
+    :param vec: input list
+    :type vec: list
+    :param item: item to see existence within list
+    :type item: Any
+    :return: true if in list, else false
+    :rtype: bool
+    """
     return item in vec
 
 
@@ -707,20 +624,6 @@ def index_vector_complement(index_vector: list[int], num_indices: int) -> list[i
     return complement_vector
 
 
-def convert_signed_vector_to_unsigned() -> None:
-    """
-    Method no longer in use.
-    """
-    deprecated()
-
-
-def convert_unsigned_vector_to_signed() -> None:
-    """
-    Method no longer in use.
-    """
-    deprecated()
-
-
 def remove_vector_values(indices_to_remove: list[Index], vec: list) -> list:
     """
     Removes elements from vec with indices specified in indices_to_remove.
@@ -750,36 +653,11 @@ def remove_vector_values(indices_to_remove: list[Index], vec: list) -> list:
     return subvec
 
 
-def copy_to_planar_point():
-    todo()
-
-
-def copy_to_spatial_vector():
-    todo()
-
-
-# TODO: don't think we need this since Python prints out vectors just fine.... maybe
-# Unless there's an extra fancy vector type in the C++ code like vector<RationalFunction>
-#  or something like that.
-def formatted_vector(vec: list, delim: str = "\n") -> str:
-    # raise Exception(
-    # "formatted_vector() is not implmemented. Print out object as-is instead.")
-    vector_string: str = ""
-    for i, _ in enumerate(vec):
-        vector_string += (str(vec[i]) + delim)
-
-    return vector_string
-
-
 def write_vector():
     todo()
 
 
 def write_float_vector():
-    todo()
-
-
-def append():
     todo()
 
 
@@ -816,14 +694,6 @@ def convert_nested_vector_to_matrix(vec: list[Vector2D]) -> np.ndarray:
     # assert matrix.shape == (len(vec))
 
     return matrix
-
-
-def append_matrix():
-    todo()
-
-
-def flatten_matrix_by_row():
-    todo()
 
 
 def read_camera_matrix(filepath: pathlib.Path) -> Matrix4x4f:
@@ -952,36 +822,6 @@ def area_from_length(l0: float, l1: float, l2: float) -> float:
     area: float = math.sqrt(max(s * (s - l0) * (s - l1) * (s - l2), 0.0))
     assert not math.isnan(area)
     return area
-
-
-def area_from_positions() -> None:
-    """
-    Compute the area of a triangle from the vertex positions
-
-    :param p0: [in] first vertex position
-    :param p1: [in] second vertex position
-    :param p2: [in] third vertex position
-    :return: triangle area
-    """
-    # p0: PlanarPoint, p1: PlanarPoint, p2: PlanarPoint) -> float:
-    deprecated(
-        "Method only used in generate_twelve_split_domain_areas, which is no longer in use.")
-
-    # assert p0.shape == (1, 2)
-    # assert p1.shape == (1, 2)
-    # assert p2.shape == (1, 2)
-    # assert p0.shape[0] == 1  # making sure that p0 is shape (1, n)
-    # assert p0.shape == p1.shape
-    # assert p1.shape == p2.shape
-
-    # TODO: double check that numpy norm is doing what we want
-    # l0: float = LA.norm(p2 - p1)
-    # l1: float = LA.norm(p0 - p2)
-    # l2: float = LA.norm(p1 - p0)
-
-    # assert isinstance(l0, float)
-
-    # return area_from_length(l0, l1, l2)
 
 
 def angle_from_length(edge_length_opposite_corner: float,
@@ -1168,22 +1008,18 @@ def remove_mesh_vertices(V: MatrixNx3f,
     return V_submesh, F_submesh, faces_to_remove
 
 
-def join_path():
-    todo()
+# TODO: combine this with the below...
+def contains_nan(arr: np.ndarray) -> bool:
+    """
+    Wrapper checking if any values of NaN in matrix
 
-
-def matrix_contains_nan(mat: np.ndarray) -> bool:
-    assert mat.ndim > 1
-
+    :param mat: matrix to check
+    :type mat: np.ndarray
+    :return: true if nan exists, else false
+    :rtype: bool
+    """
     # TODO: add test case to check this function with ASOC code version
-    return np.isnan(mat).any()
-
-
-def vector_contains_nan(vec: Vector1D) -> bool:
-    # assert vec.shape[0] == 1
-    assert vec.ndim == 1
-    # TODO: add test case to check this function with ASOC code version
-    return np.isnan(vec).any()
+    return np.isnan(arr).any()
 
 
 def convert_polylines_to_edges(polylines: list[list[int]]) -> list[tuple[int, int]]:

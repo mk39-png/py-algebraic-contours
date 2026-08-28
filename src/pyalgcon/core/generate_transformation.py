@@ -6,11 +6,7 @@ Methods to generate projective transformation matrices.
 import numpy as np
 
 from pyalgcon.core.common import (Matrix3x3f, Matrix4x4f, SpatialVector1d,
-                                  todo, unimplemented)
-
-
-def get_frame() -> None:
-    unimplemented()
+                                  unimplemented)
 
 
 def origin_to_infinity_projective_matrix(plane_distance: float) -> Matrix4x4f:
@@ -34,19 +30,6 @@ def origin_to_infinity_projective_matrix(plane_distance: float) -> Matrix4x4f:
     projection_matrix[3, 2] = 1.0
 
     return projection_matrix
-
-
-def infinity_to_origin_projective_matrix() -> None:
-    """
-    Generate the projective matrix that sends a point at infinity to the origin
-    while fixing the plane z = plane_distance.
-
-    This is the inverse of the map sending the origin to infinity.
-
-    @param[in] plane_distance: distance from the origin to the plane
-    @return 4x4 projective matrix for the transformation
-    """
-    unimplemented()
 
 
 def rotate_frame_projective_matrix(frame: Matrix3x3f) -> Matrix4x4f:
@@ -88,11 +71,6 @@ def translation_projective_matrix(translation: SpatialVector1d) -> Matrix4x4f:
     translation_matrix[:3, 3:4] = translation.reshape(3, 1)
 
     return translation_matrix
-
-
-def scaling_projective_matrix() -> None:
-    # Skip
-    unimplemented()
 
 
 def x_axis_rotation_projective_matrix(degree: float) -> Matrix4x4f:

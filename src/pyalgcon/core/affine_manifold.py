@@ -17,13 +17,11 @@ from pyalgcon.core.common import (CHECK_VALIDITY, COLS, GOLD_YELLOW,
                                   MatrixNx3i, MatrixXf, MatrixXi,
                                   PlanarPoint1d, Vector3i,
                                   angle_from_positions, area_from_length,
-                                  find_face_vertex_index, float_equal,
-                                  float_equal_zero, formatted_vector,
-                                  is_manifold, matrix_contains_nan,
+                                  contains_nan, find_face_vertex_index,
+                                  float_equal, float_equal_zero, is_manifold,
                                   reflect_across_x_axis, remove_mesh_faces,
                                   remove_mesh_vertices, remove_vector_values,
-                                  unimplemented, vector_contains_nan,
-                                  vector_equal)
+                                  unimplemented, vector_equal)
 from pyalgcon.core.halfedge import Halfedge
 from pyalgcon.core.vertex_circulator import VertexCirculator
 
@@ -974,7 +972,7 @@ class AffineManifold:
 
         # Build the next point
         next_point: PlanarPoint1d = (a * p0) + (b * p0_perp)
-        assert not vector_contains_nan(next_point)
+        assert not contains_nan(next_point)
         # WARNING: below assert triggered in ASOC debug compiled version
         assert float_equal(np.linalg.norm(next_point), prev_edge_length)
         assert next_point.ndim == 1
@@ -1027,7 +1025,7 @@ class AffineManifold:
 
         logger.info("Final layout:\n%s", one_ring_uv_positions)
 
-        assert not matrix_contains_nan(one_ring_uv_positions)
+        assert not contains_nan(one_ring_uv_positions)
         return one_ring_uv_positions
 
     def _build_lengths_from_global_uv(self,
@@ -1122,13 +1120,13 @@ class AffineManifold:
 
             # Mark vertices adjacent to cones
             logger.debug("Marking cone at adjacent vertices at %s",
-                         formatted_vector(chart.vertex_one_ring, ", "))
+                         chart.vertex_one_ring)
             for _, vj in enumerate(chart.vertex_one_ring):
                 self.__vertex_charts[vj].is_cone_adjacent = True
 
             # Mark faces adjacent to cones
             logger.debug("Marking cone adjacent faces at %s",
-                         formatted_vector(chart.face_one_ring, ", "))
+                         chart.face_one_ring)
             for _, fj in enumerate(chart.face_one_ring):
                 self.__face_charts[fj].is_cone_adjacent = True
 
@@ -1248,8 +1246,7 @@ class AffineManifold:
                 # Check that each local uv length is compatible with the given metric
                 # FIXME: pretty sure the below is not the way to go for logging with a set level
                 if logger.getEffectiveLevel != logger.level:
-                    logger.info("Face lengths: %s",
-                                formatted_vector(self.__l[face_index]))
+                    logger.info("Face lengths: %s", self.__l[face_index])
 
                 if not edge_has_length(zero,
                                        chart.one_ring_uv_positions[i, :],
@@ -1388,7 +1385,6 @@ def remove_cones(V: np.ndarray,
     # Compute the cones
     # TODO: why do we even need to pass in cones if they're just going to be removed anyways?
     cones = affine_manifold.compute_cones()
-    # TODO: implement with proper formatted_vector() function
     logger.debug("Remove cones at %s", cones)
 
     # Create boolean arrays of cone adjacent vertices

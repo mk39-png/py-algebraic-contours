@@ -226,13 +226,6 @@ def compute_polynomial_mapping_cross_product(first_degree: int, second_degree: i
     return product_polynomial_coeffs
 
 
-def compute_polynomial_mapping_dot_product() -> None:
-    """
-    Method not used.
-    """
-    unimplemented()
-
-
 def compute_polynomial_mapping_derivative(degree: int, dimension: int,
                                           polynomial_coeffs_ref: Vector1D | MatrixXf) -> MatrixXf:
     """
@@ -421,10 +414,3 @@ def formatted_polynomial(degree: int, dimension: int,
         polynomial_string += "\n"
 
     return polynomial_string
-
-
-def substitute_polynomial() -> None:
-    """ 
-    Method not used.
-    """
-    unimplemented()

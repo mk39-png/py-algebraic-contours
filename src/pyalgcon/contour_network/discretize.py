@@ -47,11 +47,3 @@ def discretize_curve_segments(degree: int,
         polylines.append(polyline)
 
     return points, polylines
-
-
-# def discretize_patch_boundaries() -> None:
-#     """
-#     TODO: go to QuadraticSplineSurface and make its function static... or just...
-#     Move the function outside of the class to make life easier for us.
-#     """
-#     unimplemented("Move function to outside of class")

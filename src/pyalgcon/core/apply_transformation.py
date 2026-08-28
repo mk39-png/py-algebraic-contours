@@ -1,10 +1,5 @@
 """
-Methods to apply projective transformation matrices to various point data
-types.
-
-TODO: try and utilize Blender's Python API for this to make life easier for us.
-TODO: but this involves mathutils...
-But anyways, could convert to MathUtils and back...
+Methods to apply projective transformation matrices to various point data types.
 """
 
 
@@ -12,8 +7,8 @@ import logging
 
 import numpy as np
 
-from pyalgcon.core.common import (ROWS, Matrix3x3f, Matrix4x4f, MatrixNx3,
-                                  MatrixNx3f, SpatialVector1d, Vector4f,
+from pyalgcon.core.common import (ROWS, Matrix3x3f, Matrix4x4f, MatrixNx3f,
+                                  SpatialVector1d, Vector4f,
                                   compute_point_cloud_bounding_box,
                                   float_equal, logger, todo, unimplemented)
 from pyalgcon.core.generate_transformation import (
@@ -81,22 +76,6 @@ def apply_transformation_to_point(point: SpatialVector1d,  projective_transforma
     return transformed_point
 
 
-def apply_transformation_to_points():
-    todo()
-
-
-def apply_transformation_to_points_in_place():
-    todo()
-
-
-def apply_transformation_to_control_points():
-    todo("Used internally")
-
-
-def apply_transformation_to_control_points_in_place():
-    unimplemented("Not used")
-
-
 def apply_transformation_to_vertices(input_V: MatrixNx3f,
                                      projective_transformation: Matrix4x4f
                                      ) -> MatrixNx3f:
@@ -139,21 +118,6 @@ def apply_transformation_to_vertices_in_place(V_ref: MatrixNx3f,
         Tv: SpatialVector1d = apply_transformation_to_point(v, projective_transformation)
         assert Tv.shape == (3, )
         V_ref[i, :] = Tv
-
-
-def generate_projective_transformation():
-    unimplemented("Not used ")
-
-
-def initialize_control_points():
-    unimplemented("Not used")
-
-
-def initialize_vertices():
-    """
-    Used in generate_perspective_figure
-    """
-    todo()
 
 
 def apply_camera_matrix_transformation_to_vertices(input_V: MatrixNx3f,
