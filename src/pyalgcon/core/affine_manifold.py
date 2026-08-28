@@ -1103,8 +1103,7 @@ class AffineManifold:
                 vertex_index].one_ring_uv_positions @ similarity_map
 
         # Check validity after direct member variable manipulation
-        is_valid: bool = self._is_valid_affine_manifold()
-        assert is_valid
+        assert self._is_valid_affine_manifold()
 
     def __mark_cones(self) -> None:
         """
