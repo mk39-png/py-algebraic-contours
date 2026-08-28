@@ -347,9 +347,9 @@ def _clipfatline(P: Matrix5x3f,
     assert clip_range.shape == (2, )
 
     for i in range(5):
-        Q[i][0] /= Q[i][2]
-        Q[i][1] /= Q[i][2]
-        Q[i][2] = 1
+        Q[i, 0] /= Q[i, 2]
+        Q[i, 1] /= Q[i, 2]
+        Q[i, 2] = 1
     L_min: Vector3f = np.zeros(shape=(3, ))
     L_max: Vector3f = np.zeros(shape=(3, ))
     t_min: Vector2f = np.zeros(shape=(2, ))
@@ -360,17 +360,17 @@ def _clipfatline(P: Matrix5x3f,
             clip_range[1] = 1
             return
         else:
-            direction: Vector2f = np.array([-(P[4][1] / P[4][2] - P[0][1] / P[0][2]),
-                                            P[4][0] / P[4][2] - P[0][0] / P[0][2]])
+            direction: Vector2f = np.array([-(P[4, 1] / P[4, 2] - P[0, 1] / P[0, 2]),
+                                            P[4, 0] / P[4, 2] - P[0, 0] / P[0, 2]])
             direction = direction / np.linalg.norm(direction)
             L_min[0] = direction[1]
             L_min[1] = -direction[0]
-            L_min[2] = (-direction[1] * (Q[0][0] + Q[4][0]) / 2 +
-                        direction[0] * (Q[0][1] + Q[4][1]) / 2)
+            L_min[2] = (-direction[1] * (Q[0, 0] + Q[4, 0]) / 2 +
+                        direction[0] * (Q[0, 1] + Q[4, 1]) / 2)
             L_max[0] = -direction[1]
             L_max[1] = direction[0]
-            L_max[2] = (direction[1] * (Q[0][0] + Q[4][0]) / 2 -
-                        direction[0] * (Q[0][1] + Q[4][1]) / 2)
+            L_max[2] = (direction[1] * (Q[0, 0] + Q[4, 0]) / 2 -
+                        direction[0] * (Q[0, 1] + Q[4, 1]) / 2)
     else:
         _fatline(Q, L_min, L_max)
 
@@ -453,12 +453,12 @@ def iterate(domsA: list[Interval_ink],
         assert len(C1) == 5
         assert len(C2) == 5
         for i in range(5):
-            P[i][0] = C1[i][0]
-            P[i][1] = C1[i][1]
-            P[i][2] = C1[i][2]
-            Q[i][0] = C2[i][0]
-            Q[i][1] = C2[i][1]
-            Q[i][2] = C2[i][2]
+            P[i, 0] = C1[i][0]
+            P[i, 1] = C1[i][1]
+            P[i, 2] = C1[i][2]
+            Q[i, 0] = C2[i][0]
+            Q[i, 1] = C2[i][1]
+            Q[i, 2] = C2[i][2]
 
         _clipfatline(Q, P, clip_range, precision)
 
