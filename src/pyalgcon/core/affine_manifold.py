@@ -832,8 +832,8 @@ class AffineManifold:
 
             # Layout vertices starting at vi. Note that here, unlike in the vertex
             # chart case, we start from axis aligned edge with length 1
-            left_vertex_uv_position: PlanarPoint1d = np.array([0.0, 0.0])
-            right_vertex_uv_position: PlanarPoint1d = np.array([1.0, 0.0])
+            left_vertex_uv_position: PlanarPoint1d = np.array([0.0, 0.0], dtype=np.float64)
+            right_vertex_uv_position: PlanarPoint1d = np.array([1.0, 0.0], dtype=np.float64)
             assert lij > 0
             top_vertex_uv_position: PlanarPoint1d = self._layout_next_vertex(
                 right_vertex_uv_position,
@@ -841,7 +841,7 @@ class AffineManifold:
                 lki / lij)
 
             # Get center of the target edge for a later shift
-            center: PlanarPoint1d = np.array(0.5 * right_vertex_uv_position)
+            center: PlanarPoint1d = 0.5 * right_vertex_uv_position
 
             # If the edge is not on the boundary, build the bottom triangle
             if not is_boundary:
@@ -873,7 +873,7 @@ class AffineManifold:
 
                 # Set the bottom uv position to the zero vector
                 # TODO: make this some sort of PlanarPoint class constructor full of 0s
-                bottom_vertex_uv_position = np.zeros(shape=(2, ))
+                bottom_vertex_uv_position = np.zeros(shape=(2, ), dtype=np.float64)
 
             # Set chart
             chart = EdgeManifoldChart(
