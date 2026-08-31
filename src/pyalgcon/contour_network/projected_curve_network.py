@@ -1119,7 +1119,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         is_covered_node: list[bool] = [False] * self.num_nodes
         is_covered_segment: list[bool] = [False] * self.num_segments
 
-        for i, ni in enumerate(self.__chain_start_nodes):
+        for ni in self.__chain_start_nodes:
             is_covered_node[ni] = True
             start_si: SegmentIndex = self.out(ni)
             if not self._is_valid_segment_index(start_si):
@@ -1180,7 +1180,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         while not all_nodes_covered:
             # Get list of all covered nodes
             is_covered_node: list[bool] = [False] * num_nodes
-            for i, ni in enumerate(self.__chain_start_nodes):
+            for ni in self.__chain_start_nodes:
                 is_covered_node[ni] = True
                 start_si: SegmentIndex = self.out(ni)
                 if not self._is_valid_segment_index(start_si):
