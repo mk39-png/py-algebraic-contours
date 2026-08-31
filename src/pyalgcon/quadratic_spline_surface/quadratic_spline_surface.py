@@ -663,7 +663,7 @@ class QuadraticSplineSurface:
         """
         assert point.shape == (2, )
 
-        # todo("Fix member variables")
+        # TODO: might just want to do float division followed by int typecasting instead
         hash_x = int((point[0] - self.__patches_bbox_x_min) // self.hash_x_interval)
         hash_y = int((point[1] - self.__patches_bbox_y_min) // self.hash_y_interval)
 
