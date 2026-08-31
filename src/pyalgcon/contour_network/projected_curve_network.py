@@ -711,6 +711,10 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         viewport = svg.ViewBoxSpec(0, 0, 800, 800)
         svg_elements: list[svg.Element] = []
 
+        # Basically, setting output path to be pathlib.Path for convenience
+        if type(output_path) is str:
+            output_path = pathlib.Path(output_path)
+
         # Write curves
         if color_mode == SVGOutputMode.UNIFORM_SEGMENTS:
             self.__write_uniform_segments(svg_elements)
@@ -755,6 +759,8 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
 
         # Write SVG
         svg_writer = svg.SVG(viewBox=viewport, elements=svg_elements_flipped_vertically)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(svg_writer.as_str(), encoding="utf-8")
         with open(output_path, 'w', encoding='utf-8') as output_file:
             output_file.write(svg_writer.as_str())
             output_file.close()
