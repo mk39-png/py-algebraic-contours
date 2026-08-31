@@ -20,7 +20,7 @@ from pyalgcon.core.common import (COLS, ROWS, Index, Matrix2x2f, Matrix2x3r,
                                   TwelveSplitHessian, Vector1D, Vector2D,
                                   Vector12f, Vector36f, VectorX,
                                   find_face_vertex_index,
-                                  index_vector_complement, unimplemented)
+                                  index_vector_complement)
 from pyalgcon.core.halfedge import Halfedge
 from pyalgcon.quadratic_spline_surface.compute_local_twelve_split_hessian import (
     build_local_smoothness_hessian, get_C_gl)
@@ -541,7 +541,7 @@ def compute_twelve_split_energy_quadratic(
         logger.info("Weighting by normal %s", normal)
 
         # Get local to global map
-        local_to_global_map: list[int] = generate_twelve_split_local_to_global_map(
+        local_to_global_map: Vector36f = generate_twelve_split_local_to_global_map(
             face_global_vertex_indices,
             face_global_edge_indices,
             num_variable_vertices)  # length = 36
@@ -601,9 +601,6 @@ def compute_twelve_split_energy_quadratic(
 
     # NOTE: Cholespy needed to be modified to treat "positive definite" warning not
     # as an error like in ASOC CHOLDMOD.
-    # TODO: fix hessian inverse csr matrix
-    # NOTE: hessian is not used anywhere else but optimize_spline_surface...
-    # in the original ASOC code... which is no longer needed with the Cholespy module.
     hessian_csr: csr_matrix = csr_matrix((data, (rows, cols)), shape=(
         num_independent_variables, num_independent_variables), dtype=np.float64)
     assert derivatives.shape == (num_independent_variables, )

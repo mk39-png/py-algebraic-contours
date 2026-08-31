@@ -16,12 +16,10 @@ from typing import Literal
 
 import numpy as np
 
-from pyalgcon.core.common import (COLS, PLACEHOLDER_VALUE,
-                                  ROWS, Index, Matrix2x3r,
-                                  SpatialVector1d,
-                                  TwelveSplitGradient,
-                                  TwelveSplitHessian,
-                                  Vector1D)
+from pyalgcon.core.common import (COLS, PLACEHOLDER_VALUE, ROWS, Index,
+                                  Matrix2x3r, SpatialVector1d,
+                                  TwelveSplitGradient, TwelveSplitHessian,
+                                  Vector1D, Vector27f, Vector36f)
 from pyalgcon.core.differentiable_variable import \
     generate_local_variable_matrix_index
 from pyalgcon.core.halfedge import Halfedge
@@ -205,10 +203,9 @@ def generate_global_edge_gradient_variables_start_index(num_variable_vertices: i
 # ***********************
 # Global variable indices
 # ***********************
-
-def generate_global_vertex_position_variable_index(vertex_index: int,
-                                                   coord: int,
-                                                   dimension: int = 3) -> int:
+def _generate_global_vertex_position_variable_index(vertex_index: int,
+                                                    coord: int,
+                                                    dimension: int = 3) -> int:
     """
     Used locally.
 
@@ -227,11 +224,11 @@ def generate_global_vertex_position_variable_index(vertex_index: int,
     return start_index + coord
 
 
-def generate_global_vertex_gradient_variable_index(num_variable_vertices: int,
-                                                   vertex_index: int,
-                                                   row: int,
-                                                   col: int,
-                                                   dimension: int = 3) -> int:
+def _generate_global_vertex_gradient_variable_index(num_variable_vertices: int,
+                                                    vertex_index: int,
+                                                    row: int,
+                                                    col: int,
+                                                    dimension: int = 3) -> int:
     """
     Used locally.
 
@@ -410,7 +407,7 @@ def generate_twelve_split_variable_value_vector(
 
 
 def generate_six_split_local_to_global_map(global_vertex_indices: list[int],
-                                           num_variable_vertices: int) -> list[int]:
+                                           num_variable_vertices: int) -> Vector27f:
     """
     Given the global vertex indices of a triangle, compute the map from the
     local DOF vector indices for this triangle to their indices in the global
@@ -423,14 +420,14 @@ def generate_six_split_local_to_global_map(global_vertex_indices: list[int],
 
     :param global_vertex_indices: [in] global indices of the triangle vertices 
     :param num_variable_vertices: [in] number of variable vertices
-    :return local_to_global_map: map from local to global DOF indices
+    :return: map from local to global DOF indices
     """
     assert len(global_vertex_indices) == 3
     dimension: int = 3
     # TODO: check if having -1 initialized into local_to_global_map is the way to go
     # TODO: seems like it since the below sets global_index to -1... somewhere.
     # TODO: what if instead of list[int]... we use numpy arrays???
-    local_to_global_map: list[int] = [PLACEHOLDER_VALUE for _ in range(27)]
+    local_to_global_map: Vector27f = np.full((27, ), -1)
 
     for local_vertex_index in range(3):
         global_vertex_index: int = global_vertex_indices[local_vertex_index]
@@ -445,7 +442,7 @@ def generate_six_split_local_to_global_map(global_vertex_indices: list[int],
             if global_vertex_index < 0:
                 global_index = -1
             else:
-                global_index = generate_global_vertex_position_variable_index(
+                global_index = _generate_global_vertex_position_variable_index(
                     global_vertex_index, coord, dimension)
 
             local_to_global_map[local_index] = global_index
@@ -459,7 +456,7 @@ def generate_six_split_local_to_global_map(global_vertex_indices: list[int],
                 if global_vertex_index < 0:
                     global_index = -1
                 else:
-                    global_index = generate_global_vertex_gradient_variable_index(
+                    global_index = _generate_global_vertex_gradient_variable_index(
                         num_variable_vertices, global_vertex_index, row, col, dimension)
 
                 local_to_global_map[local_index] = global_index
@@ -469,7 +466,7 @@ def generate_six_split_local_to_global_map(global_vertex_indices: list[int],
 
 def generate_twelve_split_local_to_global_map(global_vertex_indices: list[int],
                                               global_edge_indices: list[int],
-                                              num_variable_vertices: int) -> list[int]:
+                                              num_variable_vertices: int) -> Vector36f:
     """
     Used in optimize_spline_surface.py
 
@@ -480,7 +477,7 @@ def generate_twelve_split_local_to_global_map(global_vertex_indices: list[int],
     :param global_vertex_indices: [in] global indices of the triangle vertices
     :param global_vertex_indices: [in] global indices of the triangle edges 
     :param num_variable_vertices: [in] number of variable vertices
-    :return local_to_global_map: map from local to global DOF indices
+    :return: map from local to global DOF indices
     """
     # Making sure that "arrays" of length 3 are passed in.
     assert len(global_vertex_indices) == 3
@@ -488,8 +485,8 @@ def generate_twelve_split_local_to_global_map(global_vertex_indices: list[int],
 
     # Get index map for the Powell-Sabin shared variables
     dimension: int = 3
-    local_to_global_map: list[int] = [PLACEHOLDER_VALUE for _ in range(36)]
-    six_split_local_to_global_map: list[int] = generate_six_split_local_to_global_map(
+    local_to_global_map: Vector36f = np.full((36,), -1)
+    six_split_local_to_global_map: Vector27f = generate_six_split_local_to_global_map(
         global_vertex_indices, num_variable_vertices)
     assert len(six_split_local_to_global_map) == 27
     local_to_global_map[0:len(six_split_local_to_global_map)] = six_split_local_to_global_map
@@ -731,9 +728,9 @@ def build_variable_edge_indices_map(num_faces: int,
 
 
 def update_energy_quadratic(local_energy: float,
-                            local_derivatives: TwelveSplitGradient,  # shape (36, 1)
+                            local_derivatives: TwelveSplitGradient,  # shape (36,)
                             local_hessian: TwelveSplitHessian,  # shape (36, 36)
-                            local_to_global_map: list[int],
+                            local_to_global_map: Vector36f,
                             energy: float,
                             derivatives_ref: Vector1D,
                             hessian_entries_ref: list[tuple[int, int, float]]
@@ -756,14 +753,16 @@ def update_energy_quadratic(local_energy: float,
     """
     logger.info("Adding local face energy %s", local_energy)
     logger.info("Local to global map: %s", local_to_global_map)
-    assert derivatives_ref.ndim == 1  # shape (36, 1)
+    assert derivatives_ref.ndim == 1  # shape (36, )
     assert local_derivatives.ndim == 1
     assert local_hessian.ndim == 2
+    assert local_to_global_map.shape == (36, )
 
     # Update energy
     energy += local_energy
 
-    # Update derivatives NOTE: looks fine. things are being modified by refernece and changes are reflected back in caller method
+    # TODO: get valid local and globally indices to vectorize the below operation
+    # Update derivatives
     num_local_indices: int = len(local_to_global_map)
     for local_index in range(num_local_indices):
         global_index: int = local_to_global_map[local_index]
