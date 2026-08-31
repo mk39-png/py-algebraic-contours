@@ -752,7 +752,7 @@ def is_manifold(F: MatrixXi) -> bool:
     # Check vertex manifold condition
 
     invalid_vertices: np.ndarray = np.asarray(
-        igl.is_vertex_manifold(F), dtype=np.bool)
+        igl.is_vertex_manifold(F), dtype=bool)
     if not invalid_vertices.any():
         logger.error("Mesh is not vertex manifold")
         return False
