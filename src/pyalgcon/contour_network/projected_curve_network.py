@@ -1141,7 +1141,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
             if not is_covered_node[ni]:
                 num_missed_nodes += 1
                 logger.error("%s node %s is not covered by chain iteration",
-                             self.nodes[ni].formatted_node(),
+                             self.nodes[ni],
                              ni)
 
         num_missed_segments = 0

@@ -337,24 +337,9 @@ class NodeGeometry():
         """Marks quantitative invisibility as True"""
         self.__qi_set = True
 
-    def formatted_node(self) -> str:
+    def __str__(self) -> str:
         """Readable representation of NodeGeometry"""
-        if self.__node_type == GeometricData.KNOT:
-            return "knot"
-        elif self.__node_type == GeometricData.MARKED_KNOT:
-            return "marked_knot"
-        elif self.__node_type == GeometricData.BOUNDARY_CUSP:
-            return "boundary_cusp"
-        elif self.__node_type == GeometricData.INTERIOR_CUSP:
-            return "interior_cusp"
-        elif self.__node_type == GeometricData.INTERSECTION:
-            return "intersection"
-        elif self.__node_type == GeometricData.PATH_END_NODE:
-            return "path_end_node"
-        elif self.__node_type == GeometricData.PATH_START_NODE:
-            return "path_start_node"
-        else:
-            return "unknown"
+        return self.__node_type.name
 
 
 # ***************
@@ -949,7 +934,7 @@ def _compare_node_geometry(node_test: NodeGeometry,
     Helper method.
     Does assertions between two NodeGeometry objects.
     """
-    assert node_test.formatted_node() == node_control.formatted_node()
+    assert f"{node_test}" == f"{node_control}"
     assert (node_test.quantitative_invisibility ==
             node_control.quantitative_invisibility)
     assert (node_test.quantitative_invisibility_is_set() ==
