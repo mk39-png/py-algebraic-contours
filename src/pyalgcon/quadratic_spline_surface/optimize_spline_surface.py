@@ -186,21 +186,21 @@ class LocalDOFData:
     """
 
     def __init__(self,
-                 in_r_alpha_0: np.ndarray,  # shape (12, 3)
-                 in_r_alpha: np.ndarray,  # shape (12, 3)
-                 in_r_alpha_flat: Vector2D,  # shape (36, )
+                 r_alpha_0: np.ndarray,  # shape (12, 3)
+                 r_alpha: np.ndarray,  # shape (12, 3)
+                 r_alpha_flat: Vector2D,  # shape (36, )
                  ) -> None:
         """
         Default constructor for LocalDOFData.
         XXX: use generate_local_dog_data() to construct a LocalDOFData object
         """
-        assert in_r_alpha_0.shape == (12, 3)
-        assert in_r_alpha.shape == (12, 3)
-        assert in_r_alpha_flat.shape == (36, )
+        assert r_alpha_0.shape == (12, 3)
+        assert r_alpha.shape == (12, 3)
+        assert r_alpha_flat.shape == (36, )
 
-        self.r_alpha_0: Matrix12x3f = in_r_alpha_0  # initial local DOF
-        self.r_alpha: Matrix12x3f = in_r_alpha  # local DOF
-        self.r_alpha_flat: Vector36f = in_r_alpha_flat  # flattened local DOF
+        self.r_alpha_0: Matrix12x3f = r_alpha_0  # initial local DOF
+        self.r_alpha: Matrix12x3f = r_alpha  # local DOF
+        self.r_alpha_flat: Vector36f = r_alpha_flat  # flattened local DOF
 
     @classmethod
     def generate_local_dof_data(cls,
