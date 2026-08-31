@@ -369,7 +369,7 @@ class ContourNetwork(ProjectedCurveNetwork):
         polyscope.remove_all_structures()
 
     def write_rasterized_contours(self,
-                                  filename: pathlib.Path,
+                                  filepath: pathlib.Path,
                                   camera_position: tuple[float, float, float] = (0, 0, 2),
                                   camera_target: tuple[float, float, float] = (0, 0, 0)) -> None:
         """
@@ -387,8 +387,9 @@ class ContourNetwork(ProjectedCurveNetwork):
         polyscope.set_view_projection_mode("orthographic")
 
         # Take the screenshot
-        polyscope.screenshot(str(filename))
-        logger.info("Screenshot saved to %s", filename)
+        filepath.parent.mkdir(parents=True, exist_ok=True)  # make the directory if it doesnt exist
+        polyscope.screenshot(str(filepath))
+        logger.info("Screenshot saved to %s", filepath)
         polyscope.remove_all_structures()
 
     def reset_counter(self) -> None:
