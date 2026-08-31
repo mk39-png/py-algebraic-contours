@@ -253,15 +253,7 @@ class LocalDOFData:
         logger.info("Input values:\n%s", r_alpha)
 
         #  Also flatten r_alpha for the normal constraint term
-        r_alpha_flat: Vector36f = np.zeros(shape=(36, ))
-        for i in range(12):
-            for j in range(3):
-                # NOTE: r_alpha_flat is shape (36, )
-                r_alpha_flat[3 * i + j] = r_alpha[i, j]
-
-        # FIXME: is the test case below equal or not?
-        # Should be....
-        npt.assert_array_equal(r_alpha_flat.flatten(), r_alpha.flatten())
+        r_alpha_flat: Vector36f = r_alpha.flatten()
 
         assert r_alpha_0.shape == (12, 3)
         assert r_alpha.shape == (12, 3)
@@ -303,12 +295,6 @@ def compute_local_twelve_split_energy_quadratic(local_hessian_data: LocalHessian
 
     # Full local 12x12 hessian (only smoothness and fitting terms)
     local_hessian_12x12: Matrix12x12r = 2 * (w_s * H_s + w_f * H_f)
-
-    # TODO: below testing numpy functionality
-    npt.assert_array_equal(np.full(shape=(12, 12),
-                                   fill_value=(2*(w_s*H_s+w_f*H_f))),
-                           local_hessian_12x12)
-
     assert local_hessian_12x12.shape == (12, 12)
 
     # Add smoothness and fitting term blocks to the full local hessian per coordinate
@@ -731,7 +717,7 @@ def build_planar_constraint_hessian(uv: np.ndarray,
 
     # Build planar hessian array for derived derivative quantities (shape = (36, 36))
     # TODO: fix spatialvector to be 1D.... right now it's shape (1, 3)...
-    planarH: np.ndarray = planarHfun(normal[0][0], normal[0][1], normal[0][2])
+    planarH: Matrix36x36f = planarHfun(normal[0, 0], normal[0, 1], normal[0, 2])
     assert planarH.shape == (36, 36)
 
     # Build C_gl matrix (shape = (12, 12))
@@ -1087,12 +1073,8 @@ def generate_zero_vertex_gradients(num_vertices: int) -> list[Matrix2x3r]:
     :param num_vertices: [in] number of vertices |V|
     :return: |V| trivial vertex gradient matrices
     """
-    gradients: list[Matrix2x3r] = []
-
     # Set the zero gradient for each vertex
-    for _ in range(num_vertices):
-        gradients.append(np.zeros(shape=(2, 3)))
-
+    gradients: list[Matrix2x3r] = [np.zeros(shape=(2, 3)) for _ in range(num_vertices)]
     return gradients
 
 
@@ -1104,26 +1086,12 @@ def generate_zero_edge_gradients(num_faces: int) -> list[list[SpatialVector1d]]:
     :param num_faces: [in] number of faces |F|
     :return: 3|F| trivial edge gradient matrices
     """
-
     # Set the zero gradient for each vertex
-    edge_gradients: list[list[SpatialVector1d]] = []  # list of list of 3 SpatialVector elements
-
-    for _ in range(num_faces):
-        edge_gradients.append([np.zeros(shape=(3, )),
-                               np.zeros(shape=(3, )),
-                               np.zeros(shape=(3, ))])
+    edge_gradients: list[list[SpatialVector1d]] = [
+        [np.zeros(shape=(3, )) for _ in range(3)]
+        for _ in range(num_faces)
+    ]  # list of list of 3 SpatialVector elements
     return edge_gradients
-
-
-def convert_full_edge_gradients_to_reduced(edge_gradients: list[list[Matrix2x3r]]) -> None:
-    """
-    Given edge and opposite corner direction gradients at triangle edge midpoints,
-    extract just the opposite corner direction gradient
-    :param[in] edge_gradients: edge and corner directed gradients per edge midpoints
-    :param[out] reduced_edge_gradients: opposite corner directed gradients per edge midpoints
-    :type reduced_edge_gradients: list[list[SpatialVector]]
-    """
-    unimplemented("Method is not used anywhere in original ASOC code.")
 
 
 def convert_reduced_edge_gradients_to_full(reduced_edge_gradients: list[list[SpatialVector]],
