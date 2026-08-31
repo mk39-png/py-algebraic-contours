@@ -58,7 +58,11 @@ SPOT_FILEPATH: pathlib.Path = base_folder / "tests" / "data" / "spot_control"
 #
 # LIST COMPARISON
 #
-def compare_list_list_varying_lengths_float_from_file(filepath: pathlib.Path, rows_test: list[list[float]], precision=0.0) -> None:
+
+
+def compare_list_list_varying_lengths_float_from_file(filepath: pathlib.Path,
+                                                      rows_test: list[list[float]],
+                                                      precision=0.0) -> None:
     """
     Used when the csv list contains list with varying list lengths.
     e.g. 
