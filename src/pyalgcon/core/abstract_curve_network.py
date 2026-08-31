@@ -166,7 +166,6 @@ class AbstractCurveNetwork():
         :param intersection_array: [in] list of intersection nodes
         """
         # Check input validity
-        # FIXME: arent the below line of assert doing the opposite of what I want???
         if CHECK_VALIDITY:
             assert self._is_valid_minimal_curve_network_data(to_array,
                                                              out_array,

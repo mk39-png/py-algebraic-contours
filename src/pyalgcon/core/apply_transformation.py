@@ -33,6 +33,7 @@ def convert_homogeneous_coords_to_point(homogeneous_coords: Vector4f) -> Spatial
     """
     Convert homogeneous coordinates to a point
     """
+    assert homogeneous_coords.shape == (4, )
     point: SpatialVector1d = np.zeros(shape=(3, ), dtype=np.float64)
 
     # Extract homogeneous coordinates
@@ -65,6 +66,7 @@ def apply_transformation_to_point(point: SpatialVector1d,  projective_transforma
     # Get homogeneous coordinates for the point
     homogeneous_coords: Vector4f = convert_point_to_homogeneous_coords(point)
     assert homogeneous_coords.shape == (4, )
+    assert projective_transformation.shape == (4, 4)
 
     # Transform the homogeneous coordinates
     transformed_coords: Vector4f = projective_transformation @ homogeneous_coords

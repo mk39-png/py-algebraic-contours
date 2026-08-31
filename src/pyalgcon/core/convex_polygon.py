@@ -3,15 +3,14 @@ Convex polygons. Used in Quadratic Surface Patch files.
 Convex polygon formed by intersecting half planes.
 """
 
-import json
 from venv import logger
 
 import numpy as np
 
 from pyalgcon.core.common import (ROWS, Index, Matrix2x2f, Matrix3x2f,
-                                  MatrixNx3f, MatrixNx3i, PlanarPoint,
-                                  PlanarPoint1d, Vector1D, Vector3f,
-                                  float_equal, generate_linspace, unreachable)
+                                  MatrixNx3f, MatrixNx3i, PlanarPoint1d,
+                                  Vector1D, Vector3f, float_equal,
+                                  generate_linspace)
 from pyalgcon.core.interval import Interval
 from pyalgcon.core.line_segment import LineSegment
 

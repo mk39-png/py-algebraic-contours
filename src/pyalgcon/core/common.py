@@ -1,4 +1,3 @@
-# from typing import NewType
 import csv
 import json  # for testing
 import logging
@@ -395,8 +394,8 @@ def float_equal_zero(x: float, eps=FLOAT_EQUAL_PRECISION) -> bool:
     """
 
     # NOTE: Use absolute tolerance! Relative tolerance is not suited for our purpose.
-    return math.isclose(x, 0.0, rel_tol=0.0, abs_tol=eps)
     # return abs(x) < eps
+    return math.isclose(x, 0.0, rel_tol=0.0, abs_tol=eps)
 
 
 def float_equal(x: float, y: float, eps=FLOAT_EQUAL_PRECISION) -> bool:
@@ -610,7 +609,7 @@ def remove_vector_values(indices_to_remove: list[Index], vec: list) -> list:
     :return: vector with indices removed
     :rtype: list
     """
-    # Removes indices from vev
+    # Removes indices from vec
 
     # Remove faces adjacent to cones
     indices_to_keep: list[Index] = index_vector_complement(

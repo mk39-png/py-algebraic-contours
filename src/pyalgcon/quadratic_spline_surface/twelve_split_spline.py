@@ -296,8 +296,8 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
              num_subdivisions: int = DISCRETIZATION_LEVEL) -> None:
         """
         View the surface.
-        @param[in] color: color for the surface in the viewer
-        @param[in] num_subdivisions: number of subdivisions for the surface
+        :param color: color for the surface in the viewer
+        :param num_subdivisions: number of subdivisions for the surface
         """
         self.add_surface_to_viewer(color, num_subdivisions)
         self.add_position_data_to_viewer()
@@ -332,7 +332,8 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
 
         # Get number of patches per face
         patches_per_face: int = 12
-        num_patches: int = patches_per_face * num_faces  # NOTE: num_patches used for reserving __patches
+        # NOTE: num_patches used for reserving __patches
+        num_patches: int = patches_per_face * num_faces
 
         # Get general patch domains to use for all faces
         # patch_boundaries: list[list[Vector3f]]
@@ -478,19 +479,6 @@ def compute_twelve_split_spline_patch_boundary_edges(F: MatrixXi,
 # ******************************************************
 # Publicly Accessible Helpers for init_twelve_split_patches
 # ******************************************************
-
-def generate_twelve_split_domain_areas() -> None:
-    """
-    Generate areas for the twelve split patches in the same order as the
-    patch surface mappings for a given domain triangle.
-
-    :param[in] v0: first vertex position of the domain triangle
-    :param[in] v1: second vertex position of the domain triangle
-    :param[in] v2: third vertex position of the domain triangle
-    :param[out] patch_areas: twelve patch domain areas
-    """
-    unimplemented("Only used in test_assemble_matrix.cpp in original ASOC code.")
-
 
 def generate_twelve_split_spline_patch_patch_boundaries() -> list[list[Vector3f]]:
     """

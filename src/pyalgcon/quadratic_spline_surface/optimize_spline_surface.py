@@ -7,7 +7,6 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 import numpy as np
-import numpy.testing as npt
 from cholespy import CholeskySolverD, MatrixType
 from scipy.sparse import csr_matrix
 
@@ -73,13 +72,13 @@ class OptimizationParameters:
     # weight for encouraging orthogonality with a normal at a cone
     cone_normal_orthogonality_factor: float = 0.0
 
-    # -- TODO description for the section below --
-    # Perform one more energy computation for the final value
-    compute_final_energy = False
-    # Perform final optimization with fixed vertices and flatten cone constraints
-    flatten_cones = False
-    # 1 for assemble, 0 for autodiff, otherwise assemble
-    hessian_builder: int = 1
+    # NOTE: below are unused in ASOC
+    # # Perform one more energy computation for the final value
+    # compute_final_energy = False
+    # # Perform final optimization with fixed vertices and flatten cone constraints
+    # flatten_cones = False
+    # # 1 for assemble, 0 for autodiff, otherwise assemble
+    # hessian_builder: int = 1
 
 
 class LocalHessianData:
@@ -539,9 +538,6 @@ def compute_twelve_split_energy_quadratic(
         # Get normal for the face
         normal: SpatialVector1d = np.zeros(
             shape=(3, )) if is_cone_adjacent_face else initial_face_normals[face_index, :]
-        # if is_cone_adjacent_face:
-        #     normal = initial_face_normals[face_index, :]
-        #     assert normal.shape == (3, )
         logger.info("Weighting by normal %s", normal)
 
         # Get local to global map
