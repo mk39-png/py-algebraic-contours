@@ -28,7 +28,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 def generate_algebraic_contours(camera_matrix: Matrix4x4f,
-                                filepath: pathlib.Path) -> None:
+                                input_filepath: pathlib.Path,
+                                output_filepath: pathlib.Path,
+                                svg_output_mode: SVGOutputMode | None = None,
+                                optimization_params: OptimizationParameters | None = None,
+                                intersect_params: IntersectionParameters | None = None,
+                                invisibility_params: InvisibilityParameters | None = None,
+                                show_nodes: bool = False) -> None:
     """
     Runs end-to-end pipeline of contour generation from mesh parsing to contour generation itself.
 
@@ -37,11 +43,11 @@ def generate_algebraic_contours(camera_matrix: Matrix4x4f,
     :return: None
     """
     # TODO: implement some ability for the user to change these parameters
-    svg_output_mode: SVGOutputMode = SVGOutputMode.CONTRAST_INVISIBLE_SEGMENTS
-    optimization_params = OptimizationParameters()
-    intersect_params = IntersectionParameters()
-    invisibility_params = InvisibilityParameters(invisibility_method=InvisibilityMethod.CHAINING)
-    show_nodes: bool = False
+    svg_output_mode = SVGOutputMode.CONTRAST_INVISIBLE_SEGMENTS if svg_output_mode is None else svg_output_mode
+    optimization_params = OptimizationParameters() if optimization_params is None else optimization_params
+    intersect_params = IntersectionParameters() if intersect_params is None else intersect_params
+    invisibility_params = InvisibilityParameters(
+        invisibility_method=InvisibilityMethod.CHAINING) if invisibility_params is None else invisibility_params
 
     # Retrieve the uv unwrapped mesh
     V: ArrayLike
@@ -50,7 +56,7 @@ def generate_algebraic_contours(camera_matrix: Matrix4x4f,
     F: ArrayLike
     FT: ArrayLike
     FN: ArrayLike
-    V, uv, N, F, FT, FN = igl.readOBJ(filepath)
+    V, uv, N, F, FT, FN = igl.readOBJ(input_filepath)
 
     # Set up the camera
     V_transformed: MatrixNx3f = apply_camera_matrix_transformation_to_vertices(
@@ -80,10 +86,10 @@ def generate_algebraic_contours(camera_matrix: Matrix4x4f,
     logger.info("Saving contours")
     try:
         # Write to SVG file
-        contour_network.write(filepath.parent / "contours.svg",
+        contour_network.write(output_filepath,
                               svg_output_mode, show_nodes)
 
         # Write to png
         # contour_network.write_rasterized_contours("contours.png")
     except (IOError):
-        logger.error("FAILED TO WRITE CONTOURS TO DIRECTORY %s", filepath)
+        logger.error("FAILED TO WRITE CONTOURS TO DIRECTORY %s", input_filepath)
