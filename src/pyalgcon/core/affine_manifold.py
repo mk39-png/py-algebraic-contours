@@ -1243,9 +1243,7 @@ class AffineManifold:
                     return False
 
                 # Check that each local uv length is compatible with the given metric
-                # FIXME: pretty sure the below is not the way to go for logging with a set level
-                if logger.getEffectiveLevel != logger.level:
-                    logger.info("Face lengths: %s", self.__l[face_index])
+                logger.debug("Face lengths: %s", self.__l[face_index])
 
                 if not edge_has_length(zero,
                                        chart.one_ring_uv_positions[i, :],
