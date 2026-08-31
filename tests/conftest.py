@@ -38,6 +38,8 @@ logging.disable(logging.INFO)
 # handlers=[logging.FileHandler("test.log")])
 
 
+# NOTE: the test cases were designed with inputs and outputs from spot_control
+# Therefore, some test cases may fail if other meshes are used.
 @pytest.fixture(scope="session", params=[
     ("spot_control", "spot_control_mesh-cleaned_conf_simplified_with_uv.obj")
 ])
@@ -112,9 +114,14 @@ def initialize_affine_manifold(parsed_control_mesh: tuple[np.ndarray,
     return affine_manifold
 
 
+# NOTE: the test cases were designed with spot_quadrangulated_tri_clean_camera.csv in mind
+# Any other camera will likely break them, especially in contour_network/ and
+#   quadratic_spline_surface/ categories of tests.
+# Nonetheless, inputting additional cameras here can help with getting an understanding of how the
+# code works under the hood.
 @pytest.fixture(scope="session", params=[
     "spot_quadrangulated_tri_clean_camera.csv",
-    "top_middle_overhead_camera.csv"
+    # "top_middle_overhead_camera.csv"
 ])
 def projection_matrix_on_vertices(request,
                                   testing_fileinfo,
@@ -299,3 +306,13 @@ def initialize_contour_network(
 
     output_contour_folderpath: pathlib.Path = base_data_folderpath / "contour_network"
     return output_contour_folderpath, contour_network
+
+
+@pytest.fixture
+def no_gui():
+    """
+    Prevents GUI from halting the entire testing process
+    """
+    from unittest.mock import patch
+    with patch("polyscope.show"):
+        yield

@@ -527,8 +527,8 @@ class RationalFunction:
         """
         Evaluate the function at a domain coordinate
 
-        NOTE: Pt = np.ndarray(shape=(1, self.m_dimension)) \n
-        NOTE: Qt = np.ndarray(shape=(1, 1))
+        NOTE: Pt = np.ndarray(shape=(self.m_dimension, )) \n
+        NOTE: Qt = float 
 
         :param t: [in] coordinate
         :return point: rational function evaluated at coordinate t. Shape = (, self.dimension)
@@ -538,20 +538,21 @@ class RationalFunction:
 
         # FIXME: Wait a minute... why is numerator all 0s with test_unit_pullback_case?
         # FIXME: inheriting degree from
-        Pt: np.ndarray = evaluate_polynomial(degree=self.__degree,
-                                             dimension=self.__dimension,
-                                             polynomial_coeffs_ref=self.__numerator_coeffs,
-                                             t=t)
+        Pt: Vector1D | float = evaluate_polynomial(degree=self.__degree,
+                                                   dimension=self.__dimension,
+                                                   polynomial_coeffs_ref=self.__numerator_coeffs,
+                                                   t=t)
 
-        Qt: np.ndarray = evaluate_polynomial(degree=self.__degree,
-                                             dimension=1,
-                                             polynomial_coeffs_ref=self.__denominator_coeffs,
-                                             t=t)
+        # NOTE: Qt will get a float back
+        Qt: float = evaluate_polynomial(degree=self.__degree,
+                                        dimension=1,
+                                        polynomial_coeffs_ref=self.__denominator_coeffs,
+                                        t=t)
 
-        assert Pt.shape == (self.__dimension, )
-        assert Qt.shape == (1, )
+        assert type(Pt) is np.ndarray and Pt.shape == (self.__dimension, )
+        assert type(Qt) in (float, np.float64), f"{type(Qt)}"
 
-        point: np.ndarray = Pt / Qt[0]
+        point: np.ndarray = Pt / Qt
         assert point.shape == (self.dimension, )
         return point
 
@@ -559,7 +560,7 @@ class RationalFunction:
 
     def __repr__(self) -> str:
         rational_function_string: str = "1/("
-        rational_function_string += (
+        rational_function_string.join(
             formatted_polynomial(self.__degree, 1, self.__denominator_coeffs, 17))
         rational_function_string += ") [\n  "
 

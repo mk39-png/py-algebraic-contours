@@ -5,13 +5,11 @@ Conic intersections.
 import copy
 import logging
 
-from pyalgcon.core.common import (Matrix3x1r, Matrix3x2f,
-                                  PlanarPoint1d, Vector2f,
-                                  Vector3f, todo)
+from pyalgcon.core.common import (Matrix3x1r, Matrix3x2f, PlanarPoint1d,
+                                  Vector2f, Vector3f)
 from pyalgcon.core.conic import Conic
 from pyalgcon.core.convex_polygon import ConvexPolygon
-from pyalgcon.core.polynomial_function import \
-    quadratic_real_roots
+from pyalgcon.core.polynomial_function import quadratic_real_roots
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -29,8 +27,8 @@ def intersect_conic_with_line(C_param: Conic,
     """
     P_coeffs: Matrix3x2f = C_param.numerators
     assert P_coeffs.shape == (3, 2)
-    # HACK: flattening here when denominator should just be 1D by default
-    Q_coeffs: Vector3f = C_param.denominator.flatten()
+    Q_coeffs: Vector3f = C_param.denominator
+    assert Q_coeffs.shape == (3, )
 
     # Get equation for intersection
     X_coeffs: Vector3f = P_coeffs[:, 0]
@@ -126,7 +124,9 @@ def intersect_conic_with_convex_polygon(conic: Conic,
         else:
             t_sample = 0.0
 
-        p_sample = conic(t_sample).flatten()
+        p_sample = conic(t_sample)
+        assert p_sample.ndim == 1
+
         if convex_polygon.contains(p_sample):
             conic_segments.append(conic)
             line_intersection_indices.append((-1, -1))

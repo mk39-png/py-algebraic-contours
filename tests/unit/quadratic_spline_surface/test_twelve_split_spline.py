@@ -258,7 +258,7 @@ def test_generate_face_normals(testing_fileinfo,
     compare_eigen_numpy_matrix(filepath / "N.csv", N_test)
 
 
-def test_view_mesh(twelve_split_spline_raw) -> None:
+def test_view_mesh(twelve_split_spline_raw, no_gui) -> None:
     """
     This is used to test and view the spot model.
     """
@@ -273,7 +273,7 @@ def test_view_mesh(twelve_split_spline_raw) -> None:
     spline_surface.view(color, num_subdivisions)
 
 
-def test_view_mesh_transformed(twelve_split_spline_transformed) -> None:
+def test_view_mesh_transformed(twelve_split_spline_transformed, no_gui) -> None:
     """
     This is used to test and view the mesh after applying the 
     camera matrix and its projection onto the mesh vertices..

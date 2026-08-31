@@ -21,14 +21,35 @@ def test_generate_monomials() -> None:
     """
     From original C++ code.
     """
+
+    # Testing values themselves
     degree = 2
     t = -1
     T: Vector2D = generate_monomials(degree, t)
 
-    assert T.shape == (1, degree + 1)
-    assert T[0][0] == 1
-    assert T[0][1] == -1
-    assert T[0][2] == 1
+    assert T.shape == (degree + 1, )
+    assert T[0] == 1
+    assert T[1] == -1
+    assert T[2] == 1
+
+    T = generate_monomials(4, 2)
+    assert T.shape == (5, )
+    assert T[0] == 1
+    assert T[1] == 2
+    assert T[2] == 4
+    assert T[3] == 8
+    assert T[4] == 16
+
+    # Now, testing against control implementation
+    def generate_monomials_control(degree, t) -> Vector2D:
+        T_control: Vector2D = np.empty(shape=(degree + 1, ), dtype=np.float64)
+        T_control[0] = 1.0
+        for i in range(1, degree + 1):
+            T_control[i] = T_control[i - 1] * t
+
+        return T_control
+
+    npt.assert_allclose(generate_monomials(3, 2), generate_monomials_control(3, 2))
 
 
 def test_evaluate_polynomial() -> None:
@@ -40,9 +61,20 @@ def test_evaluate_polynomial() -> None:
     polynomial_coeffs: Vector1D = np.array([0., 0., 0.])
     t: float = -1.0
 
-    polynomial_evaluation: Vector1D = evaluate_polynomial(
+    # Checking if we get float value back
+    polynomial_evaluation: Vector1D | float = evaluate_polynomial(
         degree, dimension, polynomial_coeffs, t)
-    assert polynomial_evaluation.shape == (dimension, )
+
+    assert type(polynomial_evaluation) is np.float64
+    # assert polynomial_evaluation.shape == (dimension, )
+
+    # Checking if we get regular solutions value back
+    # -3t^2 + -5t + 2 with t = 2
+    # meaning we get back -20
+    # NOTE: evaluate_polynomial expects degrees in descending order (e.g. at^2 + bt + c)
+    polynomial_coeffs = np.array([2, -5, -3])
+    polynomial_evaluation = evaluate_polynomial(2, 1, polynomial_coeffs, 2)
+    assert polynomial_evaluation == -20
 
 
 def test_compute_polynomial_mapping_product_one_dimension() -> None:

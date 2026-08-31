@@ -16,14 +16,16 @@ as to not break anything.
 Meaning, vectors treated as (1, n) and (n, 1) rather than (n, )
 """
 
+import logging
 import math
-from venv import logger
 
 import numpy as np
 
 from pyalgcon.core.common import (COLS, ROWS, MatrixNx3f, MatrixXf, Vector1D,
                                   Vector2D, Vector2f, Vector3f, float_equal,
-                                  float_equal_zero, unimplemented)
+                                  float_equal_zero)
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def remove_polynomial_trailing_coefficients(A_coeffs_ref: Vector1D) -> Vector1D:
@@ -42,32 +44,24 @@ def remove_polynomial_trailing_coefficients(A_coeffs_ref: Vector1D) -> Vector1D:
     return reduced_coeffs
 
 
-def generate_monomials(degree: int, t: float) -> Vector2D:
+def generate_monomials(degree: int, t: float) -> Vector1D:
     """
     Generate the row vector T of n + 1 monomials 1, t, ... , t^n.
 
     :param int degree: [in] maximum monomial degree.
     :param float t: [in] evaluation point for the monomials.
 
-    :return T: row vector of monomials of shape (1, degree + 1).
+    :return T: row vector of monomials of shape (degree + 1, ).
     :rtype: np.ndarray
     """
-    # NOTE: Keep below as 2D vector for use in evaluate_polynomial() where dimension is 1
-    # and we want the behavior to be the same for any number of dimension.
-    # Because if dimension == 1, we want to create a 2D (n, 1) shape rather than a 1D (n, ) shape
-    T: Vector2D = np.ndarray(shape=(1, degree + 1), dtype=np.float64)
-
-    T[0][0] = 1.0
-    for i in range(1, degree + 1):
-        T[0][i] = T[0][i - 1] * t
-
+    T: Vector1D = t ** np.arange(degree + 1)
     return T
 
 
 def evaluate_polynomial(degree: int,
                         dimension: int,
                         polynomial_coeffs_ref: Vector1D | Vector2D,
-                        t: float) -> Vector1D:
+                        t: float) -> Vector1D | float:
     """
     Evaluate the polynomial with given coefficients at t.
     NOTE: this has been modified from the ASOC code to support any dimension.
@@ -77,32 +71,16 @@ def evaluate_polynomial(degree: int,
     :param polynomial_coeffs: [in] coefficients of the polynomial.
     :param t: [in] evaluation point for the polynomial.
 
-    :return polynomial_evaluation: evaluation of the polynomial of shape (dimension, )
+    :return polynomial_evaluation: evaluation of the polynomial of shape (dimension, ) or float
     """
-    # Since evaluate_polynomial used for dimensions other than 1, need to convert
-    # polynomial_coeffs to 2D vector if not done so already
-    polynomial_coeffs: Vector2D = polynomial_coeffs_ref.reshape(degree + 1, dimension)
-    assert polynomial_coeffs.shape == (degree + 1, dimension), ("polynomial_coeffs supposed to be "
-                                                                "shape (degree + 1, dimension)")
 
     # Perform calculation
-    T: Vector2D = generate_monomials(degree, t)
-    assert T.shape == (1, degree + 1)
-    # shape (1, dimension) = (1, degree + 1) @ (degree + 1, dimension)
-    polynomial_evaluation = T @ polynomial_coeffs
-    assert polynomial_evaluation.shape == (1, dimension)
+    T: Vector1D = generate_monomials(degree, t)
+    assert T.shape == (degree + 1, )
 
-    # NOTE: since polynomial_evaluation.shape is (1, dimension), might as well flatten it for
-    # simplicity.
-    return polynomial_evaluation.flatten()
+    polynomial_evaluation = T @ polynomial_coeffs_ref
 
-
-def evaluate_polynomial_mapping() -> None:
-    """
-    # NOTE: This function is just here because the C++ has it.
-    # NOTE: But, this should be replaced with the more Pythonic version evaluate_polynomial()
-    """
-    raise unimplemented("Deprecated. Use evalute_polynomial() instead.")
+    return polynomial_evaluation
 
 
 def compute_polynomial_mapping_product(first_degree: int,
@@ -263,25 +241,27 @@ def quadratic_real_roots(quadratic_coeffs: Vector3f,
     :return num_solutions (int): [out] solution count
     """
     assert quadratic_coeffs.shape == (3, )
-
-    discriminant: float
-    solutions: Vector2f = np.ndarray(shape=(2, ))
+    solutions: Vector2f = np.empty(shape=(2, ))
     num_solutions: int
+    discriminant: float
 
     if eps <= abs(quadratic_coeffs[2]):
         discriminant = (-4 * quadratic_coeffs[0] * quadratic_coeffs[2] +
                         quadratic_coeffs[1] * quadratic_coeffs[1])
         if eps * eps <= discriminant:
+            # NOTE: optimization right here so that we do not gave to call math.sqrt() 4 separate times
+            sqrt_discriminant: float = math.sqrt(discriminant)
+
             if 0.0 < quadratic_coeffs[1]:
                 solutions[0] = (2.0 * quadratic_coeffs[0] /
-                                (-quadratic_coeffs[1] - math.sqrt(discriminant)))
-                solutions[1] = ((-quadratic_coeffs[1] - math.sqrt(discriminant)) /
+                                (-quadratic_coeffs[1] - sqrt_discriminant))
+                solutions[1] = ((-quadratic_coeffs[1] - sqrt_discriminant) /
                                 (2.0 * quadratic_coeffs[2]))
             else:
-                solutions[0] = ((-quadratic_coeffs[1] + math.sqrt(discriminant)) /
+                solutions[0] = ((-quadratic_coeffs[1] + sqrt_discriminant) /
                                 (2.0 * quadratic_coeffs[2]))
                 solutions[1] = (2.0 * quadratic_coeffs[0] /
-                                (-quadratic_coeffs[1] + math.sqrt(discriminant)))
+                                (-quadratic_coeffs[1] + sqrt_discriminant))
             num_solutions = 2
         elif 0.0 <= discriminant:
             solutions[0] = -quadratic_coeffs[1] / (2.0 * quadratic_coeffs[2])
@@ -317,14 +297,11 @@ def polynomial_real_roots(A_coeffs: Vector1D, imag_tolerance=1e-10) -> Vector1D:
 
     # Compute the complex roots
     solver = np.polynomial.Polynomial(reduced_coeffs)
-    solver_roots: Vector1D = solver.roots()[::-1]
+    solver_roots: Vector1D = solver.roots()[::-1]  # NOTE: reversing to match ASOC's format of roots
 
-    # Find the real roots (in the style of the C++ version)
-    # XXX: Involves a floating point threshold test... well... the C++ version did.
-    # Should only grab the true parts...
+    # Find the real roots (in the style of ASOC)
+    # XXX: Involves a floating point threshold test... well... ASCO did.
     # https://stackoverflow.com/questions/28081247/print-real-roots-only-in-numpy
-    # TODO: utilize the tolerance value inside common.py
-    # real_roots: Vector1D = solver_roots.real[abs(solver_roots.imag) < 1e-10]
     real_roots: Vector1D = solver_roots.real[abs(solver_roots.imag) < imag_tolerance]
     logger.debug("Real roots: %s", real_roots)
 
@@ -357,19 +334,15 @@ def formatted_term(coefficient: float, variable: str, precision: int = 16) -> st
     :param precision: [in] floating point precision
     :return: formatted term string
     """
-    term_string: str = ""
-
     # Zero case
     if float_equal(coefficient, 0.0):
         return ""
     # Negative case
     elif coefficient < 0:
-        term_string += f" - {abs(coefficient):.{precision}f} {variable}"
+        return f" - {abs(coefficient):.{precision}f} {variable}"
     # Positive case
     else:
-        term_string += f" + {abs(coefficient):.{precision}f} {variable}"
-
-    return term_string
+        return f" + {abs(coefficient):.{precision}f} {variable}"
 
 
 def formatted_polynomial(degree: int, dimension: int,
@@ -391,7 +364,8 @@ def formatted_polynomial(degree: int, dimension: int,
         polynomial_coeffs = polynomial_coeffs_ref.reshape(degree + 1, dimension)
     except ValueError as e:
         logger.info(
-            f"{e} Invalid degree {degree}, dimension {dimension} for polynomial coeffs {polynomial_coeffs_ref}")
+            "%s Invalid degree %s, dimension %s for polynomial coeffs %s",
+            e, degree, dimension, polynomial_coeffs_ref)
         return ""
 
     assert np.shape(polynomial_coeffs) == (degree + 1, dimension)
@@ -404,12 +378,11 @@ def formatted_polynomial(degree: int, dimension: int,
 
     # Going through polynomial_coeffs columns
     for i in range(polynomial_coeffs.shape[COLS]):
-        # f" - {coefficient:.{precision}f} {variable}"
-        polynomial_string += f"{polynomial_coeffs[0, i]:.{precision}f}"
+        polynomial_string.join(f"{polynomial_coeffs[0, i]:.{precision}f}")
         for j in range(1, polynomial_coeffs.shape[ROWS]):
             monomial_string: str = formatted_monomial("t", j)
-            polynomial_string += formatted_term(
-                polynomial_coeffs[j, i], monomial_string, precision)
+            polynomial_string.join(formatted_term(
+                polynomial_coeffs[j, i], monomial_string, precision))
         polynomial_string += "\n"
 
     return polynomial_string
