@@ -207,16 +207,9 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         """
         Update the spline surface vertex positions for the fit.
 
-        TODO: check if the below are returned or not.
-        @param[in] V: mesh vertex positions
-        :param[out] fit_matrix: fit matrix for the energy
-        :param[out] energy_hessian_inverse: inverse of the hessian for the energy
-        computation
-
-        :ivar face_to_patch_indices:
-        :ivar patch_to_face_indices:
-        :ivar patches:
-        :ivar hash_table:
+        :param V: mesh vertex positions
+        :param fit_matrix: fit matrix for the energy
+        :param energy_hessian_inverse: inverse of the hessian for the energy computation
         """
 
         affine_manifold: AffineManifold = self.affine_manifold
@@ -416,9 +409,9 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         # normal
         N: np.ndarray = np.zeros(shape=(F.shape[ROWS], 3))
 
-        for _, ci in enumerate(cones):
+        for ci in cones:
             chart: VertexManifoldChart = affine_manifold.get_vertex_chart(ci)
-            for _, fj in enumerate(chart.face_one_ring):
+            for fj in chart.face_one_ring:
                 N[fj, :] = N_vertices[ci, :]
 
         assert N.shape[COLS] == 3
