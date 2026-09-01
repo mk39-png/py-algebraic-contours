@@ -11,14 +11,12 @@ import logging
 
 import numpy as np
 
-from pyalgcon.core.affine_manifold import (
-    AffineManifold, EdgeManifoldChart, VertexManifoldChart)
-from pyalgcon.core.common import (ROWS, Matrix2x3r,
-                                  MatrixNx3f, MatrixNx3i,
-                                  PlanarPoint,
-                                  SpatialVector1d, Vector2f,
-                                  find_face_vertex_index,
-                                  unimplemented, unreachable)
+from pyalgcon.core.affine_manifold import (AffineManifold, EdgeManifoldChart,
+                                           VertexManifoldChart)
+from pyalgcon.core.common import (ROWS, Matrix2x3r, MatrixNx3f, MatrixNx3i,
+                                  PlanarPoint, SpatialVector1d, Vector2f,
+                                  find_face_vertex_index, unimplemented,
+                                  unreachable)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -39,7 +37,6 @@ class TriangleCornerData:
         :param first_edge_derivative: derivative in the counter-clockwise edge direction
         :param second_edge_derivative: derivative in the clockwise edge direction
         """
-        # FIXME: maybe the below are not shape (3, )
         assert input_function_value.shape == (3, )
         assert input_first_edge_derivative.shape == (3, )
         assert input_second_edge_derivative.shape == (3, )
