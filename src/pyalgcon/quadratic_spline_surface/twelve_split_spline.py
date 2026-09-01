@@ -578,24 +578,25 @@ def generate_twelve_split_data_matrix(corner_data: dict[int, TriangleCornerData]
     assert len(corner_data) == 3
     assert len(midpoint_data) == 3
 
+    # NOTE: function_value and derivatives should already be 1D, shape (n, ) arrays
     twelve_split_data: Matrix12x3f = np.array([
         # Vertex positions
-        corner_data[0].function_value.flatten(),  # row 0
-        corner_data[1].function_value.flatten(),  # row 1
-        corner_data[2].function_value.flatten(),  # row 2
+        corner_data[0].function_value,  # row 0
+        corner_data[1].function_value,  # row 1
+        corner_data[2].function_value,  # row 2
 
         # Vertex gradients
-        corner_data[0].first_edge_derivative.flatten(),  # row 3
-        corner_data[0].second_edge_derivative.flatten(),  # row 4
-        corner_data[1].second_edge_derivative.flatten(),  # row 5
-        corner_data[1].first_edge_derivative.flatten(),  # row 6
-        corner_data[2].first_edge_derivative.flatten(),  # row 7
-        corner_data[2].second_edge_derivative.flatten(),  # row 8
+        corner_data[0].first_edge_derivative,  # row 3
+        corner_data[0].second_edge_derivative,  # row 4
+        corner_data[1].second_edge_derivative,  # row 5
+        corner_data[1].first_edge_derivative,  # row 6
+        corner_data[2].first_edge_derivative,  # row 7
+        corner_data[2].second_edge_derivative,  # row 8
 
         # Edge midpoint normals in order ij, jk, ki
-        midpoint_data[2].normal_derivative.flatten(),  # row 9
-        midpoint_data[0].normal_derivative.flatten(),  # row 10
-        midpoint_data[1].normal_derivative.flatten()  # row 11
+        midpoint_data[2].normal_derivative,  # row 9
+        midpoint_data[0].normal_derivative,  # row 10
+        midpoint_data[1].normal_derivative  # row 11
     ], dtype=np.float64)
 
     assert twelve_split_data.shape == (12, 3)
