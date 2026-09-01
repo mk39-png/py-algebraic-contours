@@ -106,7 +106,7 @@ class QuadraticSplineSurface:
     def num_patches(self) -> PatchIndex:
         """
         Get the number of patches in the surface
-        @return number of patches
+        :return: number of patches
         """
         return len(self._patches)
 
@@ -120,16 +120,17 @@ class QuadraticSplineSurface:
     def get_patch(self, patch_index: PatchIndex) -> QuadraticSplineSurfacePatch:
         """
         Get a reference to a spline patch at patch_index
-        @return spline patch
+        :return: spline patch
         """
         return self._patches[patch_index]
 
     def evaluate_patch(self, patch_index: PatchIndex, domain_point: PlanarPoint) -> SpatialVector:
         """
         Evaluate the surface at a given patch and domain point
-        @param[in] patch_index: index of the patch to evaluate
-        @param[in] domain_point: point in the patch domain to evaluate
-        @param[out] surface_point: output point on the surface
+
+        :param patch_index: index of the patch to evaluate
+        :param domain_point: point in the patch domain to evaluate
+        :return surface_point: output point on the surface
         """
         surface_point: SpatialVector = self.get_patch(
             patch_index).evaluate(domain_point)
@@ -285,26 +286,14 @@ class QuadraticSplineSurface:
     def discretize_patch_boundaries(self) -> tuple[list[SpatialVector], list[list[int]]]:
         """
         Discretize all patch boundaries as polylines.
-        NOTE: This also appears in contour_network folder in discretize.py, 
-        but is here for convenience and also for organization purposes.
-
-
-        TODO: MOVE FUNCTION OUTSIDE OF CLASS AND ACCEPT QUADRATICSPLINESURFACE AS
-        ARGUMENT. MAKES LIFE EEASIER FOR US AS WE DONT NEED TO REIMPLEMENT THIS FUNCTION
-        INSIDE OF DISCRETIZE...
-        ACTUALLY, JUST MOVE THIS FUNCTION INTO DISCRETIZE FOR OUR CONVENIENCE... YEAH
-        OR JUST KEEP IT HERE.... ACTUALLY... JUST KEEP IT HERE...
-        MAYBE?
-        THIS HAS MUCH MORE TO DO WITH THE 12 SPLIT SPLINE PRINTING AND THE SURFACE THAN
-        WITH THE POLYLINES ITSELF, I FEEL LIKE.
-
-
 
         :return points: list of polyline points.
         :rtype points: list[SpatialVector]
         :return polyline: list of lists of polyline edges
         :rtype polyline: list[list[int]]
         """
+        # NOTE: This method also appears in contour_network folder in discretize.py,
+        # but is here for convenience and also for organization purposes.
         points: list[SpatialVector] = []
         polylines: list[list[int]] = []
 
@@ -367,8 +356,6 @@ class QuadraticSplineSurface:
         :param num_subdivisions: number of subdivisions for the surface
         :type num_subdivisions: int
         """
-
-        # TODO: adjust parameter naming of SurfaceDiscretizationParameters
         # Generate mesh discretization
         surface_disc_params = SurfaceDiscretizationParameters(num_subdivisions=num_subdivisions)
         V: MatrixNx3f
@@ -491,7 +478,6 @@ class QuadraticSplineSurface:
         :param input_file: [in] input stream for the surface
         :type input_file: TextIO
         """
-        # self._patches.clear()
         patches: list[QuadraticSplineSurfacePatch] = []
         patch_info_lines: list[str] = input_file.readlines()
         ROWS_OF_PATCH_INFORMATION = 7
@@ -554,7 +540,6 @@ class QuadraticSplineSurface:
         """
         logger.info("Writing spline to %s", filepath)
 
-        # filepath: str = os.path.abspath(f"src\\tests\\spot_control\\{filename}")
         if os.path.isfile(filepath):
             logger.warning("Overwriting file at %s.", filepath)
 

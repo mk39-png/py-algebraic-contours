@@ -204,7 +204,7 @@ class AffineManifold:
         """
         Get the number of faces in the manifold
 
-        @return number of faces in the manifold
+        :return: number of faces in the manifold
         """
         return self.__F.shape[0]
 
@@ -213,7 +213,7 @@ class AffineManifold:
         """
         Get the number of vertices in the manifold
 
-        @return number of vertices in the manifold
+        :return: number of vertices in the manifold
         """
         return len(self.__vertex_charts)
 
@@ -222,7 +222,7 @@ class AffineManifold:
         """
         Get faces for the manifold
 
-        @return faces of the manifold
+        :return: faces of the manifold
         """
         assert self.__F.dtype == np.int64
         return self.__F
@@ -232,7 +232,7 @@ class AffineManifold:
         """
         Get halfedge for the manifold
 
-        @return halfedge of the manifold
+        :return: halfedge of the manifold
         """
         return self.__halfedge
 
@@ -250,7 +250,7 @@ class AffineManifold:
         """
         Get halfedge to corner map for the manifold
 
-        @return halfedge to corner map of the manifold
+        :return: halfedge to corner map of the manifold
         """
         return self.__he_to_corner
 
@@ -277,7 +277,7 @@ class AffineManifold:
         """
         Get faces for the manifold parametrization
 
-        @return faces of the manifold layout
+        :return: faces of the manifold layout
         """
         return self.__F_uv
 
@@ -324,8 +324,8 @@ class AffineManifold:
         suitable angle normalization map (r, theta) -> (r, 2 * pi * theta / (2 *
         pi - K)), where K is the Gaussian curvature at the vertex.
 
-        @param[in] vertex_index: index of the vertex for the chart
-        @return chart for the given vertex
+        :param vertex_index: index of the vertex for the chart
+        :return: chart for the given vertex
         """
         return self.__vertex_charts[vertex_index]
 
@@ -334,10 +334,9 @@ class AffineManifold:
         Get an isometric chart for the edge opposite the corner with the given
         face index and vertex index within the face.
 
-        @param[in] face_index: index of a face containing the target edge
-        @param[in] face_vertex_index: index of the corner opposite the edge in the
-        face
-        @return chart for the given edge
+        :param face_index: index of a face containing the target edge
+        :param face_vertex_index: index of the corner opposite the edge in the face
+        :return: chart for the given edge
         """
         edge_index: Index = self.__corner_to_edge[face_index][face_vertex_index]
         return self.__edge_charts[edge_index]
@@ -346,8 +345,8 @@ class AffineManifold:
         """
         Get an isometric chart for the given face.
 
-        @param[in] face_index: index of a face
-        @return chart for the given face
+        :param face_index: index of a face
+        :return: chart for the given face
         """
         return self.__face_charts[face_index]
 
@@ -361,8 +360,8 @@ class AffineManifold:
             [1] vertices k and i in the vertex chart for vertex j
             [2] vertices i and j in the vertex chart for vertex k
 
-        @param[in] face_index: index of the face for the chart segments
-        @param[out] corner_uv_positions: chart uv positions as enumerated above
+        :param face_index: index of the face for the chart segments
+        :return corner_uv_positions: chart uv positions as enumerated above
         """
         corner_uv_positions: list[Matrix2x2f] = [np.zeros(shape=(2, 2), dtype=np.float64),
                                                  np.zeros(shape=(2, 2), dtype=np.float64),
@@ -402,8 +401,8 @@ class AffineManifold:
             [1] vertices k, i, j in the vertex chart for edge jk
             [2] vertices i, j, k in the vertex chart for edge ki
 
-        @param[in] face_index: index of the face for the charts
-        @param[out] face_edge_uv_positions: uv positions contained in the given
+        :param face_index: index of the face for the charts
+        :return face_edge_uv_positions: uv positions contained in the given
         face
         """
         face_edge_uv_positions: list[Matrix3x2f] = [np.ndarray(shape=(3, 2), dtype=np.float64),
@@ -432,10 +431,10 @@ class AffineManifold:
 
     def get_face_global_uv(self, face_index: Index) -> list[PlanarPoint1d]:
         """
-        @brief Get the uv coordinates of the face.
+        Get the uv coordinates of the face.
 
-        @param[in] face_index: index of the face for the chart
-        @param[out] face_edge_uv_positions: global uv positions of the face
+        :param face_index: index of the face for the chart
+        :return face_edge_uv_positions: global uv positions of the face
         """
         return self.get_face_chart(face_index).face_uv_positions
 
@@ -447,7 +446,7 @@ class AffineManifold:
         for boundary vertices.
 
         :param vertex_index: [in] index of the vertex
-        :return curvature at the given vertex
+        :return: curvature at the given vertex
         """
         chart: VertexManifoldChart = self.__vertex_charts[vertex_index]
 
@@ -473,8 +472,8 @@ class AffineManifold:
         """
         Determine if the vertex is on the boundary
 
-        @param[in] vertex_index: index of the vertex
-        @return true iff the vertex is on the boundary
+        :param vertex_index: index of the vertex
+        :return: true iff the vertex is on the boundary
         """
         return self.get_vertex_chart(vertex_index).is_boundary
 
@@ -483,8 +482,8 @@ class AffineManifold:
         Determine if the manifold is flat at the given vertex, i.e. has zero
         Gaussian curvature or is a boundary vertex.
 
-        @param[in] vertex_index: index of the vertex
-        @return true iff the manifold is flat at the vertex
+        :param vertex_index: index of the vertex
+        :return: true iff the manifold is flat at the vertex
         """
         # All vertices with zero curvature are flat
         # FIXME: something wrong with either compute curvature or is_boundary...
@@ -501,7 +500,7 @@ class AffineManifold:
         """
         Get list of all flat vertices in the manifold
 
-        @param[out] flat_vertices: list of flat vertices
+        :return flat_vertices: list of flat vertices
         """
         flat_vertices: list[Index] = []
 
@@ -515,7 +514,7 @@ class AffineManifold:
         """
         Get list of all cones in the manifold
 
-        @param[out] cones: list of cone vertices
+        :return cones: list of cone vertices
         """
         cones: list[Index] = []
 
@@ -532,7 +531,7 @@ class AffineManifold:
         Get boolean mask of all cones corners in the manifold.
         NOTE: returns a list of list with 3 bool elements.
 
-        @param[out] is_cone_corner: true iff corner i, j is a cone
+        :return is_cone_corner: true iff corner i, j is a cone
         """
         is_cone_corner: list[list[bool]] = [[PLACEHOLDER_BOOL, PLACEHOLDER_BOOL, PLACEHOLDER_BOOL]
                                             for _ in range(self.num_faces)]
@@ -547,8 +546,8 @@ class AffineManifold:
         """
         Compute a matrix of cone point positions from mesh vertex.
 
-        @param[in] V: mesh vertex positions
-        @param[out] cone_points: cone positions w.r.t. V
+        :param V: mesh vertex positions
+        :return cone_points: cone positions w.r.t. V
         """
         # Compute the cone indices
         cones: list[Index] = self.compute_cones()
@@ -566,20 +565,11 @@ class AffineManifold:
 
         return cone_points
 
-    # TODO: remove the function below since it's redundant in the Python version
-    def generate_cones(self) -> list[int]:
-        """
-        Return list of all cones in the manifold
-
-        @return list of cone vertices
-        """
-        return self.compute_cones()
-
     def compute_boundary_vertices(self) -> list[Index]:
         """
         Get list of all boundary vertices in the manifold
 
-        @param[out] boundary_vertices: list of boundary vertices
+        :return boundary_vertices: list of boundary vertices
         """
 
         boundary_vertices: list[Index] = []
@@ -590,28 +580,19 @@ class AffineManifold:
 
         return boundary_vertices
 
-    # TODO: remove the function below since it's redundant?
-    def generate_boundary_vertices(self) -> list[Index]:
-        """
-        Return list of all boundary vertices in the manifold
-
-        @return list of boundary vertices
-        """
-        return self.compute_boundary_vertices()
-
     def mark_cone_adjacent_vertex(self, vertex_index: Index) -> None:
         """
-        @brief Mark a vertex as adjacent to a cone
+        Mark a vertex as adjacent to a cone
 
-        @param[in] vertex_index: vertex to mark
+        :param[in] vertex_index: vertex to mark
         """
         self.__vertex_charts[vertex_index].is_cone_adjacent = True
 
     def mark_cone_adjacent_face(self, face_index: Index) -> None:
         """
-        @brief Mark a face as adjacent to a cone
+        Mark a face as adjacent to a cone
 
-        @param[in] face_index: face to mark
+        :param face_index: face to mark
         """
         self.__face_charts[face_index].is_cone_adjacent = True
 
@@ -620,14 +601,13 @@ class AffineManifold:
         """
         Get global uv coordinates
 
-        @return global uv coordinates, or the empty matrix if they do not exist
+        :return: global uv coordinates, or the empty matrix if they do not exist
         """
         return self.__global_uv
 
     def cut_cone_edges(self) -> None:
         """
-        Cut edges adjacent to cones so that a planar layout is possible around
-        them.
+        Cut edges adjacent to cones so that a planar layout is possible around them.
         """
         F: MatrixNx3i = self.faces
 

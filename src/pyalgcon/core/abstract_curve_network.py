@@ -44,13 +44,10 @@ class AbstractCurveNetwork():
                 # TODO: clear topology?
 
         # Build curve network
-        # = self.build_next_array(self.to_array, self.out_array)
         self.__next_array: list[SegmentIndex]
-        # = self.build_prev_array(self.to_array, self.out_array)
         self.__prev_array: list[SegmentIndex]
-        # = self.build_from_array(self.to_array, self.out_array)
         self.__from_array: list[NodeIndex]
-        self.__in_array: list[SegmentIndex]   # = self.build_in_array(self.to_array, self.out_array)
+        self.__in_array: list[SegmentIndex]
         (self.__next_array,
          self.__prev_array,
          self.__from_array,
@@ -65,7 +62,7 @@ class AbstractCurveNetwork():
     def num_segments(self) -> int:
         """
         Return the number of segments in the curve network.
-        @return number of segments
+        :return: number of segments
         """
         return len(self.to_array)
 
@@ -73,15 +70,15 @@ class AbstractCurveNetwork():
     def num_nodes(self) -> int:
         """
         Return the number of nodes in the curve network.
-        @return number of nodes
+        :return: number of nodes
         """
         return len(self.out_array)
 
     def next(self, segment_index: SegmentIndex) -> SegmentIndex:
         """
-        Get the next segment after a given segment (or -1 if there is no next
-        segment)
-        :param[in] segment_index: query segment index
+        Get the next segment after a given segment (or -1 if there is no next segment)
+        :param segment_index: query segment index
+
         :return next segment
         """
         if not self._is_valid_segment_index(segment_index):
@@ -90,10 +87,10 @@ class AbstractCurveNetwork():
 
     def prev(self, segment_index: SegmentIndex) -> SegmentIndex:
         """
-        Get the previous segment after a given segment (or -1 if there is no
-        previous segment)
-        @param[in] segment_index: query segment index
-        @return previous segment
+        Get the previous segment after a given segment (or -1 if there is no previous segment)
+        :param segment_index: query segment index
+
+        :return: previous segment
         """
         if not self._is_valid_segment_index(segment_index):
             return -1
@@ -103,8 +100,9 @@ class AbstractCurveNetwork():
         """
         Get the node at the tip of the segment
         Note that this operation is valid for any valid segment
-        @param[in] segment_index: query segment index
-        @return to node of the segment
+
+        :param segment_index: query segment index
+        :return: to node of the segment
         """
         if not self._is_valid_segment_index(segment_index):
             return -1
@@ -114,8 +112,9 @@ class AbstractCurveNetwork():
         """
         Get the node at the base of the segment
         Note that this operation is valid for any valid segment
-        @param[in] segment_index: query segment index
-        @return from node of the segment
+
+        :param segment_index: query segment index
+        :return: from node of the segment
         """
         if not self._is_valid_segment_index(segment_index):
             return -1
@@ -125,8 +124,9 @@ class AbstractCurveNetwork():
         """
         Get the node that intersects the given node (or -1 if the node does not
         intersect another node)
-        @param[in] node_index: query node index
-        @return intersection node of the node
+
+        :param node_index: query node index
+        :return: intersection node of the node
         """
         if not self._is_valid_node_index(node_index):
             return -1
@@ -135,8 +135,9 @@ class AbstractCurveNetwork():
     def out(self, node_index: NodeIndex) -> SegmentIndex:
         """
         Get the outgoing segment for the node (or -1 if none exists)
-        @param[in] node_index: query node index
-        @return out segment of the node
+
+        :param node_index: query node index
+        :return: out segment of the node
         """
         if not self._is_valid_node_index(node_index):
             return -1
@@ -145,8 +146,9 @@ class AbstractCurveNetwork():
     def in_(self, node_index: NodeIndex) -> SegmentIndex:
         """
         Get the incoming segment for the node (or -1 if none exists)
-        @param[in] node_index: query node index
-        @return in segment of the node
+
+        :param node_index: query node index
+        :return: in segment of the node
         """
         if not self._is_valid_node_index(node_index):
             return -1
@@ -192,8 +194,9 @@ class AbstractCurveNetwork():
     def is_boundary_node(self, node_index: NodeIndex) -> bool:
         """
         Determine if the node is on the boundary of a curve in the curve network.
-        @param[in] node_index: query node index
-        @return true iff the given node is a boundary node
+
+        :param node_index: query node index
+        :return: true iff the given node is a boundary node
         """
         #  Invalid nodes are not boundary nodes
         if not self._is_valid_node_index(node_index):
@@ -211,8 +214,9 @@ class AbstractCurveNetwork():
     def has_intersection_node(self, node_index: NodeIndex) -> bool:
         """
         Determine if the node has an intersection.
-        @param[in] node_index: query node index
-        @return true iff the given node is an intersection node
+
+        :param node_index: query node index
+        :return: true iff the given node is an intersection node
         """
         # Invalid nodes do not have intersection nodes
         if not self._is_valid_node_index(node_index):
@@ -228,8 +232,9 @@ class AbstractCurveNetwork():
         Note that this is a weaker condition than having an intersection node and
         being and intersection node and is not simply a logical and of the two
         conditions.
-        @param[in] node_index: query node index
-        @return true iff the given node is a boundary intersection node
+
+        :param node_index: query node index
+        :return: true iff the given node is a boundary intersection node
         """
         # Invalid nodes are not T-nodes
         if not self._is_valid_node_index(node_index):
@@ -297,8 +302,9 @@ class AbstractCurveNetwork():
                          out_array: list[SegmentIndex]) -> list[SegmentIndex]:
         """
         Build next map from segments to the following segment or -1 if it is terminal.
-        @param[in] to_array: array mapping segments to their endpoints
-        @param[in] out_array: array mapping nodes to their outgoing segment
+
+        :param to_array: array mapping segments to their endpoints
+        :param out_array: array mapping nodes to their outgoing segment
         :return: next_array: array mapping
         """
         num_segments: int = len(to_array)
@@ -312,8 +318,9 @@ class AbstractCurveNetwork():
                          out_array: list[SegmentIndex]) -> list[SegmentIndex]:
         """
         Build prev map from segments to their previous segment or -1 if it is initial.
-        @param[in] to_array: array mapping segments to their endpoints
-        @param[in] out_array: array mapping nodes to their outgoing segment
+
+        :param to_array: array mapping segments to their endpoints
+        :param out_array: array mapping nodes to their outgoing segment
         :return: prev_array: array mapping
         """
         # Initialize prev_array to -1
@@ -334,9 +341,10 @@ class AbstractCurveNetwork():
                          out_array: list[SegmentIndex]) -> list[NodeIndex]:
         """
         Build from map sending segments to their origin nodes.
-        @param[in] to_array: array mapping segments to their endpoints
-        @param[in] out_array: array mapping nodes to their outgoing segment
-        @param[out] from_array: array mapping segments to their origin points
+
+        :param to_array: array mapping segments to their endpoints
+        :param out_array: array mapping nodes to their outgoing segment
+        :return from_array: array mapping segments to their origin points
         """
         # Initialize from array to -1
         num_segments: SegmentIndex = len(to_array)
@@ -356,9 +364,10 @@ class AbstractCurveNetwork():
                        out_array: list[SegmentIndex]) -> list[SegmentIndex]:
         """
         Build in map from nodes to incoming segments or -1 if they are initial
-        @param[in] to_array: array mapping segments to their endpoints
-        @param[in] out_array: array mapping nodes to their outgoing segment
-        :return: in_array: array mapping
+
+        :param to_array: array mapping segments to their endpoints
+        :param out_array: array mapping nodes to their outgoing segment
+        :return in_array: array mapping
         """
         # Initialize in array to -1
         num_segments: SegmentIndex = len(to_array)
@@ -391,8 +400,8 @@ class AbstractCurveNetwork():
         Check if input has valid indexing, meaning all to nodes are valid
         Note that out may be invalid for some nodes if they are terminal
 
-        :param to_array:  [in] array mapping segments to their endpoints
-        :param out_array: [in] array mapping nodes to their outgoing segment
+        :param to_array:  array mapping segments to their endpoints
+        :param out_array: array mapping nodes to their outgoing segment
         :return: true iff the curve data is valid
         """
         num_segments: int = len(to_array)
@@ -410,10 +419,11 @@ class AbstractCurveNetwork():
                                              intersection_array: list[NodeIndex]) -> bool:
         """
         Check if input describes a valid curve network
-        @param[in] to_array: array mapping segments to their endpoints
-        @param[in] out_array: array mapping nodes to their outgoing segment
-        @param[in] intersection_array: list of intersection nodes
-        @return true iff the curve network data is valid
+
+        :param to_array: array mapping segments to their endpoints
+        :param out_array: array mapping nodes to their outgoing segment
+        :param intersection_array: list of intersection nodes
+        :return: true iff the curve network data is valid
         """
         num_segments: int = len(to_array)
         num_nodes: int = len(out_array)

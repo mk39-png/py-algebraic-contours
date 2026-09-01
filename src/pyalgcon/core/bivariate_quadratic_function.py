@@ -314,8 +314,8 @@ def formatted_bivariate_quadratic_mapping(dimension: int,
     """
     Generate a human readable format of a quadratic mapping
 
-    @param[in] quadratic_coeffs: quadratic coefficients in order [1, u, v, uv, uu, vv]
-    @return formatted quadratic mapping
+    :param quadratic_coeffs: quadratic coefficients in order [1, u, v, uv, uu, vv]
+    :return: formatted quadratic mapping
     """
     # Making sure to make vector into 2D vector for sake of iterating through it
     if quadratic_coeffs_ref.ndim == 1:
@@ -369,9 +369,9 @@ def generate_quadratic_coordinate_affine_transformation_matrix(linear_transforma
     coefficient vector for the bivariate quadratic monomials with respect to u',
     v'.
 
-    @param[in] linear_transformation: linear part of the affine transformation
-    @param[in] translation: translation part of the affine transformation
-    @param[out] change_of_basis_matrix: change of coefficient basis matrix
+    :param linear_transformation: linear part of the affine transformation
+    :param translation: translation part of the affine transformation
+    :return change_of_basis_matrix: change of coefficient basis matrix
     """
     assert linear_transformation.shape == (2, 2)
     assert translation.shape == (2, )
@@ -385,7 +385,6 @@ def generate_quadratic_coordinate_affine_transformation_matrix(linear_transforma
     b2: float = translation[1]
 
     # Set matrix
-    # TODO: check order that change_of_basis_matrix is being filled.
     change_of_basis_matrix: Matrix6x6r = np.array([
         [1.0, b1, b2, b1 * b2, b1 * b1, b2 * b2],
         [0.0, b11, b12, b11 * b2 + b12 * b1, 2 * b1 * b11, 2 * b2 * b12],

@@ -445,13 +445,13 @@ class RationalFunction:
 
     def finite_difference_derivative(self) -> None:
         """
-        @brief Compute the derivative at domain point t with finite differences
-        with finite difference step size h.
-        This method should only be used for validation; the derivative method is
-        exact.
-        @param[in] t: point to evaluate the derivative at
-        @param[in] h: finite difference step size
-        @return finite difference derivative
+        Compute the derivative at domain point t with finite differences with finite difference 
+        step size h.
+        This method should only be used for validation; the derivative method is exact.
+
+        :param t: point to evaluate the derivative at
+        :param h: finite difference step size
+        :return: finite difference derivative
         """
         unimplemented()
 
