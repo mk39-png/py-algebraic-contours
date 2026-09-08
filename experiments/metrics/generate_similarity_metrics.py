@@ -57,7 +57,6 @@ def main(args):
     Main logic
     """
     # Get command line arguments
-    # TODO: wrap in pathlib
     input_filename: pathlib.Path = pathlib.Path(args.input)
     output_dir: pathlib.Path = pathlib.Path(args.output)
     camera_filename: pathlib.Path = pathlib.Path(args.camera)
@@ -154,7 +153,6 @@ if __name__ == '__main__':
         prog="animate_rotation",
         description="Generate example figure images for a given mesh and camera.")
 
-    # TODO: change type to be pathlib.Path
     parser.add_argument("-i", "--input", type=str, help="Mesh filepath.", required=True)
     parser.add_argument("-c", "--camera", type=str, default="", help="Camera filepath")
     parser.add_argument("-o", "--output", type=str, default="./", help="Output directory")

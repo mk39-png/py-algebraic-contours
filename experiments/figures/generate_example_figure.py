@@ -52,7 +52,6 @@ def main(args):
     Main logic
     """
     # Get command line arguments
-    # TODO: wrap in pathlib
     input_filename: pathlib.Path = pathlib.Path(args.input)
     output_dir: pathlib.Path = pathlib.Path(args.output)
     camera_filename: pathlib.Path = pathlib.Path(args.camera)

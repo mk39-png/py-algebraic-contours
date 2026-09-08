@@ -11,11 +11,13 @@ import igl
 import numpy as np
 import polyscope
 from cholespy import CholeskySolverD
-from core.affine_manifold import AffineManifold
-from quadratic_spline_surface.twelve_split_spline import \
-    TwelveSplitSplineSurface
 from scipy.sparse import csr_matrix
 
+from pyalgcon.contour_network.compute_intersections import \
+    IntersectionParameters
+from pyalgcon.contour_network.contour_network import (ContourNetwork,
+                                                      InvisibilityParameters)
+from pyalgcon.core.affine_manifold import AffineManifold
 from pyalgcon.core.apply_transformation import (
     apply_camera_frame_transformation_to_vertices,
     apply_transformation_to_vertices)
@@ -26,6 +28,8 @@ from pyalgcon.core.generate_transformation import (
     axis_rotation_projective_matrix, origin_to_infinity_projective_matrix)
 from pyalgcon.quadratic_spline_surface.optimize_spline_surface import \
     OptimizationParameters
+from pyalgcon.quadratic_spline_surface.twelve_split_spline import (
+    TwelveSplitSplineSurface, compute_twelve_split_spline_patch_boundary_edges)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -98,6 +102,32 @@ def main(args):
         False
     )
 
+    # Retrieving values from Twelve Split Spline surface
+    face_to_patch_indices: list[list[int]] = spline_surface.face_to_patch_indices
+    patch_to_face_indices: list[int] = spline_surface.patch_to_face_indices
+    fit_matrix: csr_matrix = spline_surface.fit_matrix
+    energy_hessian: csr_matrix = spline_surface.energy_hessian
+    energy_hessian_inverse: CholeskySolverD = spline_surface.energy_hessian_inverse
+
+    # Get the boundary edge
+    patch_boundary_edges: list[tuple[int, int]] = compute_twelve_split_spline_patch_boundary_edges(
+        F, face_to_patch_indices)
+
+    intersect_params = IntersectionParameters()
+    invisibility_params = InvisibilityParameters()
+    contour_network: ContourNetwork = ContourNetwork(spline_surface,
+                                                     intersect_params, invisibility_params,
+                                                     patch_boundary_edges)
+    contour_network.view(spline_surface)
+    contour_network.screenshot(output_dir / "perspective_contours.png",
+                               spline_surface,
+                               np.array([0, 0, -5], dtype=np.float64),
+                               np.array([0, 0, 1], dtype=np.float64),
+                               False)
+
+    #
+    # ORTHOGRAPHIC EQUIVALENT
+    #
     # Send the camera to infinity and update the vertex positions
     projection_matrix: Matrix4x4f = origin_to_infinity_projective_matrix(1.0)
     orthographic_V: MatrixNx3f = apply_transformation_to_vertices(V, projection_matrix)
@@ -112,6 +142,21 @@ def main(args):
         True
     )
 
+    # Get the boundary edge
+    patch_boundary_edges: list[tuple[int, int]] = compute_twelve_split_spline_patch_boundary_edges(
+        F, face_to_patch_indices)
+
+    intersect_params = IntersectionParameters()
+    invisibility_params = InvisibilityParameters()
+    contour_network: ContourNetwork = ContourNetwork(spline_surface,
+                                                     intersect_params, invisibility_params,
+                                                     patch_boundary_edges)
+    # contour_network.view(spline_surface)
+    contour_network.screenshot(output_dir / "orthographic_contours.png",
+                               spline_surface,
+                               np.array([0, 0, -5], dtype=np.float64),
+                               np.array([0, 0, 0], dtype=np.float64),
+                               True)
     return 0
 
 
@@ -120,7 +165,7 @@ if __name__ == '__main__':
         prog="generate_perspective_distortion",
         description="Generate perspective distortion figure images for a given mesh and camera.")
     parser.add_argument("-i", "--input", type=str, help="Mesh filepath.", required=True)
-    parser.add_argument("-i", "--camera", type=str, help="Camera filepath.", required=False)
+    parser.add_argument("-c", "--camera", type=str, help="Camera filepath.", required=False)
     parser.add_argument("-o", "--output", type=str, default="./", help="Output directory")
     parser.add_argument("--translation", type=float, default=0.0, help="Translation amount")
     parser.add_argument("--perspective_fov", type=float, default=45.0,
