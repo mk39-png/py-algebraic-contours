@@ -1,6 +1,7 @@
 {
     "python.testing.pytestArgs": [
-        "tests"
+        "tests",
+        "--ignore=tests/data"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
@@ -8,6 +9,7 @@
     "python.analysis.extraPaths": [
         "${workspaceFolder}/src/pyalgcon",
     ],
+    "python.languageServer": "Pylance",
     "editor.codeActionsOnSave": {
         "source.organizeImports": "explicit",
     },
@@ -15,7 +17,6 @@
         "--max-line-length=100",
     ],
     "explorer.autoReveal": false,
-    "python.languageServer": "Pylance",
     "autoDocstring.docstringFormat": "sphinx",
     "editor.rulers": [
         100
