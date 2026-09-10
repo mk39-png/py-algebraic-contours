@@ -1,6 +1,16 @@
 [pytest]
 log_cli = true
 log_cli_level = "DEBUG"
+# log_cli = false
+# log_cli_level = "CRITICAL"
 log_file = "debug.log"
 log_format = "%(asctime)s %(levelname)s %(message)s"
 log_date_format = "%Y-%m-%d %H:%M:%S"
+addopts = ["--assert=plain"]
+markers = [
+    "unit: mark test as unit test",
+    "integration: mark test as integration",
+    "smoke: mark test as smoke",
+    "regression: mark test as regression",
+    "oracle: mark test as using groudn truth oracle",
+]
