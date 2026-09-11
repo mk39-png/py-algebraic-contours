@@ -7,6 +7,7 @@ import pytest
 
 from pyalgcon.core.affine_manifold import AffineManifold
 from pyalgcon.core.common import *
+from pyalgcon.core.common_c import cross_product as cross_product_c
 from pyalgcon.core.halfedge import Halfedge
 
 # *******************
@@ -84,6 +85,22 @@ def test_cross_product() -> None:
     n_numpy_control = np.cross(v, w, axis=0)
 
     assert np.array_equal(n_test, n_numpy_control)
+
+
+@pytest.mark.regression
+def test_cross_product_cython() -> None:
+    """
+    Testing cross product functionality with Cython equivalent.
+    """
+    num_cases = 10000
+    v: Vector3f = np.random.uniform(-100, 100, size=(num_cases, 3))
+    w: Vector3f = np.random.uniform(-100, 100, size=(num_cases, 3))
+
+    for i in range(num_cases):
+        n_control = cross_product(v[i], w[i])
+        n_test = cross_product_c(v[i], w[i])
+
+        assert np.array_equal(n_control, n_test)
 
 
 @pytest.mark.unit
