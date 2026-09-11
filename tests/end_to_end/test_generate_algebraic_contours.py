@@ -12,6 +12,7 @@ from pyalgcon.contour_network.contour_network import (InvisibilityMethod,
                                                       InvisibilityParameters)
 from pyalgcon.pipelines.generate_algebraic_contours import \
     generate_algebraic_contours
+from tests.conftest import testing_fileinfo_meshes
 
 invisibility_params = InvisibilityParameters()
 
@@ -30,7 +31,7 @@ invisibility_params = InvisibilityParameters()
 @pytest.mark.parametrize("show_nodes", [True, False])
 @pytest.mark.integration
 def test_generate_algebraic_contours(camera_matrix: np.ndarray,
-                                     testing_fileinfo: tuple[pathlib.Path, pathlib.Path],
+                                     testing_fileinfo_meshes: tuple[pathlib.Path, pathlib.Path],
                                      method: InvisibilityMethod,
                                      show_nodes: bool) -> None:
     """
@@ -38,17 +39,20 @@ def test_generate_algebraic_contours(camera_matrix: np.ndarray,
     """
     # Retrieve parameters
     base_data_folderpath: pathlib.Path
-    base_data_folderpath, obj_filepath = testing_fileinfo
-    folderpath: pathlib.Path = base_data_folderpath / "exec" / "generate_algebraic_contours"
+    obj_filepath: pathlib.Path
+    base_data_folderpath, obj_filepath = testing_fileinfo_meshes
+    folderpath: pathlib.Path = base_data_folderpath / "output" / obj_filepath.stem
     output_filepath: pathlib.Path = folderpath / f"{method.name}_show_nodes-{show_nodes}.svg"
     assert type(method) is InvisibilityMethod
     invisibility_params.invisibility_method = method
 
     # Remove pre-existing file
-    output_filepath.unlink(missing_ok=True)
+    # output_filepath.unlink(missing_ok=True)
 
     generate_algebraic_contours(camera_matrix, obj_filepath, output_filepath,
                                 invisibility_params=invisibility_params,
                                 show_nodes=show_nodes)
 
     assert output_filepath.is_file()
+
+# TODO: make a helper function that rasterizes the SVG using methods depending on the current OS
