@@ -14,6 +14,8 @@ from pyalgcon.core.polynomial_function import (
     compute_polynomial_mapping_derivative, compute_polynomial_mapping_product,
     evaluate_polynomial, generate_monomials, polynomial_real_roots,
     quadratic_real_roots)
+from pyalgcon.core.polynomial_function_c import \
+    evaluate_polynomial as evaluate_polynomial_c
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -342,6 +344,23 @@ def test_polynomial_real_roots_vs_quadratic_real_roots() -> None:
     # But anyways, polynomial_real_roots and quadratic_real_roots appear to just do the same thing.
     # assert roots_quadratic.size == 0
 
+
+def test_evaluate_polynomial_cython() -> None:
+    """
+    Tests cythonized version with regular version (with 2D coefficients)
+    """
+    size = 10000
+    degrees = np.random.randint(2, 100, size)
+    dimensions = np.random.randint(2, 100, size)
+    t_values = np.random.uniform(-1000, 1000, size)
+
+    for degree, dimension, t_value in zip(degrees, dimensions, t_values):
+        coeffs = np.random.uniform(-1000, 1000, (degree + 1, dimension))
+        args = (degree, dimension, coeffs, t_value)
+        n_control = evaluate_polynomial(*args)
+        n_test = evaluate_polynomial_c(*args)
+
+        npt.assert_allclose(n_control, n_test, atol=1e-10)
 
 # TODO: add fuzzing test case comparing Polynomial solver to Cubic solver
 # TODO: add fuzzing test case comparing polynomial solver to Quadratic solver (w/out real roots)
