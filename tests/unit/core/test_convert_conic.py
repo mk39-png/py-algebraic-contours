@@ -4,12 +4,14 @@ Test convert conic
 import math
 
 import numpy as np
+import pytest
 
 from pyalgcon.core.common import Matrix2x2f, Vector2f, float_equal
 from pyalgcon.core.convert_conic import \
     compute_symmetric_matrix_eigen_decomposition
 
 
+@pytest.mark.unit
 def test_parametrize_contour_identity() -> None:
     """
     The eigen decomposition of the identity is trivial
@@ -28,6 +30,7 @@ def test_parametrize_contour_identity() -> None:
     assert float_equal(rotation[1, 1], 1.0)
 
 
+@pytest.mark.unit
 def test_parametrize_contour_diagonal():
     """
     The eigen decomposition of a diagonal matrix is trivial
@@ -48,6 +51,7 @@ def test_parametrize_contour_diagonal():
     assert float_equal(rotation[1, 1], 1.0)
 
 
+@pytest.mark.unit
 def test_parametrize_contour_orthogonal() -> None:
     """
     "Singular values (5, 0.5), rotation angle 0.1"
@@ -81,6 +85,7 @@ def test_parametrize_contour_orthogonal() -> None:
     # assert float_equal(rotation[1, 1], U[1, 1])
 
 
+@pytest.mark.unit
 def test_parametrize_contour_orthogonal_rotation_angle_1() -> None:
     """
     Singular values (-5, -0.5), rotation angle 1

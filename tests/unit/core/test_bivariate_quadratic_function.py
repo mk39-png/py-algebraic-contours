@@ -1,10 +1,12 @@
 import numpy as np
+import pytest
 
 from pyalgcon.core.bivariate_quadratic_function import \
     compute_quadratic_cross_product
 from pyalgcon.core.common import Matrix3x3f
 
 
+@pytest.mark.unit
 def test_compute_quadratic_cross_product_shape() -> None:
     """
     Simply testing shaping.

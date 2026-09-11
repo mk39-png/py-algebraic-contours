@@ -6,12 +6,14 @@ So, dependent on the assertions made in methods like compute_least_squares_verte
 import math
 
 import numpy as np
+import pytest
 
 from pyalgcon.quadratic_spline_surface.position_data import (
     TriangleCornerData, TriangleMidpointData, generate_corner_data_matrices,
     generate_midpoint_data_matrices)
 
 
+@pytest.mark.unit
 def test_gradients_find_constant() -> None:
     """
     From original C++ code
@@ -41,6 +43,7 @@ def test_gradients_find_constant() -> None:
     assert one_ring_uv_positions.shape == (3, 2)
 
 
+@pytest.mark.unit
 def test_generate_corner_data_matrices() -> None:
     """
     Test to see if the method goes through ALL elements in the arrays 
@@ -83,6 +86,7 @@ def test_generate_corner_data_matrices() -> None:
     np.testing.assert_equal(second_derivative_matrix, np.ones(shape=(6, 3)))
 
 
+@pytest.mark.unit
 def test_generate_midpoint_data_matrices() -> None:
     """
     From original C++ code

@@ -28,6 +28,7 @@ invisibility_params = InvisibilityParameters()
                               [0.0000, 0.0000,  0.0000, 1.0000]])])
 @pytest.mark.parametrize("method", list(InvisibilityMethod))
 @pytest.mark.parametrize("show_nodes", [True, False])
+@pytest.mark.integration
 def test_generate_algebraic_contours(camera_matrix: np.ndarray,
                                      testing_fileinfo: tuple[pathlib.Path, pathlib.Path],
                                      method: InvisibilityMethod,

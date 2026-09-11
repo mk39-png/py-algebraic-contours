@@ -152,6 +152,7 @@ def compute_twelve_split_energy_quadratic_params(energy_quadratic_filepath,
         num_variable_edges)
 
 
+@pytest.mark.unit
 def test_initial_vertex_positions_t(energy_quadratic_filepath,
                                     compute_twelve_split_energy_quadratic_params) -> None:
     """
@@ -183,6 +184,7 @@ def test_initial_vertex_positions_t(energy_quadratic_filepath,
             np.array(initial_vertex_positions_T).squeeze())
 
 
+@pytest.mark.unit
 def test_vertex_positions_t(energy_quadratic_filepath,
                             compute_twelve_split_energy_quadratic_params) -> None:
     """
@@ -214,6 +216,7 @@ def test_vertex_positions_t(energy_quadratic_filepath,
             np.array(vertex_positions_T).squeeze())
 
 
+@pytest.mark.unit
 def test_vertex_gradients_t(energy_quadratic_filepath,
                             compute_twelve_split_energy_quadratic_params) -> None:
     """
@@ -246,6 +249,7 @@ def test_vertex_gradients_t(energy_quadratic_filepath,
             make_3d=True)
 
 
+@pytest.mark.unit
 def test_edge_gradients_t(energy_quadratic_filepath,
                           compute_twelve_split_energy_quadratic_params) -> None:
     """

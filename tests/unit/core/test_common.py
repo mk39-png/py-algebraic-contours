@@ -3,6 +3,8 @@ Test common methods
 """
 
 
+import pytest
+
 from pyalgcon.core.affine_manifold import AffineManifold
 from pyalgcon.core.common import *
 from pyalgcon.core.halfedge import Halfedge
@@ -12,6 +14,7 @@ from pyalgcon.core.halfedge import Halfedge
 # *******************
 
 
+@pytest.mark.unit
 def test_compute_point_cloud_bounding_box(parsed_control_mesh) -> None:
     """
     Test compute_point_cloud_bounding_box
@@ -34,6 +37,7 @@ def test_compute_point_cloud_bounding_box(parsed_control_mesh) -> None:
     npt.assert_allclose(max_point_test, max_point_control, atol=1e-7)
 
 
+@pytest.mark.unit
 def test_index_vector_complement(testing_fileinfo,
                                  parsed_control_mesh,
                                  initialize_affine_manifold) -> None:
@@ -65,6 +69,8 @@ def test_index_vector_complement(testing_fileinfo,
     compare_eigen_numpy_matrix(filepath / "variable_edges.csv", np.array(variable_edges))
 
 
+@pytest.mark.unit
+@pytest.mark.oracle("numpy")
 def test_cross_product() -> None:
     """
     Testing cross product functionality.
@@ -80,6 +86,8 @@ def test_cross_product() -> None:
     assert np.array_equal(n_test, n_numpy_control)
 
 
+@pytest.mark.unit
+@pytest.mark.oracle("numpy")
 def test_convert_nested_vector_to_matrix() -> None:
     """
     Testing if original C++ code is equivalent to NumPy operation

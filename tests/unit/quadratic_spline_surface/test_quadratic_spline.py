@@ -5,6 +5,7 @@ Test quadratic spline
 import pathlib
 
 import numpy.testing as npt
+import pytest
 
 from pyalgcon.core.common import FLOAT_EQUAL_PRECISION, Matrix3x2r, Matrix6x3r
 from pyalgcon.core.convex_polygon import ConvexPolygon
@@ -14,6 +15,7 @@ from pyalgcon.quadratic_spline_surface.quadratic_spline_surface_patch import \
     QuadraticSplineSurfacePatch
 
 
+@pytest.mark.integration
 def test_read_write_spline_surface_serialization(testing_fileinfo) -> None:
     """
     Test by deserializing control file, then serialize numpy code and compare to see 

@@ -15,10 +15,10 @@ from pyalgcon.core.common import (Index, MatrixNx3i, MatrixXf, MatrixXi,
 from pyalgcon.core.halfedge import Halfedge
 
 
+@pytest.mark.integration
 def test_halfedge_spot_mesh(testing_fileinfo,
                             parsed_control_mesh) -> None:
     """
-    Integration test.
     Tests constructor of halfedge from spot control mesh.
     """
     # Get input mesh
@@ -68,6 +68,7 @@ def test_halfedge_spot_mesh(testing_fileinfo,
                                np.array(halfedge.to))
 
 
+@pytest.mark.unit
 def test_halfedge_one_triangle() -> None:
     """
     From original C++ code
@@ -115,6 +116,7 @@ def test_halfedge_one_triangle() -> None:
     assert mesh.halfedge_to_head_vertex(he2) == v1
 
 
+@pytest.mark.unit
 def test_halfedge_two_closed_triangles() -> None:
     """
     Original test case from Algebraic Contours.
@@ -188,6 +190,7 @@ def test_halfedge_two_closed_triangles() -> None:
     assert mesh.halfedge_to_head_vertex(he12) == v0
 
 
+@pytest.mark.unit
 def test_halfedge_two_open_triangles() -> None:
     """
     Original test case from Algebraic Contours.

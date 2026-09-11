@@ -9,6 +9,7 @@ from collections import defaultdict
 
 import numpy as np
 import numpy.testing as npt
+import pytest
 from cholespy import CholeskySolverD
 from scipy.sparse import csr_matrix
 
@@ -46,6 +47,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 # ****************
 
 
+@pytest.mark.integration
 def test_position_data(testing_fileinfo, parsed_control_mesh) -> None:
     """
     Tests corner_data and midpoint_data of TwelveSplitSpline.
@@ -107,6 +109,7 @@ def test_position_data(testing_fileinfo, parsed_control_mesh) -> None:
                                np.array(midpoint_data_test))
 
 
+@pytest.mark.integration
 def test_face_patch_indices(testing_fileinfo,
                             parsed_control_mesh) -> None:
     """
@@ -188,6 +191,7 @@ def test_face_patch_indices(testing_fileinfo,
                                np.array(patch_to_face_indices))
 
 
+@pytest.mark.unit
 def test_patch_to_corner_map(testing_fileinfo) -> None:
     """
     Tests generate_twelve_split_spline_patch_patch_to_corner_map().
@@ -208,6 +212,7 @@ def test_patch_to_corner_map(testing_fileinfo) -> None:
                                np.array(patch_to_corner_map))
 
 
+@pytest.mark.unit
 def test_patch_boundaries(testing_fileinfo) -> None:
     """
     Tests generate_twelve_split_spline_patch_patch_boundaries().
@@ -231,6 +236,7 @@ def test_patch_boundaries(testing_fileinfo) -> None:
                                make_3d=True)
 
 
+@pytest.mark.unit
 def test_generate_face_normals(testing_fileinfo,
                                parsed_control_mesh,
                                initialize_affine_manifold) -> None:
@@ -289,14 +295,18 @@ def test_view_mesh_transformed(twelve_split_spline_transformed, no_gui) -> None:
     spline_surface.view(color, num_subdivisions)
 
 
+@pytest.mark.regression
 def test_patches(testing_fileinfo,
                  parsed_control_mesh,
-                 quadratic_spline_surface_control_from_file) -> None:
+                 quadratic_spline_surface_control_from_file,
+                 no_gui) -> None:
     """
     Testing to see if parent class QuadraticSplineSurface is utilized properly by TwelveSplitSpline.
     As in, the patches in TwelveSplitSpline subclass are the same as QuadraticSplineSurface
     parent class.
 
+    This specifically exists because there were bugs with translating C++ to Python and subclass
+    inheritance.
     As in, we can deserialize and reserialize
     FIXME: make this modular and usable for any .obj
     """
@@ -352,15 +362,15 @@ def test_patches(testing_fileinfo,
         npt.assert_allclose(surface_mapping_coeffs_control, surface_mapping_coeffs_test)
 
     # View the mesh
-    # color: tuple[float, float, float] = SKY_BLUE
-    # num_subdivisions: int = DISCRETIZATION_LEVEL
-    # spline_surface.view(color, num_subdivisions)
+    color: tuple[float, float, float] = SKY_BLUE
+    num_subdivisions: int = DISCRETIZATION_LEVEL
+    spline_surface.view(color, num_subdivisions)
 
 
 # *******************
 # Original Test Cases
 # *******************
-
+@pytest.mark.unit
 def twelve_split_quadratic_reproduction(uv_coeff: float,
                                         uu_coeff: float,
                                         vv_coeff: float
@@ -416,6 +426,7 @@ def twelve_split_quadratic_reproduction(uv_coeff: float,
     return True
 
 
+@pytest.mark.unit
 def test_twelve_split_spline_constant_surface() -> None:
     """
     Build constant function triangle data
@@ -449,6 +460,7 @@ def test_twelve_split_spline_constant_surface() -> None:
     assert vector_equal(q, p)
 
 
+@pytest.mark.unit
 def test_twelve_split_spline_linear_surface() -> None:
     """
     Build linear "quadratic" functionals
@@ -456,6 +468,7 @@ def test_twelve_split_spline_linear_surface() -> None:
     assert twelve_split_quadratic_reproduction(0.0, 0.0, 0.0)
 
 
+@pytest.mark.unit
 def test_twelve_split_spline_quadratic_surface() -> None:
     """
     Test linear "quadratic" functionals

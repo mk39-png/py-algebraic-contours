@@ -48,7 +48,7 @@ def initialize_to_out_arrays(testing_fileinfo: tuple[pathlib.Path, pathlib.Path]
 #
 # Tests
 #
-
+@pytest.mark.unit
 def test_build_next_array(testing_fileinfo,
                           initialize_to_out_arrays) -> None:
     """ 
@@ -72,6 +72,7 @@ def test_build_next_array(testing_fileinfo,
                                np.array(next_array, dtype=np.int64))
 
 
+@pytest.mark.unit
 def test_build_prev_array(testing_fileinfo,
                           initialize_to_out_arrays) -> None:
     """ 
@@ -95,6 +96,7 @@ def test_build_prev_array(testing_fileinfo,
                                np.array(prev_array, dtype=np.int64))
 
 
+@pytest.mark.unit
 def test_build_from_array(testing_fileinfo,
                           initialize_to_out_arrays) -> None:
     """ 
@@ -118,6 +120,7 @@ def test_build_from_array(testing_fileinfo,
                                np.array(from_array, dtype=np.int64))
 
 
+@pytest.mark.unit
 def test_build_in_array(testing_fileinfo,
                         initialize_to_out_arrays) -> None:
     """ 

@@ -6,6 +6,7 @@ import logging
 
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 from pyalgcon.core.common import MatrixXf, Vector1D, Vector2D, float_equal
 from pyalgcon.core.polynomial_function import (
@@ -52,10 +53,14 @@ def test_generate_monomials() -> None:
     npt.assert_allclose(generate_monomials(3, 2), generate_monomials_control(3, 2))
 
 
+@pytest.mark.unit
+@pytest.mark.regression
 def test_evaluate_polynomial() -> None:
     """
     From original C++ code.
+    Regression test to ensure proper order of polynomial evaluation.
     """
+
     degree = 2
     dimension = 1
     polynomial_coeffs: Vector1D = np.array([0., 0., 0.])
@@ -69,7 +74,7 @@ def test_evaluate_polynomial() -> None:
     # assert polynomial_evaluation.shape == (dimension, )
 
     # Checking if we get regular solutions value back
-    # -3t^2 + -5t + 2 with t = 2
+    # 2 - 5t - 3t^2 with t = 2
     # meaning we get back -20
     # NOTE: evaluate_polynomial expects degrees in descending order (e.g. at^2 + bt + c)
     polynomial_coeffs = np.array([2, -5, -3])
@@ -113,6 +118,7 @@ def test_compute_polynomial_mapping_product_one_dimension() -> None:
     assert np.array_equal(product_polynomial_coeffs_test, np.array([2, 3, 1]))
 
 
+@pytest.mark.unit
 def test_compute_polynomial_mapping_derivative_with_asoc() -> None:
     """
     Testing the ASOC code's implementation of compute_polynomial_mapping_derivative()
@@ -156,6 +162,7 @@ def test_compute_polynomial_mapping_derivative_with_asoc() -> None:
     # TODO: derive each row of the polynomial for multidimensional coeff matrices (e.g shape (2, 3))
 
 
+@pytest.mark.unit
 def test_remove_polynomial_trailing_coefficients() -> None:
     """
     Comparing original C++ functionality with NumPy
@@ -184,6 +191,7 @@ def test_remove_polynomial_trailing_coefficients() -> None:
     assert np.array_equal(np.trim_zeros(A_coeffs, 'b'), reduced_coeffs)
 
 
+@pytest.mark.unit
 def test_polynomial_mapping_cross_products_elementary_constant_functions() -> None:
     """
     Testing compute_polynomial_mapping_cross_product() with
@@ -202,6 +210,7 @@ def test_polynomial_mapping_cross_products_elementary_constant_functions() -> No
     assert float_equal(cross_product_coeffs[0][2], 1.0)
 
 
+@pytest.mark.unit
 def test_polynomial_mapping_cross_products_elementary_linear_functions() -> None:
     """
     Testing compute_polynomial_mapping_cross_product() with
@@ -223,6 +232,7 @@ def test_polynomial_mapping_cross_products_elementary_linear_functions() -> None
     # TODO: now check to see if equivalent to NumPy's polynomial solver...
 
 
+@pytest.mark.unit
 def test_polynomial_mapping_cross_products_general_constant_functions() -> None:
     """
     Original C++ code.
@@ -240,6 +250,7 @@ def test_polynomial_mapping_cross_products_general_constant_functions() -> None:
     assert float_equal(cross_product_coeffs[0][2], -3.0)
 
 
+@pytest.mark.unit
 def test_polynomial_mapping_cross_products_cancelling_linear_functions() -> None:
     """
     Original C++ code.
@@ -265,6 +276,7 @@ def test_polynomial_mapping_cross_products_cancelling_linear_functions() -> None
     assert float_equal(cross_product_coeffs[2, 2], 0.0)
 
 
+@pytest.mark.unit
 def test_polynomial_real_roots_linear_function() -> None:
     """
     Original C++ code.
@@ -276,6 +288,7 @@ def test_polynomial_real_roots_linear_function() -> None:
     assert float_equal(roots[0], -1.0)
 
 
+@pytest.mark.unit
 def test_polynomial_real_roots_quadratic_function_with_roots() -> None:
     """
     Original C++ code.
@@ -288,6 +301,7 @@ def test_polynomial_real_roots_quadratic_function_with_roots() -> None:
     assert (float_equal(roots[1], -1.0) or float_equal(roots[1], 1.0))
 
 
+@pytest.mark.unit
 def test_polynomial_real_roots_quadratic_function_without_roots() -> None:
     """
     Original C++ code.
@@ -298,10 +312,14 @@ def test_polynomial_real_roots_quadratic_function_without_roots() -> None:
     assert roots.size == 0
 
 
+@pytest.mark.regression
 def test_polynomial_real_roots_vs_quadratic_real_roots() -> None:
     """
     This test is just to see if quadratic_real_roots() and polynomial_real_roots()
     do the same thing.
+
+    Specifically, quadratic_real_roots is a particular case of polynomial_real_roots
+    where the equation is quadratic.
     """
     logger.info("Quadratic function with roots")
     A_coeffs = np.array([-1, 0, 1])
@@ -323,3 +341,7 @@ def test_polynomial_real_roots_vs_quadratic_real_roots() -> None:
     # But the num_solutions is 0....
     # But anyways, polynomial_real_roots and quadratic_real_roots appear to just do the same thing.
     # assert roots_quadratic.size == 0
+
+
+# TODO: add fuzzing test case comparing Polynomial solver to Cubic solver
+# TODO: add fuzzing test case comparing polynomial solver to Quadratic solver (w/out real roots)

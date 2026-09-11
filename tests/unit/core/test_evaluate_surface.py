@@ -4,6 +4,7 @@ This file basically test bivariate_quadratic_function.py
 import logging
 
 import numpy as np
+import pytest
 
 from pyalgcon.core.bivariate_quadratic_function import \
     generate_quadratic_monomials
@@ -12,6 +13,7 @@ from pyalgcon.core.common import Vector6f
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@pytest.mark.unit
 def test_patch_monomials() -> None:
     """
     From original C++ code

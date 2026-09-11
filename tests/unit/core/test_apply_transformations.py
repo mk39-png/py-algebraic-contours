@@ -21,6 +21,8 @@ from pyalgcon.core.common import (Matrix3x3f, Matrix4x4f, MatrixNx3f,
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@pytest.mark.unit
+@pytest.mark.regression
 @pytest.mark.parametrize("seed", range(100))
 def test_apply_transformation_to_vertices(seed, parsed_control_mesh) -> None:
     """
@@ -69,7 +71,8 @@ def test_apply_transformation_to_vertices(seed, parsed_control_mesh) -> None:
 #     # Compare results
 #     compare_eigen_numpy_matrix(filepath / "V_transformed.csv", V_transformed)
 
-
+@pytest.mark.unit
+@pytest.mark.oracle("translation")
 def test_apply_camera_frame_transformation_to_vertices(
         testing_fileinfo: tuple[pathlib.Path, pathlib.Path],
         parsed_control_mesh: tuple[np.ndarray,

@@ -2,12 +2,14 @@
 Test conic
 """
 import numpy as np
+import pytest
 
 from pyalgcon.core.common import Matrix3x2f, Vector3f, Vector6f, float_equal
 from pyalgcon.core.conic import Conic, ConicType
 from pyalgcon.core.rational_function import RationalFunction
 
 
+@pytest.mark.unit
 def test_zero_case() -> None:
     """
     Testing 2D vector with F_coeffs to see if it's all good.
@@ -34,6 +36,7 @@ def test_zero_case() -> None:
     assert (float_equal(pullback(1.0)[0], 0.0))
 
 
+@pytest.mark.unit
 def test_unit_pullback_case() -> None:
     P_coeffs: Matrix3x2f = np.array([[0.0, 2.0],
                                      [0.0, 3.0],
@@ -54,6 +57,7 @@ def test_unit_pullback_case() -> None:
     assert (float_equal(pullback(1.0)[0], 1.0))
 
 
+@pytest.mark.unit
 def test_u_projection_case() -> None:
     P_coeffs: Matrix3x2f = np.array([[1.0, 1.0],
                                      [2.0, -2.0],

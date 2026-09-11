@@ -5,6 +5,7 @@ import pathlib
 
 import numpy as np
 import numpy.testing as npt
+import pytest
 
 from pyalgcon.core.affine_manifold import (AffineManifold,
                                            ParametricAffineManifold,
@@ -20,6 +21,7 @@ from pyalgcon.debug.debug import (compare_edge_charts_from_file,
 # ********************
 # Test Methods
 # ********************
+@pytest.mark.unit
 def test_compute_cone_corners(testing_fileinfo,
                               initialize_affine_manifold) -> None:
     """
@@ -40,6 +42,7 @@ def test_compute_cone_corners(testing_fileinfo,
     compare_eigen_numpy_matrix(filepath / "is_cone_corner.csv", np.array(is_cone_corner))
 
 
+@pytest.mark.unit
 def test_compute_cones(initialize_affine_manifold) -> None:
     """
     This tests the entire constructor of AffineManifold.
@@ -57,6 +60,7 @@ def test_compute_cones(initialize_affine_manifold) -> None:
     npt.assert_allclose(cones_control, np.array(cones))
 
 
+@pytest.mark.integration
 def test_affine_manifold(testing_fileinfo,
                          initialize_affine_manifold) -> None:
     """
@@ -98,6 +102,7 @@ def test_affine_manifold(testing_fileinfo,
                                   affine_manifold.face_charts)
 
 
+@pytest.mark.unit
 def test_affine_manifold_from_global_uvs() -> None:
     """
     From original Algebraic Contours test case.
