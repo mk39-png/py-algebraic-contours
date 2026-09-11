@@ -164,3 +164,17 @@ def test_view_contours(initialize_contour_network, no_gui) -> None:
     contour_network: ContourNetwork
     output_contour_folderpath, contour_network = initialize_contour_network
     contour_network.view_contours()
+
+
+def test_view(initialize_contour_network,
+              twelve_split_spline_transformed,
+              no_gui) -> None:
+    """ 
+    Tests to see if we can view the contour network in Polyscope
+    """
+    # NOTE: remove no_gui if wanting to see the polyscope viewer and its contours
+    # Retrieve parameters
+    output_contour_folderpath: pathlib.Path
+    contour_network: ContourNetwork
+    output_contour_folderpath, contour_network = initialize_contour_network
+    contour_network.view(twelve_split_spline_transformed)
