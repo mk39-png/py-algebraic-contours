@@ -38,6 +38,35 @@ logging.disable(logging.INFO)
 # handlers=[logging.FileHandler("test.log")])
 
 
+MESH_PATHS: list[pathlib.Path] = list(
+    (pathlib.Path(__file__).parent / "data" / "meshes").glob("*.obj"))
+MESH_FILES: list[tuple[pathlib.Path, pathlib.Path]] = [
+    (path.parent.parent, path) for path in MESH_PATHS]
+
+
+# @pytest.fixture(scope="session", params=MESH_FILES, ids=lambda param: f"{param[1].name}::")
+@pytest.fixture(scope="session", params=MESH_FILES, ids=lambda param: f"{param[1].stem}::")
+def testing_fileinfo_meshes(request: pytest.FixtureRequest) -> tuple[pathlib.Path, pathlib.Path]:
+    """ Gets meshes for end-to-end testing
+
+    :returns: tuple of folderpath and filepath to a given obj file (e.g. tests/data/spot_control/)
+    """
+    # Setup
+    # foldername: str
+    # obj_filename: str
+    # foldername, obj_filename = request.param
+    # base_folderpath: pathlib.Path = pathlib.Path(__file__).parent / "data"
+    # meshes_folderpath: pathlib.Path = base_folderpath / "meshes"
+
+    # # Return values
+    # base_data_folderpath: pathlib.Path = base_folderpath / foldername
+    # obj_filepath: pathlib.Path = base_folderpath / foldername / obj_filename
+    base_data_folderpath, obj_filepath = request.param
+    assert base_data_folderpath.name == "data"
+
+    return base_data_folderpath, obj_filepath
+
+
 # NOTE: the test cases were designed with inputs and outputs from spot_control
 # Therefore, some test cases may fail if other meshes are used.
 @pytest.fixture(scope="session", params=[
