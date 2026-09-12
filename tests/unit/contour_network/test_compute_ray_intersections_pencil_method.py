@@ -8,14 +8,15 @@ Testing various methods for calculating intersections.
 import pathlib
 
 import numpy as np
+import numpy.testing as npt
 
 from pyalgcon.contour_network.compute_ray_intersections_pencil_method import (
+    _solve_quadratic_complex,
     compute_spline_surface_patch_ray_intersections_pencil_method,
     pencil_first_part, solve_quadratic_quadratic_equation_pencil_method)
 from pyalgcon.core.common import (Matrix2x3f, PlanarPoint1d, Vector6f,
-                                  compare_eigen_numpy_matrix,
                                   compare_intersection_points,
-                                  deserialize_eigen_matrix_csv_to_numpy, todo)
+                                  deserialize_eigen_matrix_csv_to_numpy)
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface_patch import \
     QuadraticSplineSurfacePatch
 
@@ -178,3 +179,27 @@ def test_pencil_first_part(testing_fileinfo) -> None:
             compare_intersection_points(filepath / "intersection_points" / f"{i}.csv",
                                         np.array(intersection_points),
                                         num_intersections_control)
+
+
+def test_solve_quadratic_complex() -> None:
+    """
+    Comparing with NumPy implementation.
+    """
+
+    trials = 1000
+    degree = 2
+
+    for _ in range(trials):
+        coeffs = np.random.uniform(-100, 100, degree + 1)
+        coeffs_np = coeffs[::-1]
+
+        # Compute the complex roots
+        solver = np.polynomial.Polynomial(coeffs_np)
+        # Reverse to match order of descending degree
+        control_roots: np.ndarray = solver.roots()[::-1]
+        test_roots: np.ndarray = _solve_quadratic_complex(coeffs)
+
+        # NOTE: root may have different ordering, which for our case is fine for now.
+        npt.assert_allclose(actual=np.sort_complex(test_roots),
+                            desired=np.sort_complex(control_roots),
+                            atol=1e-7)

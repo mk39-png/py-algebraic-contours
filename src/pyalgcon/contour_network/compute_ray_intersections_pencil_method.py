@@ -4,6 +4,7 @@ compute_ray_intersections_pencil_method.py
 Methodds to assist with computiong cusps.
 """
 
+import cmath
 import logging
 import math
 
@@ -12,8 +13,8 @@ import numpy as np
 from pyalgcon.contour_network.intersection_heuristics import is_in_bounding_box
 from pyalgcon.core.common import (MAX_PATCH_RAY_INTERSECTIONS, Matrix2x2f,
                                   Matrix2x3f, Matrix6x3f, PlanarPoint1d,
-                                  SpatialVector1d, Vector2f, Vector3f,
-                                  Vector6f)
+                                  SpatialVector1d, Vector2f, Vector2r,
+                                  Vector3f, Vector6f)
 from pyalgcon.core.convex_polygon import ConvexPolygon
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface_patch import \
     QuadraticSplineSurfacePatch
@@ -21,9 +22,35 @@ from pyalgcon.quadratic_spline_surface.quadratic_spline_surface_patch import \
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def _solve_quadratic(q: Vector3f | list[float], threshold: float) -> tuple[int, Vector2f]:
+def _solve_quadratic_complex(coeffs: Vector3f | list[float] | tuple[float, float, float]
+                             ) -> np.ndarray:
     """
-    Solves quadratic.
+    Solves quadratic, preserving complex roots.
+    Going from highest degree to lowest degree
+    ax^2 + bx + c = 0
+
+    :param q: coefficients
+    :return: roots of equation as complex numbers
+    """
+    # TODO: refactor to polynomial_function.py
+    a: float
+    b: float
+    c: float
+    a, b, c = coeffs
+    solution: Vector2r = np.empty((2, ), dtype=complex)
+
+    discriminant: float = b * b - 4.0 * a * c
+    discriminant_root: complex = cmath.sqrt(discriminant)
+    solution[0] = (-b + discriminant_root) / (2.0 * a)
+    solution[1] = (-b - discriminant_root) / (2.0 * a)
+
+    return solution
+
+
+def _solve_quadratic(q: Vector3f | list[float] | tuple[float, float, float],
+                     threshold: float) -> tuple[int, Vector2f]:
+    """
+    Solves quadratic, preserving only real roots.
     Returns number of solutions and solution.
     So, going from highest degree to lowest degree
     ax^2 + bx + c

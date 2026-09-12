@@ -55,6 +55,7 @@ SegmentIndex = int
 Color = tuple[float, float, float, float]
 Vector3i = np.ndarray
 Vector2f = np.ndarray
+Vector2r = np.ndarray
 Vector3f = np.ndarray
 Vector4f = np.ndarray
 Vector5f = np.ndarray
