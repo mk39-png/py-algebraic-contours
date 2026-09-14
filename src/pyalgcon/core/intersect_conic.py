@@ -137,7 +137,7 @@ def intersect_conic_with_convex_polygon(conic: Conic,
     t0 = conic.domain.lower_bound
     t1 = indexed_intersections[0][0]
     t_sample = max(0.5 * (t0 + t1), t1 - 1)
-    p_sample = conic(t_sample).flatten()
+    p_sample = conic(t_sample)
     logger.debug("Sampling at %s", t_sample)
     if convex_polygon.contains(p_sample):
         conic_segment: Conic = copy.deepcopy(conic)
@@ -201,13 +201,8 @@ def intersect_conic_in_cone_patch(conic: Conic,
     :return: true iff an intersection is found
     """
     # Get boundary for the edge opposite the cone corner
-    polygon_boundaries_2d: list[Matrix3x1r] = convex_polygon.boundary_segments  # length 3
-    assert len(polygon_boundaries_2d) == 3
-    polygon_boundaries: list[Vector3f] = []
-    # HACK: flattening elements shape (3, 1) list of boundary_segments to (3, )
-    # TODO: remove this once transition fully away from 2D Vectors and towards 1D vectors of ndim == 1
-    for boundary in polygon_boundaries_2d:
-        polygon_boundaries.append(boundary.flatten())
+    polygon_boundaries: list[Vector3f] = convex_polygon.boundary_segments
+    assert polygon_boundaries[0].shape == (3, )  # lazy checking shape
 
     polygon_boundary_index: int = cone_corner_index
     L_coeffs: Vector3f = polygon_boundaries[polygon_boundary_index]
@@ -227,7 +222,6 @@ def intersect_conic_in_cone_patch(conic: Conic,
 
     # Split the conic at the intersection (depending on what kind of ray it is)
     # FIXME: potentially incompatible C++ translation below...
-    # TODO: instead of making a deep copy... actually nvm porbably need a deep copy
     conic_segment: Conic = copy.deepcopy(conic)
     line_intersection_indices: tuple[int, int] = (-1, -1)
     t: float = intersections[0]
