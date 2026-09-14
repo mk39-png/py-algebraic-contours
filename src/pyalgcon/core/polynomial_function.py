@@ -64,6 +64,8 @@ def evaluate_polynomial(degree: int,
                         t: float) -> Vector1D | float:
     """
     Evaluate the polynomial with given coefficients at t.
+    Evaluates in order of increasing degree 0, 1, ... degree
+    e.g. c + bx^1 + ax^2 for degree 2
     NOTE: this has been modified from the ASOC code to support any dimension.
 
     :param int degree: [in] maximum monomial degree.
