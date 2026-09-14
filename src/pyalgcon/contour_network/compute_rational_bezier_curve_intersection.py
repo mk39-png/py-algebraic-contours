@@ -10,8 +10,12 @@ import math
 import numpy as np
 
 from pyalgcon.core.common import (Matrix5x3f, SpatialVector1d, Vector2f,
-                                  Vector3f, Vector5f, cross_product,
-                                  float_equal)
+                                  Vector3f, Vector5f, float_equal)
+
+try:
+    from pyalgcon.core.common_c import cross_product
+except ImportError:
+    from pyalgcon.core.common import cross_product
 
 logger: logging.Logger = logging.getLogger(__name__)
 
