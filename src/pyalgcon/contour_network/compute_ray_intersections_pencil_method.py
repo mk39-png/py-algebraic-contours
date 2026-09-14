@@ -312,7 +312,7 @@ def pencil_first_part(coeff_F: Vector6f,
         # NOTE: this is in "ASOC" order, meaning coefficients in decreasing degree
         # NOTE: keep this as list rather than np.array since _solve_quadratic doesn't utilize any
         # NumPy fanciness.
-        quadratic: list[float] = [a2, a1, a0]
+        quadratic: tuple[float, float, float] = (a2, a1, a0)
 
         solution: Vector2f
         num_solution, solution = _solve_quadratic(quadratic, coeff_threshold)
