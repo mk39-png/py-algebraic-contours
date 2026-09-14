@@ -1,13 +1,20 @@
 """
 Methods to operate on bivariate quadratics represented by coefficient vectors.
 """
+
 import numpy as np
 
 from pyalgcon.core.common import (Matrix2x2f, Matrix3x3r, Matrix3x6r,
                                   Matrix6x3f, Matrix6x6r, PlanarPoint,
                                   PlanarPoint1d, SpatialVector1d, Vector1D,
-                                  Vector2D, Vector3f, Vector6f, cross_product,
-                                  float_equal, unimplemented)
+                                  Vector2D, Vector3f, Vector6f, float_equal,
+                                  unimplemented)
+
+try:
+    from pyalgcon.core.common_c import cross_product
+except ImportError:
+    from pyalgcon.core.common import cross_product
+
 from pyalgcon.core.polynomial_function import formatted_term
 
 
