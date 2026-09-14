@@ -73,7 +73,7 @@ def evaluate_polynomial(degree: int,
 
     :return polynomial_evaluation: evaluation of the polynomial of shape (dimension, ) or float
     """
-
+    assert polynomial_coeffs_ref.shape == (degree + 1, dimension)
     # Perform calculation
     T: Vector1D = generate_monomials(degree, t)
     assert T.shape == (degree + 1, )
