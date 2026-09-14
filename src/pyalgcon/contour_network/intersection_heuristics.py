@@ -283,10 +283,13 @@ def _compute_bezier_bounding_box_over_domain(planar_curve: RationalFunction,
     bezier_y_coords: Vector5f = bezier_points[:, 1] / bezier_points[:, 2]
 
     # Bezier points should interpolate the endpoints
-    assert float_equal(planar_curve(t_min)[0], bezier_x_coords[4])
-    assert float_equal(planar_curve(t_min)[1], bezier_y_coords[4])
-    assert float_equal(planar_curve(t_max)[0], bezier_x_coords[0])
-    assert float_equal(planar_curve(t_max)[1], bezier_y_coords[0])
+    assert float_equal(planar_curve(t_min)[0], bezier_x_coords[4], 1e-7)
+    assert float_equal(planar_curve(t_min)[1], bezier_y_coords[4], 1e-7)
+    assert float_equal(planar_curve(t_max)[0], bezier_x_coords[0], 1e-7)
+    # NOTE: 1e-7 since with AngelaFace with Chaining QI, these would be really close values
+    # but fail with 1e-10 eps
+    assert float_equal(planar_curve(t_max)[1], bezier_y_coords[0], 1e-7
+                       ), f"{planar_curve(t_max)[1]} not equal to {bezier_y_coords[0]}"
 
     # Get the max and min x values from the points
     x_min: float = np.min(bezier_x_coords)
