@@ -182,10 +182,8 @@ def _get_solutions(A: list[SpatialVector1d],
     if len(domsA) != len(domsB):
         assert len(domsA) == len(domsB)
 
-    xs: list[tuple[float, float]] = []
-    for i, _ in enumerate(domsA):
-        xs.append((domsA[i].middle(), domsB[i].middle()))
-
+    xs: list[tuple[float, float]] = [(domsA[i].middle(), domsB[i].middle())
+                                     for i, _ in enumerate(domsA)]
     return xs
 
 
