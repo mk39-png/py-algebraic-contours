@@ -373,10 +373,9 @@ class RationalFunction:
         s: float = interval_lerp(0.0, 1.0, t0, t1, t)
 
         # Evaluate at the given domain coordinate
-        point: Vector2D = self.evaluate(s)
-
-        # HACK: flattening to 1D when evaluate should natively return 1D
-        return point.flatten()
+        point: Vector1D = self.evaluate(s)
+        assert point.ndim == 1
+        return point
 
     def is_in_domain(self, t: float) -> bool:
         """
