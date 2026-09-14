@@ -74,22 +74,22 @@ class InvisibilityParameters():
     Parameters for the invisibility computation
     """
     pad_amount: float = 1e-9  # Padding for contour domains
-    write_contour_soup = False  # Option to write contours before graph construction for diagnostics
+    write_contour_soup: bool = False  # Option to write contours before graph construction for diagnostics
 
     # Method for computing quantitative visibility
     invisibility_method: InvisibilityMethod = InvisibilityMethod.CHAINING
 
     # Options to view each local propagation step during computation for debugging
-    view_intersections = False
-    view_cusps = False
+    view_intersections: bool = False
+    view_cusps: bool = False
 
     # Options for redundancy checks
-    poll_chain_segments = True  # Sample and poll 3 segments for majority per chain QI
-    poll_segment_points = False  # Sample and poll 3 points for majority per segment QI
+    poll_chain_segments: bool = True  # Sample and poll 3 segments for majority per chain QI
+    poll_segment_points: bool = False  # Sample and poll 3 points for majority per segment QI
 
     # Consistency checks
-    check_chaining = False
-    check_propagation = False
+    check_chaining: bool = False
+    check_propagation: bool = False
 
 
 class ContourNetwork(ProjectedCurveNetwork):
