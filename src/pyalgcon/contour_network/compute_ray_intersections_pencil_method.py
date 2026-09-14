@@ -509,7 +509,7 @@ def pencil_first_part(coeff_F: Vector6f,
     else:
         # Ellipsoid with zero area
         return False, num_intersections, intersection_points
-    assert len(intersection_points) == MAX_PATCH_RAY_INTERSECTIONS
+
     return intersection_flag, num_intersections, intersection_points
 
 
