@@ -15,8 +15,12 @@ from pyalgcon.core.common import (COLS, MatrixXf, Vector1D, Vector2D,
 from pyalgcon.core.interval import Interval
 from pyalgcon.core.polynomial_function import (
     compute_polynomial_mapping_derivative, compute_polynomial_mapping_product,
-    compute_polynomial_mapping_scalar_product, evaluate_polynomial,
-    formatted_polynomial)
+    compute_polynomial_mapping_scalar_product, formatted_polynomial)
+
+try:
+    from pyalgcon.core.polynomial_function_c import evaluate_polynomial
+except ImportError:
+    from pyalgcon.core.polynomial_function import evaluate_polynomial
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -537,10 +541,10 @@ class RationalFunction:
 
         # FIXME: Wait a minute... why is numerator all 0s with test_unit_pullback_case?
         # FIXME: inheriting degree from
-        Pt: Vector1D | float = evaluate_polynomial(degree=self.__degree,
-                                                   dimension=self.__dimension,
-                                                   polynomial_coeffs_ref=self.__numerator_coeffs,
-                                                   t=t)
+        Pt: Vector1D = evaluate_polynomial(degree=self.__degree,
+                                           dimension=self.__dimension,
+                                           polynomial_coeffs_ref=self.__numerator_coeffs,
+                                           t=t)
 
         # NOTE: Qt will get a float back
         Qt: float = evaluate_polynomial(degree=self.__degree,
