@@ -329,8 +329,7 @@ def compute_local_twelve_split_energy_quadratic(local_hessian_data: LocalHessian
     smoothness_term: float = 0.0
     for i in range(3):
         # r_alpha shape sliced = (12, )
-        # FIXME: is .T really needed?
-        smoothness_term += (r_alpha[:, i].T @ (w_s * H_s) @ r_alpha[:, i])
+        smoothness_term += (r_alpha[:, i] @ (w_s * H_s) @ r_alpha[:, i])
     assert isinstance(smoothness_term, float)
     logger.info("Smoothness term is %s", smoothness_term)
 
@@ -339,13 +338,15 @@ def compute_local_twelve_split_energy_quadratic(local_hessian_data: LocalHessian
     for i in range(3):
         # r_alpha_diff shape sliced = (12, )
         r_alpha_diff: Vector12f = r_alpha[:, i] - r_alpha_0[:, i]  # gets columns
-        fit_term += (r_alpha_diff.T @ (w_f * H_f) @ r_alpha_diff)
+        # (12, 3) @ (12, 12) @ (12, 3)
+        fit_term += (r_alpha_diff @ (w_f * H_f) @ r_alpha_diff)
+
     assert isinstance(fit_term, float)
     logger.info("Fit term is %s", fit_term)
 
     # Add planar fitting term
     planar_term: float = 0.0
-    planar_term += (r_alpha_flat.T @ (w_p * H_p) @ r_alpha_flat)
+    planar_term += (r_alpha_flat @ (w_p * H_p) @ r_alpha_flat)
     assert isinstance(planar_term, float)
 
     logger.info("Planar orthogonality term is %s", planar_term)
