@@ -328,17 +328,15 @@ class ConvexPolygon:
         """
         Retrieves boundary segments coefficients of shape (3, )
 
+        :return: copy of boundary segment coefficients
         :rtype: list[Vector3f]
         """
-        # HACK: flattening this accessor to return list[Vector3f] rather than
-        # a list of (3, 1) matrices
-        boundary_segments_coeffs_flattened: list[Vector3f] = []
-        for boundary_segment_coeffs in self.__boundary_segments_coeffs:
-            boundary_segments_coeffs_flattened.append(boundary_segment_coeffs.flatten())
-        assert (np.array(boundary_segments_coeffs_flattened).shape ==
+        boundary_segment_coeffs: list[Vector3f] = [
+            np.copy(boundary_seg_coeff) for boundary_seg_coeff in self.__boundary_segments_coeffs]
+        assert (np.array(boundary_segment_coeffs).shape ==
                 np.array(self.__boundary_segments_coeffs).squeeze().shape)
-
-        return boundary_segments_coeffs_flattened
+        assert boundary_segment_coeffs[0].shape == (3, )  # lazy check first element
+        return boundary_segment_coeffs
 
     @property
     def vertices(self) -> Matrix3x2f:
