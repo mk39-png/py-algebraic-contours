@@ -128,7 +128,10 @@ def intersect_conic_with_convex_polygon(conic: Conic,
         assert p_sample.ndim == 1
 
         if convex_polygon.contains(p_sample):
-            conic_segments.append(conic)
+            # FIXME: deepcopy conic?
+            conic_segment = copy.deepcopy(conic)
+            conic_segments.append(conic_segment)
+            # conic_segments.append(conic)
             line_intersection_indices.append((-1, -1))
 
         return conic_segments, line_intersection_indices
