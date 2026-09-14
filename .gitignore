@@ -2,9 +2,13 @@ __pycache__/
 .pytest_cache
 .venv/
 results/
+build/
+output/
 *.csv
 *.obj
 *.json
 *.ini
 *.coverage
 *.log
+*.c
+*.pyd
