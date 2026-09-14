@@ -125,8 +125,10 @@ class Conic(RationalFunction):
         assert F_coeffs.shape == (6, dimension)
         assert F_coeffs.dtype == np.float64
 
-        logger.debug("Pulling back conic by quadratic function %s",
-                     formatted_bivariate_quadratic_mapping(dimension, F_coeffs))
+        # NOTE: must include this statement or else logger will run method despite logging level
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("Pulling back conic by quadratic function %s",
+                         formatted_bivariate_quadratic_mapping(dimension, F_coeffs))
 
         # Separate the individual polynomial coefficients from the rational function
         P_coeffs: Matrix3x2f = self.numerators
