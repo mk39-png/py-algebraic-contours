@@ -521,8 +521,11 @@ class AffineManifold:
         for vertex_index in range(self.num_vertices):
             # FIXME: something wrong with is_flat
             if not self.is_flat(vertex_index):
-                logger.debug("Getting cone %s of curvature %s",
-                             vertex_index, self.compute_curvature(vertex_index))
+                # NOTE: need isEnabledFor check to avoid executing compute_curvature for non-DEBUG
+                # logging levels.
+                if logger.isEnabledFor(logging.DEBUG):
+                    logger.debug("Getting cone %s of curvature %s",
+                                 vertex_index, self.compute_curvature(vertex_index))
                 cones.append(vertex_index)
         return cones
 
