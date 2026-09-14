@@ -222,8 +222,14 @@ def compute_polynomial_mapping_derivative(degree: int, dimension: int,
     polynomial_coeffs: MatrixXf = polynomial_coeffs_ref.reshape(degree + 1, dimension)
     assert polynomial_coeffs.shape == (degree + 1, dimension)
 
-    derivative_polynomial_coeffs: MatrixXf = np.apply_along_axis(
-        np.polynomial.polynomial.polyder, axis=0, arr=polynomial_coeffs)
+    # derivative_polynomial_coeffs: MatrixXf = np.apply_along_axis(
+    #     np.polynomial.polynomial.polyder, axis=0, arr=polynomial_coeffs)
+    derivative_polynomial_coeffs = np.empty((degree, dimension), dtype=np.float64)
+
+    for i in range(1, degree+1):
+        for j in range(dimension):
+            derivative_polynomial_coeffs[i - 1, j] = i * polynomial_coeffs[i, j]
+
     assert derivative_polynomial_coeffs.shape == (degree, dimension)
 
     return derivative_polynomial_coeffs
