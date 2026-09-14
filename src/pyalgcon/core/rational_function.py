@@ -473,7 +473,7 @@ class RationalFunction:
         self.__numerator_coeffs = numerator
 
     @property
-    def denominator(self) -> Vector2D:
+    def denominator(self) -> Vector1D:
         """
         Retrieves denominator of RationalFunction
         NOTE: denominator is 1-dimensional
@@ -484,7 +484,7 @@ class RationalFunction:
     @denominator.setter
     def denominator(self, denominator: np.ndarray) -> None:
         """Sets denominator of RationalFunction"""
-        assert denominator.shape == (self.__degree + 1, 1)
+        assert denominator.shape == (self.__degree + 1, )
         self.__denominator_coeffs = denominator
 
     # TODO: then have the domain accessible.
