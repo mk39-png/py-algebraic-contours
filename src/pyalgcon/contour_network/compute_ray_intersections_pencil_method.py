@@ -16,6 +16,7 @@ from pyalgcon.core.common import (MAX_PATCH_RAY_INTERSECTIONS, Matrix2x2f,
                                   SpatialVector1d, Vector2f, Vector2r,
                                   Vector3f, Vector6f)
 from pyalgcon.core.convex_polygon import ConvexPolygon
+from pyalgcon.core.solve_cubic import _solve_cubic
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface_patch import \
     QuadraticSplineSurfacePatch
 
@@ -322,10 +323,9 @@ def pencil_first_part(coeff_F: Vector6f,
     else:
         # Solve cubic
         # NOTE: Polynomial() expects coefficients in INCREASING degree order.
-        cubic_coeffs: list[float] = [a0, a1, a2, a3]
-
-        cubic_solver = np.polynomial.Polynomial(cubic_coeffs)
-        cubic_roots = cubic_solver.roots()
+        # But _solve_cubic() is  in descending order, ax^3 + bx^2 + cx + d = 0
+        cubic_coeffs: tuple[float, float, float, float] = (a3, a2, a1, a0)
+        cubic_roots: np.ndarray = _solve_cubic(cubic_coeffs)
 
         # Check real roots
         imag_threshold: float = 1e-12
