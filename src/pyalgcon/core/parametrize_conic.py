@@ -384,14 +384,12 @@ def check_orientation(conic: Conic, conic_coeffs: Vector6f) -> bool:
     v_derivative: Vector3f = v_derivative_matrix() @ conic_coeffs
     assert v_derivative.shape == (3, )
 
-    # HACK: flattening potentially 2D array
-    point: PlanarPoint1d = conic(t).flatten()
+    point: PlanarPoint1d = conic(t)
     assert point.shape == (2, )
     perp_u: float = evaluate_line(u_derivative, point)
     perp_v: float = evaluate_line(v_derivative, point)
     logger.debug("Contour gradient: [%s, %s]", perp_u, perp_v)
-    # HACK: flattening potentially 2D array
-    point_tangent: PlanarPoint1d = tangent(t).flatten()
+    point_tangent: PlanarPoint1d = tangent(t)
     assert point_tangent.shape == (2, )
     tu: float = point_tangent[0]
     tv: float = point_tangent[1]
