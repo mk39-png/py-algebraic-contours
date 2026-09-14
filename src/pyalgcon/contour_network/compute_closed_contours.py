@@ -9,6 +9,22 @@ from pyalgcon.core.common import (PLACEHOLDER_VALUE, SpatialVector1d,
                                   float_equal_zero)
 from pyalgcon.core.rational_function import RationalFunction
 
+try:
+    from pyalgcon.contour_network.compute_closed_contours_c import \
+        point_distance_squared as _point_distance_squared
+except ImportError:
+
+    def _point_distance_squared(point_1: SpatialVector1d, point_2: SpatialVector1d) -> float:
+        """
+        Distance helper function
+        """
+        # TODO: cythonize and call dot3_c internally
+        assert point_1.shape == (3, )
+        assert point_2.shape == (3, )
+        displacement: SpatialVector1d = point_1 - point_2
+        return displacement.dot(displacement)
+
+
 logger: logging.Logger = logging.getLogger(__name__)
 
 # *******
@@ -16,21 +32,12 @@ logger: logging.Logger = logging.getLogger(__name__)
 # *******
 
 
-def _point_distance_squared(point_1: SpatialVector1d, point_2: SpatialVector1d) -> float:
-    """
-    Distance helper function
-    """
-    assert point_1.shape == (3, )
-    assert point_2.shape == (3, )
-    displacement: SpatialVector1d = point_1 - point_2
-    return displacement.dot(displacement)
-
-
 def _are_overlapping_points(point_1: SpatialVector1d, point_2: SpatialVector1d) -> bool:
     """
     Return true iff the two points overlap
     """
     squared_distance: float = _point_distance_squared(point_1, point_2)
+
     return float_equal_zero(squared_distance)
 
 
@@ -111,6 +118,7 @@ def _add_next_contour_segment(contour_segments: list[RationalFunction],
         cur_distance_sq: float = _point_distance_squared(
             contour_end_points[current_contour_ref[-1]],
             contour_start_points[i])
+
         if cur_distance_sq < min_distance_sq:
             min_distance_sq = cur_distance_sq
             next_candidate = i
@@ -158,6 +166,7 @@ def _add_next_reverse_contour_segment(contour_segments: list[RationalFunction],
         cur_distance_sq: float = _point_distance_squared(
             contour_start_points[current_contour_reverse_ref[-1]],
             contour_end_points[i])
+
         if cur_distance_sq < min_distance_sq:
             min_distance_sq = cur_distance_sq
             prev_candidate = i
