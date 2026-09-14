@@ -412,18 +412,14 @@ def pencil_first_part(coeff_F: Vector6f,
                 else:
                     discriminant: float = (c1 * c1) - 4.0 * (c0 * c2)
                     if 0.0 <= discriminant:
-                        quadratic_coeffs: list = [c2, c1, c0]
-
-                        # NOTE:  NumPy polynomial solver expects coefficients in ascending order.
-                        #  so lowest degree is first.
-                        quadratic_solver = np.polynomial.Polynomial(quadratic_coeffs)
-                        quadratic_roots: np.ndarray = quadratic_solver.roots()
+                        # Order of INCREASING COEFFICIENTS... confusingly enough.
+                        quadratic_coeffs: tuple[float, float, float] = (c0, c1, c2)
+                        quadratic_roots: np.ndarray = _solve_quadratic_complex(quadratic_coeffs)
                         assert quadratic_roots.shape == (2, )
 
                         # NOTE: Going from lowest degree to highest degree to match Eigen's root
                         # ordering.
                         for i in range(1, -1, -1):
-
                             u = quadratic_roots.real[i]
                             v = g * u + h
                             w = 1.0 - (u + v)
@@ -485,12 +481,18 @@ def pencil_first_part(coeff_F: Vector6f,
                 else:
                     # NOTE: precision problem with floating points appears down below
                     # So, expect test cases to fail here when comparing results with ASOC
-                    discriminant = (c1 * c1) - (4.0 * (c0 * c2))
+                    discriminant = (c1 * c1) - (4.0 * (c0 * c2))  # b^2 - 4ac
 
                     if 0.0 <= discriminant:
-                        quadratic_coeffs: list = [c2, c1, c0]
-                        quadratic_solver = np.polynomial.Polynomial(quadratic_coeffs)
-                        quadratic_roots: np.ndarray = quadratic_solver.roots()
+                        # quadratic_coeffs: tuple[float, float, float] = (c2, c1, c0)
+                        # TODO: clarify what ordering this is exactly...
+                        # NOTE: c0 = a, c1 = b, c2 = c in terms of the usual
+                        # ax^2 + bc + c = 0 quadratic equation.
+                        quadratic_coeffs: tuple[float, float, float] = (c0, c1, c2)
+
+                        # quadratic_solver = np.polynomial.Polynomial(quadratic_coeffs)
+                        # quadratic_roots: np.ndarray = quadratic_solver.roots()
+                        quadratic_roots = _solve_quadratic_complex(quadratic_coeffs)
 
                         for i in range(1, -1, -1):
 
