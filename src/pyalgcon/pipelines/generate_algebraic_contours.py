@@ -15,8 +15,9 @@ from pyalgcon.contour_network.contour_network import (ContourNetwork,
                                                       InvisibilityMethod,
                                                       InvisibilityParameters)
 from pyalgcon.core.affine_manifold import AffineManifold
-from pyalgcon.core.apply_transformation import \
-    apply_camera_matrix_transformation_to_vertices
+from pyalgcon.core.apply_transformation import (
+    apply_camera_matrix_transformation_to_vertices,
+    apply_normalization_to_vertices)
 from pyalgcon.core.common import Matrix4x4f, MatrixNx3f
 from pyalgcon.quadratic_spline_surface.optimize_spline_surface import \
     OptimizationParameters
@@ -34,7 +35,8 @@ def generate_algebraic_contours(camera_matrix: Matrix4x4f,
                                 optimization_params: OptimizationParameters | None = None,
                                 intersect_params: IntersectionParameters | None = None,
                                 invisibility_params: InvisibilityParameters | None = None,
-                                show_nodes: bool = False) -> None:
+                                show_nodes: bool = False,
+                                normalize_vertices: bool = True) -> None:
     """
     Runs end-to-end pipeline of contour generation from mesh parsing to contour generation itself.
 
@@ -57,6 +59,14 @@ def generate_algebraic_contours(camera_matrix: Matrix4x4f,
     FT: ArrayLike
     FN: ArrayLike
     V, uv, N, F, FT, FN = igl.readOBJ(input_filepath)
+
+    # NOTE: without vertex normalization, AngelaFace, BumpTri, Car, MonsterFrog, Fertility,
+    #   and various other meshes run for a very long time.
+    # At least with AngelaFace, this is because of an extremely high number of Cones and invalid
+    #   smooth surface constructed (I'm talking over 1 million cones!)
+    # Normalize the vertices
+    if normalize_vertices:
+        V: MatrixNx3f = apply_normalization_to_vertices(V)
 
     # Set up the camera
     V_transformed: MatrixNx3f = apply_camera_matrix_transformation_to_vertices(
