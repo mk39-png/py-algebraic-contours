@@ -27,6 +27,28 @@ from pyalgcon.quadratic_spline_surface.optimize_spline_surface import (
 from pyalgcon.quadratic_spline_surface.twelve_split_spline import \
     TwelveSplitSplineSurface
 
+
+def test_compute_local_twelve_split_energy_quadratic() -> None:
+    """ 
+    Tests equivalent functionality 
+    """
+
+    # Smoothness term
+    r_alpha = np.random.rand(12, 3)
+    H_s = np.random.rand(12, 12)
+    w_s = np.random.random()
+
+    smoothness_term_control: float = 0.0
+    for i in range(3):
+        # r_alpha shape sliced = (12, )
+        smoothness_term_control += (r_alpha[:, i] @ (w_s * H_s) @ r_alpha[:, i])
+
+    smoothness_term_test: float = 0.0
+    smoothness_term_test = np.trace(r_alpha.T @ (w_s * H_s) @ r_alpha)
+
+    assert float_equal(smoothness_term_control, smoothness_term_test)
+
+
 # def test_compute_twelve_split_energy_quadratic() -> None:
 #     # TODO: make this a proper test case.
 #     # For now, just lazily copied over my hasty testing.
