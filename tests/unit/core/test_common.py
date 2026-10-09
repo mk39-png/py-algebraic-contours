@@ -118,3 +118,33 @@ def test_convert_nested_vector_to_matrix() -> None:
     assert matrix_control.shape == (3, 3)
 
     np.testing.assert_allclose(matrix_test, matrix_control)
+
+
+@pytest.mark.unit
+@pytest.mark.regression
+def test_angle_from_positions() -> None:
+
+    def angle_from_positions_control(angle_corner_position: Vector2f,
+                                     second_corner_position: Vector2f,
+                                     third_corner_position: Vector2f) -> float:
+        assert angle_corner_position.shape == (2, )
+        assert second_corner_position.shape == (2, )
+        assert third_corner_position.shape == (2, )
+
+        # TODO: double check that the below are going to be floats...
+        l0: float = LA.norm(third_corner_position - second_corner_position)
+        l1: float = LA.norm(second_corner_position - angle_corner_position)
+        l2: float = LA.norm(third_corner_position - angle_corner_position)
+
+        return angle_from_length(l0, l1, l2)
+
+    num_data = 100
+    data_1 = np.random.rand(num_data, 2) * 100
+    data_2 = np.random.rand(num_data, 2) * 100
+    data_3 = np.random.rand(num_data, 2) * 100
+
+    for i in range(num_data):
+        control = angle_from_positions_control(data_1[i], data_2[i], data_3[i])
+        test = angle_from_positions(data_1[i], data_2[i], data_3[i])
+
+        assert float_equal(control, test)
