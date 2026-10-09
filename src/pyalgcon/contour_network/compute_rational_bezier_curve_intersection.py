@@ -535,13 +535,13 @@ def iterate(domsA: list[Interval_ink],
 
 
 def find_intersections_bezier_clipping(
-        A: list[SpatialVector1d],
-        B: list[SpatialVector1d],
-        precision: float) -> list[tuple[float, float]]:
+        A: Matrix5x3f,
+        B: Matrix5x3f,
+        precision: float) -> MatrixNx2f:
     """
     Split rational bezier curves into 2
     """
-    xs: list[tuple[float, float]] = _get_solutions(A, B, precision)
+    xs: MatrixNx2f = _get_solutions(A, B, precision)
     return xs
 
 

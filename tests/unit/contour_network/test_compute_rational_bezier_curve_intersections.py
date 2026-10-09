@@ -12,8 +12,8 @@ import pytest
 from pyalgcon.contour_network.compute_rational_bezier_curve_intersection import (
     _clipfatline, find_intersections_bezier_clipping)
 from pyalgcon.core.common import (FIND_INTERSECTIONS_BEZIER_CLIPPING_PRECISION,
-                                  Matrix5x3f, SpatialVector1d, Vector2f,
-                                  compare_eigen_numpy_matrix,
+                                  Matrix5x3f, MatrixNx2f, SpatialVector1d,
+                                  Vector2f, compare_eigen_numpy_matrix,
                                   deserialize_eigen_matrix_csv_to_numpy)
 
 
@@ -35,17 +35,13 @@ def test_find_intersections_bezier_clipping(testing_fileinfo) -> None:
 
     # i represents number of files
     for i in range(378):
-        A: list[SpatialVector1d] = [
-            np.array(point)
-            for point in deserialize_eigen_matrix_csv_to_numpy(filepath / "A" / f"{i}.csv").tolist()
-        ]
-        B: list[SpatialVector1d] = [
-            np.array(point)
-            for point in deserialize_eigen_matrix_csv_to_numpy(filepath / "B" / f"{i}.csv").tolist()
-        ]
+        A: Matrix5x3f = deserialize_eigen_matrix_csv_to_numpy(filepath / "A" / f"{i}.csv")
+        B: Matrix5x3f = deserialize_eigen_matrix_csv_to_numpy(filepath / "B" / f"{i}.csv")
+        assert A.shape == (5, 3)
+        assert B.shape == (5, 3)
 
         # Execute method
-        xs: list[tuple[float, float]] = find_intersections_bezier_clipping(
+        xs: MatrixNx2f = find_intersections_bezier_clipping(
             A, B, FIND_INTERSECTIONS_BEZIER_CLIPPING_PRECISION)
 
         # Compare results
