@@ -8,7 +8,8 @@ import numpy as np
 
 from pyalgcon.core.affine_manifold import AffineManifold
 from pyalgcon.core.common import (ROWS, Index, Matrix2x3r, SpatialVector,
-                                  SpatialVector1d, Vector1D,
+                                  SpatialVector1d, TwelveSplitGradient,
+                                  TwelveSplitHessian, Vector1D,
                                   compare_eigen_numpy_matrix,
                                   index_vector_complement)
 from pyalgcon.core.halfedge import Halfedge
@@ -138,3 +139,85 @@ def test_build_variable_edge_indices_map(testing_fileinfo,
                                np.array(global_edge_indices))
     compare_eigen_numpy_matrix(filepath / "full" / "global_edge_indices.csv",
                                np.array(global_edge_indices))
+
+
+# def test_update_energy_quadratic():
+
+#     def update_energy_quadratic(local_energy: float,
+#                                 local_derivatives: TwelveSplitGradient,  # shape (36,)
+#                                 local_hessian: TwelveSplitHessian,  # shape (36, 36)
+#                                 local_to_global_map: Vector36f,
+#                                 energy: float,
+#                                 derivatives_ref: Vector1D,
+#                                 # hessian_entries_ref: HessianEntries
+#                                 hessian_entries_ref: list[tuple[int, int, float]]
+#                                 ) -> float:
+#         """
+#         Update global energy, derivatives, and hessian with local per face values
+
+#         NOTE: since update_energy_quadratic() is called in a loop to update the energy variable,
+#         we cannot simply just reassign energy to local_energy.
+#         TODO: is it right to pass in parameters that are then modified and then pass those same
+#         parameters back as return values?
+
+#         :param local_energy:        [in] local energy value
+#         :param local_derivatives:   [in] local energy gradient
+#         :param local_hessian:       [in] local energy Hessian
+#         :param local_to_global_map: [in] map from local to global DOF indices
+
+#         :param  derivatives_ref:    [out] global energy gradient
+#         :param global_indices_i:    [out] global energy Hessian index i
+#         :param global_indices_j:    [out] global energy Hessian index j
+#         :param  hessian_values:     [out] global energy Hessian
+
+#         :return energy:           global energy value
+#         """
+#         assert derivatives_ref.ndim == 1  # shape (36, )
+#         assert local_derivatives.ndim == 1
+#         assert local_hessian.ndim == 2
+#         assert local_to_global_map.shape == (36, )
+
+#         # Update energy
+#         energy += local_energy
+
+#         # TODO: get valid local and globally indices to vectorize the below operation
+#         # Update derivatives
+#         num_local_indices: int = len(local_to_global_map)
+#         for local_index in range(num_local_indices):
+#             global_index: int = local_to_global_map[local_index]
+#             if global_index < 0:
+#                 continue  # Skip fixed variables with no global index
+#             derivatives_ref[global_index] += local_derivatives[local_index]
+
+#         # Update hessian entries
+#         for local_index_i in range(num_local_indices):
+#             # Get global row index, skipping fixed variables with no global index
+#             global_index_i: int = local_to_global_map[local_index_i]
+#             if global_index_i < 0:
+#                 continue
+
+#             for local_index_j in range(num_local_indices):
+#                 # Get global column index, skipping fixed variables with no global index
+#                 global_index_j: int = local_to_global_map[local_index_j]
+#                 if global_index_j < 0:
+#                     continue
+
+#                 # Get Hessian entry value
+#                 hessian_value: float = local_hessian[local_index_i, local_index_j]
+
+#                 # Assemble global Hessian entry
+#                 hessian_entries_ref.append((global_index_i, global_index_j, hessian_value))
+
+#         return energy
+
+#     trials = 1000
+
+#     local_energy: float = 0.0
+#     local_derivatives: TwelveSplitGradient = np.zeros(shape=(36, ), dtype=np.float64)
+#     local_hessian: TwelveSplitHessian = np.zeros(shape=(36, 36), dtype=np.float64)
+#     local_to_global_map = np.zeros(shape=(36, ), dtype=np.float64)
+#     energy: float = 0.0
+#     derivatives_ref: Vector1D = np.zeros(shape=(36, ), dtype=np.float64)
+#     hessian_entries_ref: list[tuple[int, int, float]]
+
+#     # for i in range(trials):
