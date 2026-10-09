@@ -6,6 +6,8 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 
+import numpy as np
+
 from pyalgcon.contour_network.compute_rational_bezier_curve_intersection import (
     find_intersections_bezier_clipping,
     split_bezier_curve_no_self_intersection)
@@ -15,7 +17,8 @@ from pyalgcon.contour_network.intersection_heuristics import (
     compute_bezier_bounding_box, compute_bounding_box_hash_table,
     compute_homogeneous_bezier_points_over_interval)
 from pyalgcon.core.common import (FIND_INTERSECTIONS_BEZIER_CLIPPING_PRECISION,
-                                  Matrix5x3f, PlanarPoint1d, SpatialVector1d,
+                                  Matrix5x3f, MatrixNx2f, MatrixNx3f,
+                                  PlanarPoint1d, SpatialVector1d,
                                   float_equal_zero, interval_lerp)
 from pyalgcon.core.rational_function import RationalFunction
 
@@ -52,7 +55,7 @@ def _compute_bezier_clipping_planar_curve_intersections(first_planar_curve: Rati
                                                         first_bezier_control_points: Matrix5x3f,
                                                         second_bezier_control_points: Matrix5x3f,
                                                         epsilon: float = 0.0
-                                                        ) -> list[tuple[float, float]]:
+                                                        ) -> MatrixNx2f:
     """
     Compute planar curve intersections with Bezier clipping
     """
@@ -60,15 +63,9 @@ def _compute_bezier_clipping_planar_curve_intersections(first_planar_curve: Rati
     assert (second_planar_curve.degree, second_planar_curve.dimension) == (4, 2)
     assert first_bezier_control_points.shape == (5, 3)
     assert second_bezier_control_points.shape == (5, 3)
-    intersection_points: list[tuple[float, float]] = []
-    intersection_param_inkscope: list[tuple[float, float]]
-    p1: list[SpatialVector1d] = []
-    p2: list[SpatialVector1d] = []
-    for i in range(5):
-        assert first_bezier_control_points[i, :].shape == (3, )
-        assert second_bezier_control_points[i, :].shape == (3, )
-        p1.append(first_bezier_control_points[i, :])
-        p2.append(second_bezier_control_points[i, :])
+    intersection_param_inkscope: MatrixNx2f
+    p1: Matrix5x3f = first_bezier_control_points
+    p2: Matrix5x3f = second_bezier_control_points
 
     # Below gives back the amount of intersections
     intersection_param_inkscope = find_intersections_bezier_clipping(
@@ -76,14 +73,17 @@ def _compute_bezier_clipping_planar_curve_intersections(first_planar_curve: Rati
         p2,
         FIND_INTERSECTIONS_BEZIER_CLIPPING_PRECISION)  # 1e-7
 
-    for spline in intersection_param_inkscope:
+    intersection_points: MatrixNx2f = np.empty(shape=intersection_param_inkscope.shape,
+                                               dtype=np.float64)
+
+    for i, spline in enumerate(intersection_param_inkscope):
         t_spline: float = spline[0]
         s_spline: float = spline[1]
         t: float = _convert_spline_to_planar_curve_parameter(
             first_planar_curve, t_spline, epsilon)
         s: float = _convert_spline_to_planar_curve_parameter(
             second_planar_curve, s_spline, epsilon)
-        intersection_points.append((t, s))
+        intersection_points[i] = t, s
 
     return intersection_points
 
@@ -150,9 +150,11 @@ def _compute_planar_curve_intersections_from_bounding_box(
 
     intersection_stats_ref.num_intersection_tests += 1
     t1: datetime = datetime.now()
-    logger.debug("Finding intersections for %s and %s",
-                 first_planar_curve,
-                 second_planar_curve)
+
+    if __debug__:
+        logger.debug("Finding intersections for %s and %s",
+                     first_planar_curve,
+                     second_planar_curve)
 
     intersection_stats_ref.bounding_box_call += 1
 
@@ -163,18 +165,19 @@ def _compute_planar_curve_intersections_from_bounding_box(
     intersection_stats_ref.intersection_call += 1
 
     # Compute intersection points by Bezier clipping
-    intersection_points: list[tuple[float, float]]
-    try:
-        intersection_points = _compute_bezier_clipping_planar_curve_intersections(
-            first_planar_curve,
-            second_planar_curve,
-            first_bezier_control_points,
-            second_bezier_control_points)
-    except ValueError as e:
-        # FIXME: this return is different from the logic in the original C++ code and may need
-        # adjustment
-        logger.error("Failed to find intersection points %s", e)
-        return
+    intersection_points: MatrixNx2f
+
+    # try:
+    intersection_points = _compute_bezier_clipping_planar_curve_intersections(
+        first_planar_curve,
+        second_planar_curve,
+        first_bezier_control_points,
+        second_bezier_control_points)
+    # except ValueError as e:
+    #     # FIXME: this return is different from the logic in the original C++ code and may need
+    #     # adjustment
+    #     logger.error("Failed to find intersection points %s", e)
+    #     return
 
     # Prune the computed intersections to ensure they are in the correct domain
     _prune_intersection_points(first_planar_curve,
@@ -185,7 +188,9 @@ def _compute_planar_curve_intersections_from_bounding_box(
 
     t2: datetime = datetime.now()
     total_time: int = (t2 - t1).microseconds
-    logger.debug("Finding intersections took %s ms", total_time)
+
+    if __debug__:
+        logger.debug("Finding intersections took %s ms", total_time)
 
 
 def compute_planar_curve_intersections(first_planar_curve: RationalFunction,

@@ -9,8 +9,8 @@ import math
 
 import numpy as np
 
-from pyalgcon.core.common import (Matrix5x3f, SpatialVector1d, Vector2f,
-                                  Vector3f, Vector5f, float_equal)
+from pyalgcon.core.common import (Matrix5x3f, MatrixNx2f, SpatialVector1d,
+                                  Vector2f, Vector3f, Vector5f, float_equal)
 
 try:
     from pyalgcon.core.common_c import cross_product
@@ -165,9 +165,9 @@ def check_split_criteria(q: list[SpatialVector1d]) -> bool:
     return True
 
 
-def _get_solutions(A: list[SpatialVector1d],
-                   B: list[SpatialVector1d],
-                   precision: float) -> list[tuple[float, float]]:
+def _get_solutions(A: Matrix5x3f,
+                   B: Matrix5x3f,
+                   precision: float) -> MatrixNx2f:
     """
     NOTE: get_solutions() passed a reference to the same Interval_ink object into iterate()
     """
@@ -186,8 +186,19 @@ def _get_solutions(A: list[SpatialVector1d],
     if len(domsA) != len(domsB):
         assert len(domsA) == len(domsB)
 
-    xs: list[tuple[float, float]] = [(domsA[i].middle(), domsB[i].middle())
-                                     for i, _ in enumerate(domsA)]
+    # TODO: this can be optimized further if domsA and domsB both had middle() calculated in
+    #       their own lists and xs was created with column_stack()
+    num_xs: int = len(domsA)
+
+    # NOTE: need this if statement or else we can get shape (0, 2) array, which fails the
+    # test case for find_intersections_bezier_clipping() and subsequently
+    # _compute_bezier_clipping_planar_curve_intersections()
+    xs: MatrixNx2f = np.empty(shape=(num_xs, 2), dtype=np.float64) if num_xs else np.empty(
+        shape=0, dtype=np.float64)
+
+    for i in range(num_xs):
+        xs[i] = domsA[i].middle(), domsB[i].middle()
+
     return xs
 
 

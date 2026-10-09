@@ -10,20 +10,17 @@ from pyalgcon.contour_network.compute_intersections import (
     IntersectionParameters,
     _compute_bezier_clipping_planar_curve_intersections,
     _compute_planar_curve_intersections_from_bounding_box,
-    _prune_intersection_points, compute_intersections,
-    compute_planar_curve_intersections)
+    _prune_intersection_points, compute_intersections)
 from pyalgcon.contour_network.intersection_data import IntersectionData
 from pyalgcon.contour_network.intersection_heuristics import IntersectionStats
-from pyalgcon.core.common import (Matrix5x2f, Matrix5x3f, PlanarPoint1d,
-                                  Vector5f, compare_eigen_numpy_matrix,
-                                  compare_list_list_varying_lengths,
-                                  compare_list_list_varying_lengths_float,
-                                  deserialize_eigen_matrix_csv_to_numpy,
-                                  float_equal)
+from pyalgcon.core.common import (Matrix5x2f, Matrix5x3f, MatrixNx2f,
+                                  PlanarPoint1d, Vector5f,
+                                  compare_eigen_numpy_matrix,
+                                  deserialize_eigen_matrix_csv_to_numpy)
 from pyalgcon.core.rational_function import RationalFunction
 from pyalgcon.utils.compute_intersections_testing_utils import (
-    compare_intersection_stats, compare_list_list_intersection_data_from_file,
-    deserialize_intersection_stats, deserialize_list_list_intersection_data)
+    compare_intersection_stats, deserialize_intersection_stats,
+    deserialize_list_list_intersection_data)
 from pyalgcon.utils.rational_function_testing_utils import \
     deserialize_rational_functions_from_file
 
@@ -147,7 +144,7 @@ def test_compute_bezier_clipping_planar_curve_intersections(
             filepath / "second_bezier_control_points" / f"{i}.csv")
 
         # Execute method
-        intersection_points_test: list[tuple[float, float]] = (
+        intersection_points_test: MatrixNx2f = (
             _compute_bezier_clipping_planar_curve_intersections(first_planar_curve,
                                                                 second_planar_curve,
                                                                 first_bezier_control_points,
@@ -155,7 +152,7 @@ def test_compute_bezier_clipping_planar_curve_intersections(
 
         # Compare results
         compare_eigen_numpy_matrix(filepath / "intersection_points" / f"{i}.csv",
-                                   np.array(intersection_points_test).squeeze())
+                                   intersection_points_test.squeeze())
 
 # def test_compute_spline_surface_boundary_intersections_spot_control() -> None:
 #     """
