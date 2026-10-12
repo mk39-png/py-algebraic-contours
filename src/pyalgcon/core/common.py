@@ -65,6 +65,7 @@ Vector12f = np.ndarray
 Vector13f = np.ndarray
 Vector27f = np.ndarray
 Vector36f = np.ndarray
+Vector36i = np.ndarray
 
 VectorX = np.ndarray  # shape (n, )... sometimes. Oftentimes it's shape (n, 1) or (1, n)...
 # shape (1, n) (or sometimes shape (n, 1) as in the case of optimize_spline_surface)...
@@ -108,6 +109,7 @@ Matrix36x12f = np.ndarray
 Matrix36x36f = np.ndarray
 Matrix12x6x12f = np.ndarray
 Matrix12x3x3f = np.ndarray
+Matrix3x2x2f = np.ndarray
 TwelveSplitGradient = np.ndarray  # shape (36, 1)
 TwelveSplitHessian = np.ndarray  # shape (36, 36)
 
@@ -119,6 +121,9 @@ MatrixXr = np.ndarray[tuple[int, int], np.dtype[np.float64]]  # shape (n, m)
 # This is not suggesting that MatrixNx3f and MatrixNx3i has the same number of rows.
 MatrixNx3f = np.ndarray  # np.ndarray[tuple[int, int], np.dtype[np.float64]]
 MatrixNx3i = np.ndarray  # np.ndarray[tuple[int, int], np.dtype[np.int64]]
+MatrixNx3x3f = np.ndarray
+MatrixNx2x3 = np.ndarray
+MatrixNx3x2x3 = np.ndarray
 
 # Used for accessing numpy shape for clarity sake
 ROWS = 0
