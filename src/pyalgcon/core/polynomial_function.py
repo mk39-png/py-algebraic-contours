@@ -287,9 +287,12 @@ def polynomial_real_roots(A_coeffs: Vector1D, imag_tolerance=1e-10) -> Vector1D:
     """
     # Ensuring that A_coeffs is (n, ) shape array
     assert A_coeffs.ndim == 1
-    logger.debug("Full coefficient vector: %s", A_coeffs)
+    if __debug__:
+        logger.debug("Full coefficient vector: %s", A_coeffs)
     reduced_coeffs: Vector1D = remove_polynomial_trailing_coefficients(A_coeffs)
-    logger.debug("Reduced coefficient vector: %s", reduced_coeffs)
+
+    if __debug__:
+        logger.debug("Reduced coefficient vector: %s", reduced_coeffs)
 
     # Check if reduced coeff is 0
     if reduced_coeffs.size == 1 and float_equal_zero(reduced_coeffs[0]):
