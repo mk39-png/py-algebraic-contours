@@ -38,7 +38,7 @@ def remove_polynomial_trailing_coefficients(A_coeffs_ref: Vector1D) -> Vector1D:
     assert A_coeffs_ref.ndim == 1
 
     # Make a copy of A_coeffs_ref as to not modify the original array when trimming zeros
-    reduced_coeffs: Vector1D = np.copy(A_coeffs_ref)
+    reduced_coeffs: Vector1D = A_coeffs_ref.copy()
     np.trim_zeros(reduced_coeffs, 'b')
 
     return reduced_coeffs
