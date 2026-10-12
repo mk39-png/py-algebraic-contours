@@ -10,7 +10,7 @@ import numpy as np
 import numpy.testing as npt
 
 from pyalgcon.core.common import (Matrix2x2f, PlanarPoint1d, Vector2f,
-                                  Vector6f, float_equal, todo)
+                                  Vector6f, float_equal, float_equal_zero)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -41,9 +41,9 @@ def compute_symmetric_matrix_eigen_decomposition(A: Matrix2x2f) -> tuple[Vector2
     # Otherwise, if a00 < a11, use current formula, if not use other (with
     # A(1,1))
     eigenvector_1: PlanarPoint1d
-    if not float_equal(A[0, 1], 0.0):
+    if not float_equal_zero(A[0, 1]):
         eigenvector_1 = np.array([A[0, 1], sigma_1 - A[0, 0]], dtype=np.float64)
-        assert not float_equal(np.linalg.norm(eigenvector_1), 0.0)
+        assert not float_equal_zero(np.linalg.norm(eigenvector_1))
         eigenvector_1 /= np.linalg.norm(eigenvector_1)
     # This can be removed
     elif A[0, 0] < A[1, 1]:
@@ -63,10 +63,11 @@ def compute_symmetric_matrix_eigen_decomposition(A: Matrix2x2f) -> tuple[Vector2
 
     # TODO: move the below to its own test case, or remove completely
     # FIXME: potentially incorrect C++ translation
-    if logger.isEnabledFor(logging.DEBUG):
-        npt.assert_allclose(
-            A,
-            rotation.T @ np.diag([eigenvalues[0], eigenvalues[1]]) @ rotation, atol=1e-5)
+    if __debug__:
+        if logger.isEnabledFor(logging.DEBUG):
+            npt.assert_allclose(
+                A,
+                rotation.T @ np.diag([eigenvalues[0], eigenvalues[1]]) @ rotation, atol=1e-5)
     assert float_equal(np.linalg.det(rotation), 1.0)
 
     return eigenvalues, rotation
@@ -94,7 +95,7 @@ def convert_conic_to_matrix_form(conic_coeffs: Vector6f) -> tuple[Matrix2x2f,
     )
 
     #  Compute b
-    b: Vector2f = np.array([conic_coeffs[1], conic_coeffs[2]], dtype=np.float64)
+    b: Vector2f = conic_coeffs[1:3]  # gets conic_coeffs[1] and conic_coeffs[2]
 
     #  Compute c
     c: float = conic_coeffs[0]
@@ -133,20 +134,17 @@ def convert_conic_to_standard_form(conic_coeffs: Vector6f) -> tuple[Vector6f,
 
     if float_equal(singular_values[0], 0.0) or float_equal(singular_values[1], 0.0):
         # FIXME Add warning so we know this case is occurring
-        logger.warning("Singular conic with det %s  and singular values %s , %s ",
-                       det,
-                       singular_values[0],
-                       singular_values[1])
+        if __debug__:
+            logger.warning("Singular conic with det %s  and singular values %s , %s ",
+                           det,
+                           singular_values[0],
+                           singular_values[1])
 
         # Ensure the y coordinate is singular
         if (float_equal(singular_values[0], 0.0)):
             # FIXME: potentially incompatible C++ translation
-            # singular_values[0], singular_values[1] = singular_values[1], singular_values[0]
-            singular_values[[0, 1]] = singular_values[[1, 0]]
-
-            rotation[[0, 1]] = rotation[[1, 0]]
-            # rotation[0, 0], rotation[1, 0] = rotation[1, 0], rotation[0, 0]
-            # rotation[0, 1], rotation[1, 1] = rotation[1, 1], rotation[0, 1]
+            singular_values[(0, 1)] = singular_values[(1, 0)]
+            rotation[(0, 1)] = rotation[(1, 0)]
 
             # Ensure the rotation is still orientation preserving
             rotation[1, :] *= -1
@@ -183,17 +181,20 @@ def convert_conic_to_standard_form(conic_coeffs: Vector6f) -> tuple[Vector6f,
                 conic_standard_form[1] = Ub[0]
             # Translate a parabola so that its vertex is at the origin
             else:
-                logger.debug("Parabola is %s  u^2 + %s  u + %s  v + %s ",
-                             0.5 * singular_values[0],
-                             Ub[0],
-                             Ub[1],
-                             c)
+                if __debug__:
+                    logger.debug("Parabola is %s  u^2 + %s  u + %s  v + %s ",
+                                 0.5 * singular_values[0],
+                                 Ub[0],
+                                 Ub[1],
+                                 c)
                 translation[0] = -Ub[0] / singular_values[0]
                 translation[1] = -(c - 0.5 * singular_values[0] * Ub[0] * Ub[0]) / (Ub[1])
-                logger.debug("Using translation %s for parabola", translation)
+                if __debug__:
+                    logger.debug("Using translation %s for parabola", translation)
 
                 translation = translation @ rotation
-                logger.debug("Rotating to translation %s", translation)
+                if __debug__:
+                    logger.debug("Rotating to translation %s", translation)
                 conic_standard_form[2] = Ub[1]
 
             # Ensure nonzero quadratic term is positive
@@ -213,9 +214,9 @@ def convert_conic_to_standard_form(conic_coeffs: Vector6f) -> tuple[Vector6f,
         conic_standard_form[4] = 0.5 * singular_values[0]
         conic_standard_form[5] = 0.5 * singular_values[1]
         # todo("double check the matmul above")
-
-    logger.debug("Standard form: %s", conic_standard_form)
-    logger.debug("Rotation:\n%s", rotation)
-    logger.debug("Translation:\n%s", translation)
+    if __debug__:
+        logger.debug("Standard form: %s", conic_standard_form)
+        logger.debug("Rotation:\n%s", rotation)
+        logger.debug("Translation:\n%s", translation)
 
     return conic_standard_form, rotation, translation
