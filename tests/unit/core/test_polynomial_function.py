@@ -326,17 +326,16 @@ def test_polynomial_real_roots_vs_quadratic_real_roots() -> None:
     logger.info("Quadratic function with roots")
     A_coeffs = np.array([-1, 0, 1])
     roots_polynomial: Vector2D = polynomial_real_roots(A_coeffs)
-    roots_quadratic, num_solutions = quadratic_real_roots(A_coeffs)
-
+    roots_quadratic_temp, num_solutions = quadratic_real_roots(A_coeffs)
+    roots_quadratic_test = np.array(roots_quadratic_temp)
     assert (roots_polynomial.size == 2)
-    assert (roots_quadratic.size == 2)
-    assert np.array_equal(roots_polynomial, roots_quadratic)
+    assert (roots_quadratic_test.size == 2)
+    assert np.array_equal(roots_polynomial, roots_quadratic_test)
 
     logger.info("Quadratic function without roots")
     A_coeffs = np.array([1, 0, 1])
     roots_polynomial = polynomial_real_roots(A_coeffs)
-    roots_quadratic, num_solutions = quadratic_real_roots(A_coeffs)
-
+    roots_quadratic_temp, num_solutions = quadratic_real_roots(A_coeffs)
     assert roots_polynomial.size == 0
 
     # TODO: the below assert should fail since the roots_quadratic() just has whatever.
