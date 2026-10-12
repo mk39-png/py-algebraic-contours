@@ -10,7 +10,7 @@ import numpy as np
 
 from pyalgcon.core.bivariate_quadratic_function import \
     formatted_bivariate_linear_mapping
-from pyalgcon.core.common import Matrix3x2r, Vector2D, unreachable
+from pyalgcon.core.common import Matrix2x3f, Matrix3x2r, Vector2D, unreachable
 from pyalgcon.core.conic import Conic
 from pyalgcon.core.interval import Interval
 from pyalgcon.core.polynomial_function import formatted_polynomial
@@ -76,7 +76,7 @@ class LineSegment(Conic):
                     formatted_polynomial(3, 1, v_coeffs))
 
         # Combine quadratic monomial functions into a matrix
-        monomial_coeffs = np.zeros(shape=(2, 3))
+        monomial_coeffs: Matrix2x3f = np.zeros(shape=(2, 3))
         monomial_coeffs[0, 0] = 1.0
         monomial_coeffs[0, 1] = u_coeffs[0]
         monomial_coeffs[1, 1] = u_coeffs[1]
@@ -87,12 +87,12 @@ class LineSegment(Conic):
         # Compute the pulled back rational function numerator
         logger.info("Linear coefficient matrix:\n%s", F_coeffs)
         pullback_coeffs = monomial_coeffs * F_coeffs
-        assert pullback_coeffs.shape == (2, self.__dimension)
+        assert pullback_coeffs.shape == (2, self._dimension)
         logger.info("Pullback function: %s",
-                    formatted_polynomial(2, self.__dimension, pullback_coeffs))
+                    formatted_polynomial(2, self._dimension, pullback_coeffs))
 
         pullback_function = RationalFunction(
-            1, self.__dimension, pullback_coeffs, Q_coeffs, self.domain)
+            1, self._dimension, pullback_coeffs, Q_coeffs, self.domain)
 
         return pullback_function
 
