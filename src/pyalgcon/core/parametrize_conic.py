@@ -313,35 +313,46 @@ def parametrize_standard_form_conic(conic_standard_form: Vector6f) -> list[Conic
     assert conic_type == identify_standard_form_conic(-1 * conic_standard_form)
 
     if conic_type == ConicType.ELLIPSE:
-        logger.debug("Parametrizing ellipse")
+        if __debug__:
+            logger.debug("Parametrizing ellipse")
         parametrize_ellipse(conic_standard_form, conics)
     elif conic_type == ConicType.HYPERBOLA:
-        logger.debug("Parametrizing hyperbola")
+        if __debug__:
+            logger.debug("Parametrizing hyperbola")
         parametrize_hyperbola(conic_standard_form, conics)
     elif conic_type == ConicType.PARABOLA:
-        logger.debug("Parametrizing parabola")
+        if __debug__:
+            logger.debug("Parametrizing parabola")
         conics = parametrize_parabola(conic_standard_form)
     elif conic_type == ConicType.PARALLEL_LINES:
-        logger.debug("Parametrizing parallel lines")
+        if __debug__:
+            logger.debug("Parametrizing parallel lines")
         conics = parametrize_parallel_lines(conic_standard_form)
     elif conic_type == ConicType.INTERSECTING_LINES:
-        logger.debug("Parametrizing intersecting lines")
+        if __debug__:
+            logger.debug("Parametrizing intersecting lines")
         conics = parametrize_intersecting_lines(conic_standard_form)
     elif conic_type == ConicType.LINE:
-        logger.debug("Parametrizing line")
+        if __debug__:
+            logger.debug("Parametrizing line")
         conics = parametrize_line()
     elif conic_type == ConicType.POINT:
-        logger.debug("Skipping degenerate point")
+        if __debug__:
+            logger.debug("Skipping degenerate point")
     elif conic_type == ConicType.EMPTY:
-        logger.debug("Skipping degenerate empty set")
+        if __debug__:
+            logger.debug("Skipping degenerate empty set")
     elif conic_type == ConicType.PLANE:
-        logger.error("Entire plane is the solution")
+        if __debug__:
+            logger.error("Entire plane is the solution")
         raise ValueError("Entire plane is the solution")
     elif conic_type == ConicType.ERROR:
-        logger.error("Error in conic")
+        if __debug__:
+            logger.error("Error in conic")
         raise ValueError("Error in conic")
     else:
-        logger.error("Unknown conic")
+        if __debug__:
+            logger.error("Unknown conic")
         raise ValueError("Unknown conic")
 
     return conics
@@ -352,16 +363,20 @@ def check_standard_form(conic_coeffs: Vector6f,
                         rotation: Matrix2x2f,
                         translation: PlanarPoint1d) -> bool:
     """Checks if parameters are in standard form"""
-    logger.debug("Checking standard form %s for implicit function %s",
-                 conic_standard_form, conic_coeffs)
+
+    if __debug__:
+        logger.debug("Checking standard form %s for implicit function %s",
+                     conic_standard_form, conic_coeffs)
 
     change_of_basis_matrix: Matrix6x6f
     change_of_basis_matrix = generate_quadratic_coordinate_affine_transformation_matrix(rotation,
                                                                                         translation)
     test_conic_coeffs: Vector6f = change_of_basis_matrix @ conic_coeffs
     assert test_conic_coeffs.ndim == 1
-    logger.debug("Implicit function after rotation is %s",
-                 test_conic_coeffs)
+
+    if __debug__:
+        logger.debug("Implicit function after rotation is %s",
+                     test_conic_coeffs)
 
     return vector_equal(test_conic_coeffs, conic_standard_form, eps=1e-4)
 
@@ -370,13 +385,16 @@ def check_parametrized_conic(conic: Conic, conic_coeffs: Vector6f) -> bool:
     """
     Checking conic parametrization
     """
-    logger.info("Checking parametrization for conic %s with implicit function %s",
-                conic,
-                conic_coeffs)
+    if __debug__:
+        logger.info("Checking parametrization for conic %s with implicit function %s",
+                    conic,
+                    conic_coeffs)
 
     pullback: RationalFunction  # <4, 1>
     pullback = conic.pullback_quadratic_function(1, conic_coeffs)
-    logger.info("Pullback by implicit function is %s", pullback)
+
+    if __debug__:
+        logger.info("Pullback by implicit function is %s", pullback)
 
     return float_equal(np.linalg.norm(pullback.numerators), 0.0, 1e-4)
 
@@ -389,10 +407,12 @@ def check_orientation(conic: Conic, conic_coeffs: Vector6f) -> bool:
     if not conic.is_in_domain(t):
         t = -0.1
 
-    logger.debug("Checking consistency for conic %s with implicit function %s at %s",
-                 conic,
-                 conic_coeffs,
-                 t)
+    if __debug__:
+        logger.debug("Checking consistency for conic %s with implicit function %s at %s",
+                     conic,
+                     conic_coeffs,
+                     t)
+
     tangent: RationalFunction  # <4, 2>
     tangent = conic.compute_derivative()
     assert (tangent.degree, tangent.dimension) == (4, 2)
@@ -405,12 +425,15 @@ def check_orientation(conic: Conic, conic_coeffs: Vector6f) -> bool:
     assert point.shape == (2, )
     perp_u: float = evaluate_line(u_derivative, point)
     perp_v: float = evaluate_line(v_derivative, point)
-    logger.debug("Contour gradient: [%s, %s]", perp_u, perp_v)
+
+    if __debug__:
+        logger.debug("Contour gradient: [%s, %s]", perp_u, perp_v)
     point_tangent: PlanarPoint1d = tangent(t)
     assert point_tangent.shape == (2, )
     tu: float = point_tangent[0]
     tv: float = point_tangent[1]
-    logger.debug("Contour parametric tangent: [%s, %s]", tu, tv)
+    if __debug__:
+        logger.debug("Contour parametric tangent: [%s, %s]", tu, tv)
 
     return ((-tv * perp_u + tu * perp_v) < 0)
 
@@ -433,8 +456,8 @@ def parametrize_conic(conic_coeffs: Vector6f) -> list[Conic]:
     # CAUSING THEM TO EXECUTE AND CAUSE PREMATURE FAILURE IN THE
     # PROPAGATION QUANTITATIVE INVISIBILITY MODE DURING THE
     # PERFORMANCE EVALUATION EXPERIMENT.
-
-    logger.debug("Parametrizing conic with equation: %s", conic_coeffs)
+    if __debug__:
+        logger.debug("Parametrizing conic with equation: %s", conic_coeffs)
     conics: list[Conic] = []
 
     # Get standard form with rotation and translation
@@ -453,7 +476,9 @@ def parametrize_conic(conic_coeffs: Vector6f) -> list[Conic]:
         assert check_orientation(conic, conic_standard_form)
 
         conic.transform(rotation, translation)
-        logger.debug("Parametrized conic:\n%s", conic)
+
+        if __debug__:
+            logger.debug("Parametrized conic:\n%s", conic)
 
         assert check_parametrized_conic(conic, conic_coeffs)
         assert check_orientation(conic, conic_coeffs)
@@ -487,8 +512,10 @@ def parametrize_cone_patch_conic(conic_coeffs: Vector6f) -> list[Conic]:
     :return conics: segments of the parametrized conic
     """
     conics: list[Conic] = []
-    logger.debug("Parametrizing conic from cone patch with equation: %s",
-                 conic_coeffs)
+
+    if __debug__:
+        logger.debug("Parametrizing conic from cone patch with equation: %s",
+                     conic_coeffs)
 
     # Get standard form with rotation and translation
     conic_standard_form: Vector6f
@@ -503,24 +530,31 @@ def parametrize_cone_patch_conic(conic_coeffs: Vector6f) -> list[Conic]:
 
     # If the determinant is positive, the contour is a point and can be skipped
     if (det > 0.0) or float_equal(det, 0.0):
-        logger.debug("Skipping degenerate point contour in cone patch with determinant %s", det)
+        if __debug__:
+            logger.debug("Skipping degenerate point contour in cone patch with determinant %s", det)
         return conics
 
     # Get parametrization of conic
-    logger.debug("Parametrizing intersecting lines in cone patch")
+    if __debug__:
+        logger.debug("Parametrizing intersecting lines in cone patch")
     standard_form_conics: list[Conic] = parametrize_intersecting_lines(conic_standard_form)
     # FIXME: check to see that modification of conic in the loop is reflected back inside
     # standard_form_conics
     for conic in standard_form_conics:
-        assert check_parametrized_conic(conic, conic_standard_form)
-        assert check_orientation(conic, conic_standard_form)
+        if __debug__:
+            assert check_parametrized_conic(conic, conic_standard_form)
+            assert check_orientation(conic, conic_standard_form)
+
         conic.transform(rotation, translation)
-        if not check_parametrized_conic(conic, conic_coeffs):
-            logger.error("Did not parametrize implicit cone patch conic %s with %s",
-                         conic_coeffs,
-                         conic)
-        assert check_orientation(conic, conic_coeffs)
-        logger.debug("Parametrized conic:\n%s", conic)
+
+        if __debug__:
+            if not check_parametrized_conic(conic, conic_coeffs):
+                logger.error("Did not parametrize implicit cone patch conic %s with %s",
+                             conic_coeffs,
+                             conic)
+            assert check_orientation(conic, conic_coeffs)
+            logger.debug("Parametrized conic:\n%s", conic)
+
         conics.append(conic)
 
     return conics
