@@ -41,10 +41,13 @@ class SVGOutputMode(Enum):
     UNIFORM_SIMPLIFIED_VISIBLE_CURVES = 9  # All visible closed curves with simplification
 
 
-class SegmentGeometry():
+class SegmentGeometry:
     """
     Geometry at segment
     """
+    __slots__ = ("_parameter_curve", "_spatial_curve", "_planar_curve",
+                 "_segment_labels",
+                 "_quantitative_invisibility")
 
     def __init__(self,
                  parameter_curve: Conic,
@@ -58,11 +61,11 @@ class SegmentGeometry():
         assert (spatial_curve.degree, spatial_curve.dimension) == (4, 3)
         assert (planar_curve.degree, planar_curve.dimension) == (4, 2)
 
-        self.__parameter_curve: Conic = parameter_curve
-        self.__spatial_curve: RationalFunction = spatial_curve
-        self.__planar_curve: RationalFunction = planar_curve
-        self.__segment_labels: dict[str, int] = segment_labels
-        self.__quantitative_invisibility = -1
+        self._parameter_curve: Conic = parameter_curve
+        self._spatial_curve: RationalFunction = spatial_curve
+        self._planar_curve: RationalFunction = planar_curve
+        self._segment_labels: dict[str, int] = segment_labels
+        self._quantitative_invisibility = -1
 
         if not self.__is_valid_segment_geometry():
             logger.error("Invalid segment made")
@@ -76,36 +79,36 @@ class SegmentGeometry():
         """
         Retrieves parameter curve of type Conic. degree = 2, dimension = 2
         """
-        assert (self.__parameter_curve.degree, self.__parameter_curve.dimension) == (2, 2)
-        return self.__parameter_curve
+        assert (self._parameter_curve.degree, self._parameter_curve.dimension) == (2, 2)
+        return self._parameter_curve
 
     @property
     def spatial_curve(self) -> RationalFunction:
         """
         Retrieves spatial curve of type RationalFunction. degree = 4, dimension = 3
         """
-        assert (self.__spatial_curve.degree, self.__spatial_curve.dimension) == (4, 3)
-        return self.__spatial_curve
+        assert (self._spatial_curve.degree, self._spatial_curve.dimension) == (4, 3)
+        return self._spatial_curve
 
     @property
     def planar_curve(self) -> RationalFunction:
         """
         Retrieves planar curve. degree = 4, dimension = 2
         """
-        assert (self.__planar_curve.degree, self.__planar_curve.dimension) == (4, 2)
-        return self.__planar_curve
+        assert (self._planar_curve.degree, self._planar_curve.dimension) == (4, 2)
+        return self._planar_curve
 
     def set_segment_label(self, label_name: str, new_segment_label: int) -> None:
         """
         Sets segment_label at key label_name with value new_segment_label
         """
-        self.__segment_labels[label_name] = new_segment_label
+        self._segment_labels[label_name] = new_segment_label
 
     def get_segment_label(self, label_name: str) -> NodeIndex:
         """
         Retrives segment label at label_name key. Raises value error if key does not exist
         """
-        segment_label: NodeIndex | None = self.__segment_labels.get(label_name)
+        segment_label: NodeIndex | None = self._segment_labels.get(label_name)
         if segment_label is None:
             raise ValueError(f"{label_name} does not exist in segment_labels")
 
@@ -116,14 +119,14 @@ class SegmentGeometry():
         """
         Primarily used for testing.
         """
-        return self.__segment_labels
+        return self._segment_labels
 
     @property
     def quantitative_invisibility(self) -> NodeIndex:
         """
         Retrieves quantitative invisibility
         """
-        return self.__quantitative_invisibility
+        return self._quantitative_invisibility
 
     @quantitative_invisibility.setter
     def quantitative_invisibility(self, new_quantitative_invisibility: int) -> None:
@@ -132,7 +135,7 @@ class SegmentGeometry():
         """
         if new_quantitative_invisibility < 0:
             raise ValueError("Cannot set negative segment Q1")
-        self.__quantitative_invisibility: NodeIndex = new_quantitative_invisibility
+        self._quantitative_invisibility: NodeIndex = new_quantitative_invisibility
 
     # ****************
     # Utility methods
@@ -172,11 +175,11 @@ class SegmentGeometry():
         lower_segment = SegmentGeometry(lower_parameter_curve,
                                         lower_spatial_curve,
                                         lower_planar_curve,
-                                        self.__segment_labels)
+                                        self._segment_labels)
         upper_segment = SegmentGeometry(upper_parameter_curve,
                                         upper_spatial_curve,
                                         upper_planar_curve,
-                                        self.__segment_labels)
+                                        self._segment_labels)
 
         return lower_segment, upper_segment
 
@@ -196,8 +199,8 @@ class SegmentGeometry():
         """
         Verifies validity of segment geometry
         """
-        t0: float = self.__planar_curve.domain.lower_bound
-        t1: float = self.__planar_curve.domain.upper_bound
+        t0: float = self._planar_curve.domain.lower_bound
+        t1: float = self._planar_curve.domain.upper_bound
 
         if not float_equal(self.spatial_curve.domain.lower_bound, t0):
             logger.error("Spatial Curve Lower bound error: spatial %s, planar %s",
@@ -239,10 +242,11 @@ class GeometricData(Enum):
     PATH_START_NODE = 6
 
 
-class NodeGeometry():
+class NodeGeometry:
     """
     Geometry at node
     """
+    __slots__ = ("_node_type", "_quantitative_invisibility", "_qi_set")
 
     def __init__(self,
                  node_type: GeometricData = GeometricData.KNOT,
@@ -253,93 +257,90 @@ class NodeGeometry():
         Constructor for NodeGeometry
         Default values in case nothing is passed through.
         """
-        # self.__node_type: GeometricData = GeometricData.KNOT
-        # self.__quantitative_invisibility: int = -1
-        # self.__qi_set = False
-        self.__node_type: GeometricData = node_type
-        self.__quantitative_invisibility: int = quantitative_invisibility
-        self.__qi_set: bool = qi_set
+        self._node_type: GeometricData = node_type
+        self._quantitative_invisibility: int = quantitative_invisibility
+        self._qi_set: bool = qi_set
 
     def mark_as_knot(self) -> None:
         """Mark node type as KNOT enum"""
-        self.__node_type = GeometricData.KNOT
+        self._node_type = GeometricData.KNOT
 
     def mark_as_marked_knot(self) -> None:
         """Mark node type as MARKED_KNOT enum"""
-        self.__node_type = GeometricData.MARKED_KNOT
+        self._node_type = GeometricData.MARKED_KNOT
 
     def mark_as_boundary_cusp(self) -> None:
         """Mark node type as BOUNDARY_CUSP enum"""
-        self.__node_type = GeometricData.BOUNDARY_CUSP
+        self._node_type = GeometricData.BOUNDARY_CUSP
 
     def mark_as_interior_cusp(self) -> None:
         """Mark node type as INTERIOR_CUSP enum"""
-        self.__node_type = GeometricData.INTERIOR_CUSP
+        self._node_type = GeometricData.INTERIOR_CUSP
 
     def mark_as_intersection(self) -> None:
         """Mark node type as INTERSECTION enum"""
-        self.__node_type = GeometricData.INTERSECTION
+        self._node_type = GeometricData.INTERSECTION
 
     def mark_as_path_start_node(self) -> None:
         """Mark node type as PATH_START_NODE enum"""
-        self.__node_type = GeometricData.PATH_START_NODE
+        self._node_type = GeometricData.PATH_START_NODE
 
     def mark_as_path_end_node(self) -> None:
         """Mark node type as PATH_END_NODE enum"""
-        self.__node_type = GeometricData.PATH_END_NODE
+        self._node_type = GeometricData.PATH_END_NODE
 
     def is_knot(self) -> bool:
         """Checks if node_type is KNOT enum"""
-        return self.__node_type == GeometricData.KNOT
+        return self._node_type == GeometricData.KNOT
 
     def is_marked_knot(self) -> bool:
         """Checks if node_type is MARKED_KNOT enum"""
-        return self.__node_type == GeometricData.MARKED_KNOT
+        return self._node_type == GeometricData.MARKED_KNOT
 
     def is_boundary_cusp(self) -> bool:
         """Checks if node_type is BOUNDARY_CUSP enum"""
-        return self.__node_type == GeometricData.BOUNDARY_CUSP
+        return self._node_type == GeometricData.BOUNDARY_CUSP
 
     def is_interior_cusp(self) -> bool:
         """Checks if node_type is INTERIOR_CUSP enum"""
-        return self.__node_type == GeometricData.INTERIOR_CUSP
+        return self._node_type == GeometricData.INTERIOR_CUSP
 
     def is_intersection(self) -> bool:
         """Checks if node_type is INTERSECTION enum"""
-        return self.__node_type == GeometricData.INTERSECTION
+        return self._node_type == GeometricData.INTERSECTION
 
     def is_path_start_node(self) -> bool:
         """Checks if node_type is PATH_START_NODE enum"""
-        return self.__node_type == GeometricData.PATH_START_NODE
+        return self._node_type == GeometricData.PATH_START_NODE
 
     def is_path_end_node(self) -> bool:
         """Checks if node_type is PATH_END_NODE enum"""
-        return self.__node_type == GeometricData.PATH_END_NODE
+        return self._node_type == GeometricData.PATH_END_NODE
 
     @property
     def quantitative_invisibility(self) -> NodeIndex:
         """Retrieves quantitative invisibility"""
-        return self.__quantitative_invisibility
+        return self._quantitative_invisibility
 
     @quantitative_invisibility.setter
     def quantitative_invisibility(self, new_quantitative_invisibility: int) -> None:
         """Sets quantitative_invisibility"""
-        self.__qi_set = True
+        self._qi_set = True
         if new_quantitative_invisibility < 0:
             raise ValueError("Cannot set negative segment Q1")
-        self.__quantitative_invisibility: NodeIndex = new_quantitative_invisibility
+        self._quantitative_invisibility: NodeIndex = new_quantitative_invisibility
 
     def quantitative_invisibility_is_set(self) -> bool:
         """Returns self.__qi_set"""
-        return self.__qi_set
+        return self._qi_set
 
     def mark_quantitative_invisibility_as_set(self) -> None:
         """Marks quantitative invisibility as True"""
-        self.__qi_set = True
+        self._qi_set = True
 
     def __str__(self) -> str:
         """Readable representation of NodeGeometry"""
-        return self.__node_type.name
+        return self._node_type.name
 
 
 # ***************
@@ -379,7 +380,9 @@ def build_projected_curve_network_without_intersections(parameter_segments: list
     nodes: list[NodeGeometry] = []
 
     # Initialize segments without intersections
-    logger.info("Initializing segment geometry without intersections")
+
+    if __debug__:
+        logger.info("Initializing segment geometry without intersections")
     for i in range(num_segments):
         segments.append(SegmentGeometry(parameter_segments[i],
                                         spatial_segments[i],
@@ -387,11 +390,13 @@ def build_projected_curve_network_without_intersections(parameter_segments: list
                                         segment_labels[i]))
 
     # Initializing node bases without intersections
-    logger.info("Initializing node bases without intersections")
+    if __debug__:
+        logger.info("Initializing node bases without intersections")
     for i in range(num_segments):
         nodes.append(NodeGeometry())
         if has_cusp_at_base[i]:
-            logger.info("Marking node %s as boundary cusp", i)
+            if __debug__:
+                logger.info("Marking node %s as boundary cusp", i)
             nodes[i].mark_as_boundary_cusp()
 
     # Initialize one node for the base of each segment. Since we assume all
@@ -557,11 +562,13 @@ def split_segment_at_knot(original_segment_index: SegmentIndex,
     lower_segment: SegmentGeometry
     upper_segment: SegmentGeometry
     lower_segment, upper_segment = segments_ref[original_segment_index].split_at_knot(knot)
-    logger.info("Segment %s split into %s and %s at %s",
-                segments_ref[original_segment_index],
-                lower_segment,
-                upper_segment,
-                knot)
+
+    if __debug__:
+        logger.info("Segment %s split into %s and %s at %s",
+                    segments_ref[original_segment_index],
+                    lower_segment,
+                    upper_segment,
+                    knot)
 
     # Add the new split segments to the array
     new_segment_index: SegmentIndex = len(segments_ref)
@@ -695,12 +702,12 @@ def split_segments_at_intersections(intersection_data: list[list[IntersectionDat
 
                 # Continue splitting upper segment
                 segment_index = upper_segment_index
-
-    logger.debug("Split %s segments with %s nodes into %s segments with %s nodes",
-                 num_segments,
-                 num_nodes,
-                 len(segments_ref),
-                 len(nodes_ref))
+    if __debug__:
+        logger.debug("Split %s segments with %s nodes into %s segments with %s nodes",
+                     num_segments,
+                     num_nodes,
+                     len(segments_ref),
+                     len(nodes_ref))
 
     return original_segment_indices, split_segment_indices, intersection_nodes
 
@@ -771,7 +778,8 @@ def split_segments_at_cusps(interior_cusps: list[list[float]],
     :param segments_ref: [out]
     :param nodes_ref:    [out]
     """
-    logger.info("Splitting segments at cusps")
+    if __debug__:
+        logger.info("Splitting segments at cusps")
 
     num_segments: int = len(segments_ref)
     num_nodes: int = len(nodes_ref)
@@ -805,7 +813,8 @@ def split_segments_at_cusps(interior_cusps: list[list[float]],
                                                               segments_ref,
                                                               nodes_ref)
                     # Mark new node as interior cusp
-                    logger.info("Marking node %s as interior cusp", knot_node_index)
+                    if __debug__:
+                        logger.info("Marking node %s as interior cusp", knot_node_index)
                     nodes_ref[knot_node_index].mark_as_interior_cusp()
 
                     # Add trivial intersection information
@@ -825,12 +834,12 @@ def split_segments_at_cusps(interior_cusps: list[list[float]],
                     original_segment_indices_ref[lower_segment_index] = i
                     original_segment_indices_ref[upper_segment_index] = i
                     break
-
-    logger.debug("Split %s segments with %s nodes into %s segments with %s nodes",
-                 num_segments,
-                 num_nodes,
-                 len(segments_ref),
-                 len(nodes_ref))
+    if __debug__:
+        logger.debug("Split %s segments with %s nodes into %s segments with %s nodes",
+                     num_segments,
+                     num_nodes,
+                     len(segments_ref),
+                     len(nodes_ref))
 
     # Check consistency of out and intersection arrays
     if len(out_array_ref) != len(intersection_array_ref):
