@@ -8,8 +8,9 @@ import numpy as np
 
 from pyalgcon.core.bivariate_quadratic_function import \
     formatted_bivariate_quadratic_mapping
-from pyalgcon.core.common import (COLS, Matrix2x2f, Matrix3x2f, Matrix6xNi,
-                                  PlanarPoint1d, Vector1D, Vector3f)
+from pyalgcon.core.common import (COLS, Matrix2x2f, Matrix3x2f, Matrix5x6f,
+                                  Matrix6xNi, PlanarPoint1d, Vector1D,
+                                  Vector3f)
 from pyalgcon.core.interval import Interval
 from pyalgcon.core.polynomial_function import (
     compute_polynomial_mapping_product, formatted_polynomial)
@@ -40,6 +41,8 @@ class Conic(RationalFunction):
     # ************
     # Constructors
     # ************
+    __slots__ = ("_type", )
+
     def __init__(self,
                  _type=ConicType.UNKNOWN,
                  numerator_coeffs: Matrix3x2f | None = None,
@@ -133,7 +136,7 @@ class Conic(RationalFunction):
         assert F_coeffs.dtype == np.float64
 
         # NOTE: must include this statement or else logger will run method despite logging level
-        if logger.isEnabledFor(logging.DEBUG):
+        if __debug__:
             logger.debug("Pulling back conic by quadratic function %s",
                          formatted_bivariate_quadratic_mapping(dimension, F_coeffs))
 
@@ -148,13 +151,11 @@ class Conic(RationalFunction):
         assert v_coeffs.shape == (3, )
         assert Q_coeffs.shape == (3, )
 
-        logger.debug("u function before pullback: (%s)/(%s)",
-                     u_coeffs, Q_coeffs)
-
-        logger.debug("v function before pullback: (%s)/(%s)",
-                     v_coeffs, Q_coeffs)
-        # formatted_polynomial(self.get_degree, self.get_dimension, u_coeffs),
-        # formatted_polynomial(self.get_degree, self.get_dimension, Q_coeffs))
+        if __debug__:
+            logger.debug("u function before pullback: (%s)/(%s)",
+                         u_coeffs, Q_coeffs)
+            logger.debug("v function before pullback: (%s)/(%s)",
+                         v_coeffs, Q_coeffs)
 
         # Compute (homogenized) polynomial coefficients for the quadratic terms
         QQ_coeffs: Vector1D  # shape (5, )
@@ -163,8 +164,6 @@ class Conic(RationalFunction):
         uv_coeffs: Vector1D  # shape (5, )
         uu_coeffs: Vector1D  # shape (5, )
         vv_coeffs: Vector1D  # shape (5, )
-
-        # TODO: change the  function below to reemove the dimension parameter... maybe...
         QQ_coeffs = compute_polynomial_mapping_product(
             2, 2, Q_coeffs, Q_coeffs)
         Qu_coeffs = compute_polynomial_mapping_product(
@@ -179,30 +178,25 @@ class Conic(RationalFunction):
             2, 2, v_coeffs, v_coeffs)
 
         # Combine quadratic monomial functions into a matrix
-        # NOTE: need to flatten the NP matrices into vectors from (5,1) to (5,)
-        # shape for broadcasting to work
-        # NOTE: Also transposing with .T to be shape (5,6) rather than (6,5)
-        monomial_coeffs = np.column_stack([QQ_coeffs,
-                                           Qu_coeffs,
-                                           Qv_coeffs,
-                                           uv_coeffs,
-                                           uu_coeffs,
-                                           vv_coeffs])
-
+        monomial_coeffs: Matrix5x6f = np.column_stack([QQ_coeffs,
+                                                       Qu_coeffs,
+                                                       Qv_coeffs,
+                                                       uv_coeffs,
+                                                       uu_coeffs,
+                                                       vv_coeffs])
         assert monomial_coeffs.shape == (5, 6)
-        logger.debug("Monomial coefficients matrix:\n%s", monomial_coeffs)
+
+        if __debug__:
+            logger.debug("Monomial coefficients matrix:\n%s", monomial_coeffs)
+            logger.debug("Quadratic coefficient matrix:\n%s", F_coeffs)
 
         # Compute the pulled back rational function numerator
-        logger.debug("Quadratic coefficient matrix:\n%s", F_coeffs)
         pullback_coeffs = monomial_coeffs @ F_coeffs
         assert pullback_coeffs.shape == (5, dimension)
 
-        logger.debug("Pullback numerator: %s",
-                     pullback_coeffs)
-        # formatted_polynomial(self.get_degree, self.get_dimension, pullback_coeffs))
-        logger.debug("Pullback denominator: %s",
-                     QQ_coeffs)
-        # formatted_polynomial(self.get_degree, self.get_dimension, QQ_coeffs))
+        if __debug__:
+            logger.debug("Pullback numerator: %s", pullback_coeffs)
+            logger.debug("Pullback denominator: %s", QQ_coeffs)
 
         # XXX: domain() is in the C++. Meanwhile, Python code here uses self.m_domain...
         # may cause problems.
