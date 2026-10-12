@@ -9,8 +9,7 @@ import logging
 import numpy as np
 
 from pyalgcon.contour_network.validity import is_valid_frame
-from pyalgcon.core.common import (Matrix3x3f, Matrix5x2f,
-                                  Matrix5x3f, Vector5f)
+from pyalgcon.core.common import Matrix3x3f, Matrix5x2f, Matrix5x3f, Vector5f
 from pyalgcon.core.rational_function import RationalFunction
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -23,20 +22,23 @@ def _project_curve(spatial_curve: RationalFunction, frame: Matrix3x3f) -> Ration
 
     :param spatial_curve: [in] curve in R^3 to project (i.e. degree 4, dimension 3)
     :param frame: [in] 3x3 matrix defining the projection
+
     :return planar_curve: projected planar curve in R^2 (i.e. degree 4, dimension 2)
     """
     assert (spatial_curve.degree, spatial_curve.dimension) == (4, 3)
     assert is_valid_frame(frame)
 
     # Get coordinates for spatial curve
-    logger.debug("Getting spatial curve coefficients")
+    if __debug__:
+        logger.debug("Getting spatial curve coefficients")
     spatial_P_coeffs: Matrix5x3f = spatial_curve.numerators
     assert spatial_P_coeffs.shape == (5, 3)
     Q_coeffs: Vector5f = spatial_curve.denominator
     assert Q_coeffs.shape == (5, )
 
     # Build planar curve coefficients
-    logger.debug("Getting planar curve coefficients")
+    if __debug__:
+        logger.debug("Getting planar curve coefficients")
     # FIXME: probably problem with shaping... as in we may not need to transpose.
     # shape (5, 1) = (5, 3) @ (1, 3).T --> (5, 3) @ (3, 1) --> (5, 1)
     # TODO: remove unnecessary transpose
