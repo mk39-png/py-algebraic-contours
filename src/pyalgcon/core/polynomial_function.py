@@ -239,8 +239,9 @@ def compute_polynomial_mapping_derivative(degree: int, dimension: int,
     return derivative_polynomial_coeffs
 
 
-def quadratic_real_roots(quadratic_coeffs: Vector3f,
-                         eps: float = 1e-10) -> tuple[Vector2f, int]:
+def quadratic_real_roots(coeffs: Vector3f,
+                         eps: float = 1e-10) -> tuple[tuple[float, float] | tuple[float] | tuple,
+                                                      int]:
     """
     Compute the real roots of a quadratic polynomial.
     In order of lowest to highest degree. c + bx + ax^2
@@ -250,41 +251,31 @@ def quadratic_real_roots(quadratic_coeffs: Vector3f,
     :return solutions (list): [out] real roots of the polynomial
     :return num_solutions (int): [out] solution count
     """
-    assert quadratic_coeffs.shape == (3, )
-    solutions: Vector2f = np.empty(shape=(2, ))
-    num_solutions: int
+    assert coeffs.shape == (3, )
+    solutions: tuple[float, float] | tuple[float] | tuple = ()
+    num_solutions: int = 0
     discriminant: float
 
-    if eps <= abs(quadratic_coeffs[2]):
-        discriminant = (-4 * quadratic_coeffs[0] * quadratic_coeffs[2] +
-                        quadratic_coeffs[1] * quadratic_coeffs[1])
+    if eps <= abs(coeffs[2]):
+        discriminant = (-4 * coeffs[0] * coeffs[2] + coeffs[1] * coeffs[1])
         if eps * eps <= discriminant:
             # NOTE: optimization right here so that we do not gave to call math.sqrt() 4 separate times
             sqrt_discriminant: float = math.sqrt(discriminant)
 
-            if 0.0 < quadratic_coeffs[1]:
-                solutions[0] = (2.0 * quadratic_coeffs[0] /
-                                (-quadratic_coeffs[1] - sqrt_discriminant))
-                solutions[1] = ((-quadratic_coeffs[1] - sqrt_discriminant) /
-                                (2.0 * quadratic_coeffs[2]))
+            if 0.0 < coeffs[1]:
+                solutions = ((2.0 * coeffs[0] / (-coeffs[1] - sqrt_discriminant)),
+                             ((-coeffs[1] - sqrt_discriminant) / (2.0 * coeffs[2])))
             else:
-                solutions[0] = ((-quadratic_coeffs[1] + sqrt_discriminant) /
-                                (2.0 * quadratic_coeffs[2]))
-                solutions[1] = (2.0 * quadratic_coeffs[0] /
-                                (-quadratic_coeffs[1] + sqrt_discriminant))
+                solutions = (((-coeffs[1] + sqrt_discriminant) / (2.0 * coeffs[2])),
+                             (2.0 * coeffs[0] / (-coeffs[1] + sqrt_discriminant)))
             num_solutions = 2
         elif 0.0 <= discriminant:
-            solutions[0] = -quadratic_coeffs[1] / (2.0 * quadratic_coeffs[2])
+            solutions = ((-coeffs[1] / (2.0 * coeffs[2])), )
             num_solutions = 1
-        else:
-            num_solutions = 0
-    elif eps <= abs(quadratic_coeffs[1]):
-        solutions[0] = -quadratic_coeffs[0] / quadratic_coeffs[1]
+    elif eps <= abs(coeffs[1]):
+        solutions = ((-coeffs[0] / coeffs[1]),)
         num_solutions = 1
-    else:
-        num_solutions = 0
 
-    # TODO: solutions should be size 2
     return (solutions, num_solutions)
 
 
