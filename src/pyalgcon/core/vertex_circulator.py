@@ -4,10 +4,7 @@ Class to build circulators around vertices in VF representation
 
 import logging
 
-import numpy as np
-
-from pyalgcon.core.common import (PLACEHOLDER_VALUE, MatrixNx3i, Vector1D,
-                                  contains_vertex)
+from pyalgcon.core.common import MatrixNx3i, Vector1D, contains_vertex
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -103,7 +100,7 @@ def are_adjacent(face_0: Vector1D, face_1: Vector1D) -> bool:
     return False
 
 
-def compute_adjacent_faces(F: np.ndarray) -> list[list[int]]:
+def compute_adjacent_faces(F: MatrixNx3i) -> list[list[int]]:
     """
     Get list of all faces adjacent to each vertex
     """
@@ -122,7 +119,7 @@ def compute_adjacent_faces(F: np.ndarray) -> list[list[int]]:
 
 
 def compute_vertex_one_ring_first_face(
-        F: np.ndarray, vertex_index: int, adjacent_faces: list[int]) -> int:
+        F: MatrixNx3i, vertex_index: int, adjacent_faces: list[int]) -> int:
     """
     Compute the first face of the vertex one ring, which should be right
     boundary face for a boundary vertex.
@@ -133,8 +130,10 @@ def compute_vertex_one_ring_first_face(
     #  Get arbitrary adjacent face to start and vertex on the face
     current_face: int = adjacent_faces[0]
     current_vertex: int = find_next_vertex(F[current_face, :], vertex_index)
-    logger.info("Starting search for first face from vertex %s on face %s",
-                current_vertex, F[current_face, :])
+
+    if __debug__:
+        logger.info("Starting search for first face from vertex %s on face %s",
+                    current_vertex, F[current_face, :])
 
     # Cycle clockwise to a starting face
     for _ in range(1, len(adjacent_faces)):
@@ -160,7 +159,7 @@ def compute_vertex_one_ring_first_face(
     return current_face
 
 
-def compute_vertex_one_ring(F: np.ndarray,
+def compute_vertex_one_ring(F: MatrixNx3i,
                             vertex_index: int,
                             adjacent_faces: list[int]) -> tuple[list[int], list[int]]:
     """
@@ -175,8 +174,8 @@ def compute_vertex_one_ring(F: np.ndarray,
     """
     # TODO: double check logic of this method and if it makes sense to return a new value
     num_faces:       int = len(adjacent_faces)
-    vertex_one_ring: list[int] = [PLACEHOLDER_VALUE] * (num_faces + 1)
-    face_one_ring:   list[int] = [PLACEHOLDER_VALUE] * num_faces
+    vertex_one_ring: list[int] = [-1] * (num_faces + 1)
+    face_one_ring:   list[int] = [-1] * num_faces
 
     if len(adjacent_faces) == 0:
         return [], []
@@ -197,11 +196,15 @@ def compute_vertex_one_ring(F: np.ndarray,
                 face_one_ring[i] = f
 
     # Get final vertex(same as first for closed loop)
-    logger.info("Adding last vertex for face %s from vertex %s",
-                F[face_one_ring[num_faces - 1], :], vertex_one_ring[num_faces - 1])
+    if __debug__:
+        logger.info("Adding last vertex for face %s from vertex %s",
+                    F[face_one_ring[num_faces - 1], :], vertex_one_ring[num_faces - 1])
+
     vertex_one_ring[num_faces] = find_next_vertex(
         F[face_one_ring[num_faces - 1], :], vertex_one_ring[num_faces - 1])
-    logger.info("Last vertex: %s", vertex_one_ring[num_faces])
+
+    if __debug__:
+        logger.info("Last vertex: %s", vertex_one_ring[num_faces])
 
     return vertex_one_ring, face_one_ring
 
@@ -210,6 +213,7 @@ class VertexCirculator:
     """
     Class to build circulators around vertices in VF representation
     """
+    __slots__ = ("_F", "_all_adjacent_faces", "_all_vertex_one_rings", "_all_face_one_rings")
 
     def __init__(self, F: MatrixNx3i) -> None:
         """
@@ -221,15 +225,15 @@ class VertexCirculator:
         # ***************
         # Private Members
         # ***************
-        self.m_F: MatrixNx3i = F
+        self._F: MatrixNx3i = F
 
         # Initialize adjacent faces list
         num_vertices: int = F.max() + 1
-        self.m_all_adjacent_faces: list[list[int]] = compute_adjacent_faces(F)
+        self._all_adjacent_faces: list[list[int]] = compute_adjacent_faces(F)
 
         # Compute face and vertex one rings
-        self.m_all_vertex_one_rings: list[list[int]] = [[] for _ in range(num_vertices)]
-        self.m_all_face_one_rings: list[list[int]] = [[] for _ in range(num_vertices)]
+        self._all_vertex_one_rings: list[list[int]] = [[] for _ in range(num_vertices)]
+        self._all_face_one_rings: list[list[int]] = [[] for _ in range(num_vertices)]
 
         # TODO: there must be a better way of doing this.
         for i in range(num_vertices):
@@ -237,8 +241,8 @@ class VertexCirculator:
             # which is bad for us.
             # TODO: meaning, we'll have to return something to store into m_all_vertex_one_rings and
             # m_all_face_one_rings
-            self.m_all_vertex_one_rings[i], self.m_all_face_one_rings[i] = (
-                compute_vertex_one_ring(F, i, self.m_all_adjacent_faces[i]))
+            self._all_vertex_one_rings[i], self._all_face_one_rings[i] = (
+                compute_vertex_one_ring(F, i, self._all_adjacent_faces[i]))
 
     # ***************
     # Public Members
@@ -261,6 +265,6 @@ class VertexCirculator:
         """
 
         # TODO: maybe just use a list of list of ints rather than a 2D NumPy array...
-        vertex_one_ring: list[int] = self.m_all_vertex_one_rings[vertex_index]
-        face_one_ring: list[int] = self.m_all_face_one_rings[vertex_index]
+        vertex_one_ring: list[int] = self._all_vertex_one_rings[vertex_index]
+        face_one_ring: list[int] = self._all_face_one_rings[vertex_index]
         return vertex_one_ring, face_one_ring
