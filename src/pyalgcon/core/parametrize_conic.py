@@ -116,13 +116,17 @@ def parametrize_ellipse(conic_standard_form: Vector6f, conics_ref: list[Conic]) 
         P_coeffs[:, 1] = k2 * elliptic_basis_2
 
     # Parametrize upper half over finite interval [-1,1]
-    semi_ellipse_upper = Conic(ConicType.ELLIPSE, np.copy(P_coeffs), np.copy(Q_coeffs))
+    semi_ellipse_upper = Conic(ConicType.ELLIPSE,
+                               P_coeffs.copy(),
+                               Q_coeffs.copy())
     semi_ellipse_upper.domain.set_lower_bound(-1.0, False)
     semi_ellipse_upper.domain.set_upper_bound(1.0, False)
     conics_ref.append(semi_ellipse_upper)
 
     # Parametrize lower half (also with closed endpoints)
-    semi_ellipse_lower = Conic(ConicType.ELLIPSE, -np.copy(P_coeffs), np.copy(Q_coeffs))
+    semi_ellipse_lower = Conic(ConicType.ELLIPSE,
+                               -P_coeffs.copy(),
+                               Q_coeffs.copy())
     semi_ellipse_lower.domain.set_lower_bound(-1.0, False)
     semi_ellipse_lower.domain.set_upper_bound(1.0,  False)
     conics_ref.append(semi_ellipse_lower)
@@ -171,16 +175,20 @@ def parametrize_hyperbola(conic_standard_form: Vector6f, conics_ref: list[Conic]
         P_coeffs[:, 1] = k2 * hyperbolic_basis_1
 
     # Parametrize one branch over finite interval (-1,1)
-    hyperbola_branch = Conic(ConicType.HYPERBOLA, np.copy(P_coeffs), np.copy(Q_coeffs))
+    hyperbola_branch = Conic(ConicType.HYPERBOLA,
+                             P_coeffs.copy(),
+                             Q_coeffs.copy())
     hyperbola_branch.domain.set_lower_bound(-1.0, True)
     hyperbola_branch.domain.set_upper_bound(1.0, True)
     conics_ref.append(hyperbola_branch)
 
     # Parametrize other branch
-    hyperbola_branch_2 = Conic(ConicType.HYPERBOLA, np.copy(P_coeffs), np.copy(Q_coeffs))
+    hyperbola_branch_2 = Conic(ConicType.HYPERBOLA,
+                               P_coeffs.copy(),
+                               Q_coeffs.copy())
     hyperbola_branch_2.domain.set_lower_bound(-1.0, True)
     hyperbola_branch_2.domain.set_upper_bound(1.0, True)
-    hyperbola_branch_2.numerators = -np.copy(P_coeffs)
+    hyperbola_branch_2.numerators = -P_coeffs.copy()
     conics_ref.append(hyperbola_branch_2)
 
 
@@ -236,18 +244,26 @@ def parametrize_intersecting_lines(conic_standard_form: Vector6f) -> list[Conic]
     # FIXME: ensure that the order of the arguments to Conic is correct
     conics.append(
         Conic(ConicType.INTERSECTING_LINES,
-              np.copy(P_coeffs), np.copy(Q_coeffs), copy.deepcopy(nonnegatives)))
+              P_coeffs.copy(),
+              Q_coeffs.copy(),
+              copy.deepcopy(nonnegatives)))
     conics.append(
         Conic(ConicType.INTERSECTING_LINES,
-              -1.0 * np.copy(P_coeffs), np.copy(Q_coeffs), copy.deepcopy(nonnegatives)))
+              -1.0 * P_coeffs.copy(),
+              Q_coeffs.copy(),
+              copy.deepcopy(nonnegatives)))
 
     P_coeffs[1, 1] *= -1.0
     conics.append(
         Conic(ConicType.INTERSECTING_LINES,
-              np.copy(P_coeffs), np.copy(Q_coeffs), copy.deepcopy(nonpositives)))
+              P_coeffs.copy(),
+              Q_coeffs.copy(),
+              copy.deepcopy(nonpositives)))
     conics.append(
         Conic(ConicType.INTERSECTING_LINES,
-              -1.0 * np.copy(P_coeffs), np.copy(Q_coeffs), copy.deepcopy(nonpositives)))
+              -1.0 * P_coeffs.copy(),
+              Q_coeffs.copy(),
+              copy.deepcopy(nonpositives)))
 
     return conics
 
@@ -276,10 +292,14 @@ def parametrize_parallel_lines(conic_standard_form: Vector6f) -> list[Conic]:
 
     Q_coeffs: Vector3f = np.array([1.0, 0.0, 0.0], dtype=np.float64)
 
-    conics.append(Conic(ConicType.PARALLEL_LINES, np.copy(P_coeffs), np.copy(Q_coeffs)))
+    conics.append(Conic(ConicType.PARALLEL_LINES,
+                        P_coeffs.copy(),
+                        Q_coeffs.copy()))
     P_coeffs[0, 0] = x1
     P_coeffs[1, 1] = -1.0
-    conics.append(Conic(ConicType.PARALLEL_LINES, np.copy(P_coeffs), np.copy(Q_coeffs)))
+    conics.append(Conic(ConicType.PARALLEL_LINES,
+                        P_coeffs.copy(),
+                        Q_coeffs.copy()))
 
     return conics
 
