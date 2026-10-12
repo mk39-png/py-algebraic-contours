@@ -47,6 +47,7 @@ def remove_polynomial_trailing_coefficients(A_coeffs_ref: Vector1D) -> Vector1D:
 def generate_monomials(degree: int, t: float) -> Vector1D:
     """
     Generate the row vector T of n + 1 monomials 1, t, ... , t^n.
+    In order of increasing degree.
 
     :param int degree: [in] maximum monomial degree.
     :param float t: [in] evaluation point for the monomials.
