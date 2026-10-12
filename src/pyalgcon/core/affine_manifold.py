@@ -13,8 +13,8 @@ import polyscope as ps
 from pyalgcon.core.common import (CHECK_VALIDITY, COLS, GOLD_YELLOW,
                                   PLACEHOLDER_BOOL, PLACEHOLDER_INDEX,
                                   PLACEHOLDER_VALUE, ROWS, Index, Matrix2x2f,
-                                  Matrix3x2f, MatrixNx2f, MatrixNx3f,
-                                  MatrixNx3i, MatrixXf, MatrixXi,
+                                  Matrix3x2f, Matrix3x2x2f, MatrixNx2f,
+                                  MatrixNx3f, MatrixNx3i, MatrixXf, MatrixXi,
                                   PlanarPoint1d, Vector3i,
                                   angle_from_positions, area_from_length,
                                   contains_nan, find_face_vertex_index,
@@ -28,7 +28,7 @@ from pyalgcon.core.vertex_circulator import VertexCirculator
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(slots=True)
 class VertexManifoldChart:
     """
     Local layout manifold chart in R2 of the one ring around a central vertex.
@@ -60,7 +60,7 @@ class VertexManifoldChart:
     is_cone_adjacent: bool = False
 
 
-@dataclass
+@dataclass(slots=True)
 class EdgeManifoldChart:
     """
     Local layout manifold chart in R2 of the triangles around an edge.
@@ -90,16 +90,17 @@ class EdgeManifoldChart:
     is_boundary: bool
 
 
-# @dataclass
 class FaceManifoldChart:
     """
     Local layout manifold chart in R2 of a triangle.
     This is the same as global uv positions when these are provided.
     """
+    __slots__ = ("face_index", "face_uv_positions",
+                 "is_boundary", "is_cone_adjacent", "is_cone_corner")
 
     def __init__(self,
                  _face_index: Index,
-                 _face_uv_positions: list[PlanarPoint1d],
+                 _face_uv_positions: Matrix3x2f,
                  _is_boundary: bool = False,
                  _is_cone_adjacent: bool = False,
                  _is_cone_corner: list[bool] | None = None) -> None:
@@ -110,7 +111,8 @@ class FaceManifoldChart:
         # -- Vertex positions --
         # NOTE: self_uv_position must be a size 3 list with PlanarPoint elements
         assert len(_face_uv_positions) == 3
-        self.face_uv_positions: list[PlanarPoint1d] = _face_uv_positions
+        assert _face_uv_positions.shape == (3, 2)
+        self.face_uv_positions: Matrix3x2f = _face_uv_positions
 
         # -- Global information --
         # True iff the edge is on the boundary
@@ -133,14 +135,17 @@ class AffineManifold:
     Representation for an affine manifold, which is a topological manifold F
     equipped with a discrete metric l that satisfies the triangle inequality.
     """
+    __slots__ = ("_F", "_halfedge", "_corner_to_he", "_he_to_corner", "_corner_to_edge",
+                 "_global_uv", "_F_uv", "_l", "_vertex_charts", "_edge_charts", "_face_charts")
 
     def __init__(self, F: np.ndarray, global_uv: np.ndarray, F_uv: np.ndarray) -> None:
         """Default constructor for a trivial manifold
 
         Constructor for a cone manifold from a global parametrization.
-        @param[in] F: faces of the cone manifold
-        @param[in] global_uv: global layout of the manifold
-        @param[in] F_uv: faces of the global layout
+
+        :param F: faces of the cone manifold
+        :param global_uv: global layout of the manifold
+        :param F_uv: faces of the global layout
         """
 
         # Check the input
@@ -165,28 +170,29 @@ class AffineManifold:
         # TODO (from ASOC): The faces are duplicated in the halfedge. Our halfedge alway retains
         # the original VF topology, so there is no need to maintain both separately
         # TODO: check if below is actually retrieving what we need properly
-        self.__F: np.ndarray[tuple[int, int], np.dtype[np.int64]] = F
-        self.__halfedge = Halfedge(F)  # Build halfedge
-        he_to_edge: list[Index] = self.__halfedge.halfedge_to_edge_map
-        self.__corner_to_he: list[list[Index]] = self.__halfedge.corner_to_he
-        self.__he_to_corner: list[tuple[Index, Index]] = self.__halfedge.he_to_corner
+        self._F: np.ndarray[tuple[int, int], np.dtype[np.int64]] = F
+        self._halfedge = Halfedge(F)  # Build halfedge
+        he_to_edge: list[Index] = self._halfedge.halfedge_to_edge_map
+        self._corner_to_he: list[list[Index]] = self._halfedge.corner_to_he
+        self._he_to_corner: list[tuple[Index, Index]] = self._halfedge.he_to_corner
 
-        self.__corner_to_edge: list[list[Index]] = self._build_corner_to_edge_map(
-            self.__corner_to_he, he_to_edge)
+        self._corner_to_edge: list[list[Index]] = self._build_corner_to_edge_map(
+            self._corner_to_he, he_to_edge)
 
         # *** Global metric information ***
-        self.__global_uv: np.ndarray = global_uv
-        self.__F_uv: np.ndarray = F_uv
+        self._global_uv: np.ndarray = global_uv
+        self._F_uv: np.ndarray = F_uv
 
         # ** Build edge lengths and charts from the global uv **
-        self.__l: list[list[float]] = self._build_lengths_from_global_uv(F_uv, global_uv)
-        # * Local metric information *
-        self.__vertex_charts: list[VertexManifoldChart] = self._build_vertex_charts_from_lengths(
-            F, self.__l)
+        self._l: list[list[float]] = self._build_lengths_from_global_uv(F_uv, global_uv)
 
-        self.__edge_charts: list[EdgeManifoldChart] = self._build_edge_charts_from_lengths(
-            F, self.__halfedge, self.__l)
-        self.__face_charts: list[FaceManifoldChart] = self._build_face_charts(F, global_uv, F_uv)
+        # * Local metric information *
+        self._vertex_charts: list[VertexManifoldChart] = self._build_vertex_charts_from_lengths(
+            F, self._l)
+
+        self._edge_charts: list[EdgeManifoldChart] = self._build_edge_charts_from_lengths(
+            F, self._halfedge, self._l)
+        self._face_charts: list[FaceManifoldChart] = self._build_face_charts(F, global_uv, F_uv)
 
         # Align charts with the input parameterization
         self.__align_local_charts(global_uv, F_uv)
@@ -206,7 +212,7 @@ class AffineManifold:
 
         :return: number of faces in the manifold
         """
-        return self.__F.shape[0]
+        return self._F.shape[0]
 
     @property
     def num_vertices(self) -> int:
@@ -215,7 +221,7 @@ class AffineManifold:
 
         :return: number of vertices in the manifold
         """
-        return len(self.__vertex_charts)
+        return len(self._vertex_charts)
 
     @property
     def faces(self) -> np.ndarray[tuple[int, int], np.dtype[np.int64]]:
@@ -224,8 +230,8 @@ class AffineManifold:
 
         :return: faces of the manifold
         """
-        assert self.__F.dtype == np.int64
-        return self.__F
+        assert self._F.dtype == np.int64
+        return self._F
 
     @property
     def halfedge(self) -> Halfedge:
@@ -234,7 +240,7 @@ class AffineManifold:
 
         :return: halfedge of the manifold
         """
-        return self.__halfedge
+        return self._halfedge
 
     @property
     def corner_to_he(self) -> list[list[int]]:
@@ -243,7 +249,7 @@ class AffineManifold:
 
         :return: corner to halfedge
         """
-        return self.__corner_to_he
+        return self._corner_to_he
 
     @property
     def he_to_corner(self) -> list[tuple[Index, Index]]:
@@ -252,7 +258,7 @@ class AffineManifold:
 
         :return: halfedge to corner map of the manifold
         """
-        return self.__he_to_corner
+        return self._he_to_corner
 
     @property
     def corner_to_edge(self) -> list[list[int]]:
@@ -261,7 +267,7 @@ class AffineManifold:
 
         :return: corner to edge
         """
-        return self.__corner_to_edge
+        return self._corner_to_edge
 
     @property
     def global_uv(self) -> np.ndarray:
@@ -270,7 +276,7 @@ class AffineManifold:
 
         :return: global uv
         """
-        return self.__global_uv
+        return self._global_uv
 
     @property
     def F_uv(self) -> np.ndarray:
@@ -279,7 +285,7 @@ class AffineManifold:
 
         :return: faces of the manifold layout
         """
-        return self.__F_uv
+        return self._F_uv
 
     @property
     def l(self) -> list[list[float]]:
@@ -288,7 +294,7 @@ class AffineManifold:
 
         :return: edge lengths
         """
-        return self.__l
+        return self._l
 
     @property
     def vertex_charts(self) -> list[VertexManifoldChart]:
@@ -296,7 +302,7 @@ class AffineManifold:
         Gets local metric information vertex charts.
         :return: vertex charts
         """
-        return self.__vertex_charts
+        return self._vertex_charts
 
     @property
     def edge_charts(self) -> list[EdgeManifoldChart]:
@@ -304,7 +310,7 @@ class AffineManifold:
         Gets local metric information edge charts.
         :return: edge charts
         """
-        return self.__edge_charts
+        return self._edge_charts
 
     @property
     def face_charts(self) -> list[FaceManifoldChart]:
@@ -312,7 +318,7 @@ class AffineManifold:
         Gets local metric information face charts.
         :return: face charts
         """
-        return self.__face_charts
+        return self._face_charts
 
     def get_vertex_chart(self, vertex_index: Index) -> VertexManifoldChart:
         """
@@ -327,7 +333,7 @@ class AffineManifold:
         :param vertex_index: index of the vertex for the chart
         :return: chart for the given vertex
         """
-        return self.__vertex_charts[vertex_index]
+        return self._vertex_charts[vertex_index]
 
     def get_edge_chart(self, face_index: Index, face_vertex_index: Index) -> EdgeManifoldChart:
         """
@@ -338,8 +344,8 @@ class AffineManifold:
         :param face_vertex_index: index of the corner opposite the edge in the face
         :return: chart for the given edge
         """
-        edge_index: Index = self.__corner_to_edge[face_index][face_vertex_index]
-        return self.__edge_charts[edge_index]
+        edge_index: Index = self._corner_to_edge[face_index][face_vertex_index]
+        return self._edge_charts[edge_index]
 
     def get_face_chart(self, face_index: Index) -> FaceManifoldChart:
         """
@@ -348,9 +354,9 @@ class AffineManifold:
         :param face_index: index of a face
         :return: chart for the given face
         """
-        return self.__face_charts[face_index]
+        return self._face_charts[face_index]
 
-    def get_face_corner_charts(self, face_index: Index) -> list[Matrix2x2f]:
+    def get_face_corner_charts(self, face_index: Index) -> Matrix3x2x2f:
         """
         Get the portions of the isometric vertex charts corresponding to the
         corners of a given face.
@@ -363,14 +369,12 @@ class AffineManifold:
         :param face_index: index of the face for the chart segments
         :return corner_uv_positions: chart uv positions as enumerated above
         """
-        corner_uv_positions: list[Matrix2x2f] = [np.zeros(shape=(2, 2), dtype=np.float64),
-                                                 np.zeros(shape=(2, 2), dtype=np.float64),
-                                                 np.zeros(shape=(2, 2), dtype=np.float64)]
+        corner_uv_positions: Matrix3x2x2f = np.zeros(shape=(3, 2, 2), dtype=np.float64)
 
         for i in range(3):
             # Get the chart for vertex i in the given face
-            vertex_index: int = self.__F[face_index, i]
-            chart: VertexManifoldChart = self.__vertex_charts[vertex_index]
+            vertex_index: int = self._F[face_index, i]
+            chart: VertexManifoldChart = self._vertex_charts[vertex_index]
 
             # Iterate over the one ring of face vertex i
             for j, _ in enumerate(chart.face_one_ring):
@@ -405,9 +409,9 @@ class AffineManifold:
         :return face_edge_uv_positions: uv positions contained in the given
         face
         """
-        face_edge_uv_positions: list[Matrix3x2f] = [np.ndarray(shape=(3, 2), dtype=np.float64),
-                                                    np.ndarray(shape=(3, 2), dtype=np.float64),
-                                                    np.ndarray(shape=(3, 2), dtype=np.float64)]
+        face_edge_uv_positions: list[Matrix3x2f] = [np.empty(shape=(3, 2), dtype=np.float64),
+                                                    np.empty(shape=(3, 2), dtype=np.float64),
+                                                    np.empty(shape=(3, 2), dtype=np.float64)]
 
         # Iterate over edges
         for i in range(3):
@@ -429,7 +433,7 @@ class AffineManifold:
 
         return face_edge_uv_positions
 
-    def get_face_global_uv(self, face_index: Index) -> list[PlanarPoint1d]:
+    def get_face_global_uv(self, face_index: Index) -> Matrix3x2f:
         """
         Get the uv coordinates of the face.
 
@@ -448,10 +452,10 @@ class AffineManifold:
         :param vertex_index: [in] index of the vertex
         :return: curvature at the given vertex
         """
-        chart: VertexManifoldChart = self.__vertex_charts[vertex_index]
+        chart: VertexManifoldChart = self._vertex_charts[vertex_index]
 
         # Get zero uv coordinate (location of the central vertex)
-        zero: PlanarPoint1d = np.zeros(shape=(2, ))
+        zero: PlanarPoint1d = np.zeros(shape=(2, ), dtype=np.float64)
 
         # Compute cone angle
         cone_angle: float = 0.0
@@ -523,9 +527,10 @@ class AffineManifold:
             if not self.is_flat(vertex_index):
                 # NOTE: need isEnabledFor check to avoid executing compute_curvature for non-DEBUG
                 # logging levels.
-                if logger.isEnabledFor(logging.DEBUG):
-                    logger.debug("Getting cone %s of curvature %s",
-                                 vertex_index, self.compute_curvature(vertex_index))
+                if __debug__:
+                    if logger.isEnabledFor(logging.DEBUG):
+                        logger.debug("Getting cone %s of curvature %s",
+                                     vertex_index, self.compute_curvature(vertex_index))
                 cones.append(vertex_index)
         return cones
 
@@ -589,7 +594,7 @@ class AffineManifold:
 
         :param[in] vertex_index: vertex to mark
         """
-        self.__vertex_charts[vertex_index].is_cone_adjacent = True
+        self._vertex_charts[vertex_index].is_cone_adjacent = True
 
     def mark_cone_adjacent_face(self, face_index: Index) -> None:
         """
@@ -597,7 +602,7 @@ class AffineManifold:
 
         :param face_index: face to mark
         """
-        self.__face_charts[face_index].is_cone_adjacent = True
+        self._face_charts[face_index].is_cone_adjacent = True
 
     @property
     def get_global_uv(self) -> np.ndarray:
@@ -606,7 +611,7 @@ class AffineManifold:
 
         :return: global uv coordinates, or the empty matrix if they do not exist
         """
-        return self.__global_uv
+        return self._global_uv
 
     def cut_cone_edges(self) -> None:
         """
@@ -631,12 +636,12 @@ class AffineManifold:
                 face_index, face_vertex_index)
 
             # Mark edge and endpoints as boundaries
-            edge_index: Index = self.__corner_to_edge[face_index][face_vertex_index]
+            edge_index: Index = self._corner_to_edge[face_index][face_vertex_index]
             v0: Index = edge_chart.left_vertex_index
             v1: Index = edge_chart.right_vertex_index
-            self.__edge_charts[edge_index].is_boundary = True
-            self.__vertex_charts[v0].is_boundary = True
-            self.__vertex_charts[v1].is_boundary = True
+            self._edge_charts[edge_index].is_boundary = True
+            self._vertex_charts[v0].is_boundary = True
+            self._vertex_charts[v1].is_boundary = True
 
     def add_to_viewer(self,
                       V: MatrixXf,
@@ -709,19 +714,19 @@ class AffineManifold:
         """
         Clear all internal data for a trivial cone manifold
         """
-        self.__F[:, :] = 0.0
-        self.__corner_to_he.clear()
-        self.__corner_to_edge.clear()
-        self.__he_to_corner.clear()
-        self.__halfedge.clear()
+        self._F[:, :] = 0.0
+        self._corner_to_he.clear()
+        self._corner_to_edge.clear()
+        self._he_to_corner.clear()
+        self._halfedge.clear()
 
-        self.__l.clear()
-        self.__global_uv[:, :] = 0.0
-        self.__F_uv[:, :] = 0.0
+        self._l.clear()
+        self._global_uv[:, :] = 0.0
+        self._F_uv[:, :] = 0.0
 
-        self.__vertex_charts.clear()
-        self.__edge_charts.clear()
-        self.__face_charts.clear()
+        self._vertex_charts.clear()
+        self._edge_charts.clear()
+        self._face_charts.clear()
 
     # *****************
     # Protected Methods
@@ -879,7 +884,7 @@ class AffineManifold:
         return edge_charts
 
     def _build_face_charts(self,
-                           F: np.ndarray,
+                           F: MatrixNx3i,
                            global_uv: np.ndarray,
                            F_uv: np.ndarray) -> list[FaceManifoldChart]:
         """
@@ -889,10 +894,7 @@ class AffineManifold:
         face_charts: list[FaceManifoldChart] = []
 
         for face_index in range(num_faces):
-            face_index: int = face_index
-            face_uv_positions: list[PlanarPoint1d] = [np.ndarray(shape=(2, ), dtype=np.float64),
-                                                      np.ndarray(shape=(2, ), dtype=np.float64),
-                                                      np.ndarray(shape=(2, ), dtype=np.float64)]
+            face_uv_positions: Matrix3x2f = np.empty(shape=(3, 2), dtype=np.float64)
 
             for face_vertex_index in range(3):
                 uv_vertex_index: Index = F_uv[face_index, face_vertex_index]
@@ -970,8 +972,11 @@ class AffineManifold:
         """
         Layout the one ring around the given vertex from the lengths
         """
-        one_ring_uv_positions: MatrixNx2f = np.ndarray(shape=(len(vertex_one_ring), 2))
-        logger.info("Building layout for one ring: %s", vertex_one_ring)
+        one_ring_uv_positions: MatrixNx2f = np.empty(shape=(len(vertex_one_ring), 2),
+                                                     dtype=np.float64)
+
+        if __debug__:
+            logger.info("Building layout for one ring: %s", vertex_one_ring)
 
         #  Initialize first vertex to position (l0, 0), where l0 is the length of the
         #  edge
@@ -979,14 +984,15 @@ class AffineManifold:
         j0: int = find_face_vertex_index(F[f0, :], vertex_index)
         l0: float = l[f0][(j0 + 2) % 3]
         one_ring_uv_positions[0, :] = np.array([l0, 0], dtype=np.float64)
-        # assert one_ring_uv_positions.shape == (1, 2)
 
         # Layout remaining vertices
         for i, f in enumerate(face_one_ring):
             # Get current face and the index of the vertex in it
             j: int = find_face_vertex_index(F[f, :], vertex_index)
-            logger.info("Laying out vertex for face %s", F[f, :])
-            logger.info("Face lengths are %s", l[f])
+
+            if __debug__:
+                logger.info("Laying out vertex for face %s", F[f, :])
+                logger.info("Face lengths are %s", l[f])
 
             # Get the lengths of the triangle edges
             next_edge_length: float = l[f][j]
@@ -998,15 +1004,18 @@ class AffineManifold:
             one_ring_uv_positions[i + 1, :] = self._layout_next_vertex(one_ring_uv_positions[i, :],
                                                                        next_edge_length,
                                                                        prev_edge_length)
-            logger.info("Next vertex is %s",
-                        one_ring_uv_positions[i + 1, :])
+
+            if __debug__:
+                logger.info("Next vertex is %s",
+                            one_ring_uv_positions[i + 1, :])
 
             assert float_equal(next_edge_length, np.linalg.norm(
                 one_ring_uv_positions[i + 1, :] - one_ring_uv_positions[i, :]))
             assert float_equal(prev_edge_length, np.linalg.norm(
                 one_ring_uv_positions[i + 1, :]))
 
-        logger.info("Final layout:\n%s", one_ring_uv_positions)
+        if __debug__:
+            logger.info("Final layout:\n%s", one_ring_uv_positions)
 
         assert not contains_nan(one_ring_uv_positions)
         return one_ring_uv_positions
@@ -1065,7 +1074,7 @@ class AffineManifold:
 
             # Get the global uv values corresponding the edge of the face
             edge_face_index: Index = self.get_vertex_chart(vertex_index).face_one_ring[0]
-            edge_face_vertex_index: Index = find_face_vertex_index(self.__F[edge_face_index, :],
+            edge_face_vertex_index: Index = find_face_vertex_index(self._F[edge_face_index, :],
                                                                    vertex_index)
             uv_vertex_index: Index = F_uv[edge_face_index, edge_face_vertex_index]
             uv_edge_vertex_index: Index = F_uv[edge_face_index, (edge_face_vertex_index + 1) % 3]
@@ -1082,7 +1091,7 @@ class AffineManifold:
             # Apply composite similarity maps to the local uv positions
             # TODO: double check that this is doing matmul as we wanted
             similarity_map = global_similarity_map @ np.linalg.inv(local_similarity_map)
-            self.__vertex_charts[vertex_index].one_ring_uv_positions = self.__vertex_charts[
+            self._vertex_charts[vertex_index].one_ring_uv_positions = self._vertex_charts[
                 vertex_index].one_ring_uv_positions @ similarity_map
 
         # Check validity after direct member variable manipulation
@@ -1095,37 +1104,41 @@ class AffineManifold:
         F: MatrixNx3i = self.faces
         cones: list[Index] = self.compute_cones()
 
-        for _, ci in enumerate(cones):
-            self.__vertex_charts[ci].is_cone = True
+        for ci in cones:
+            self._vertex_charts[ci].is_cone = True
             chart: VertexManifoldChart = self.get_vertex_chart(ci)
-            logger.debug("Marking cone at %s", ci)
 
+            if __debug__:
+                logger.debug("Marking cone at %s", ci)
+                logger.debug("Marking cone at adjacent vertices at %s",
+                             chart.vertex_one_ring)
             # Mark vertices adjacent to cones
-            logger.debug("Marking cone at adjacent vertices at %s",
-                         chart.vertex_one_ring)
-            for _, vj in enumerate(chart.vertex_one_ring):
-                self.__vertex_charts[vj].is_cone_adjacent = True
+
+            for vj in chart.vertex_one_ring:
+                self._vertex_charts[vj].is_cone_adjacent = True
 
             # Mark faces adjacent to cones
-            logger.debug("Marking cone adjacent faces at %s",
-                         chart.face_one_ring)
-            for _, fj in enumerate(chart.face_one_ring):
-                self.__face_charts[fj].is_cone_adjacent = True
+            if __debug__:
+                logger.debug("Marking cone adjacent faces at %s",
+                             chart.face_one_ring)
+
+            for fj in chart.face_one_ring:
+                self._face_charts[fj].is_cone_adjacent = True
 
                 # Mark individual corners
                 for k in range(3):
                     vk: Index = F[fj, k]
-                    if self.__vertex_charts[vk].is_cone:
-                        self.__face_charts[fj].is_cone_corner[k] = True
+                    if self._vertex_charts[vk].is_cone:
+                        self._face_charts[fj].is_cone_corner[k] = True
 
     def _compute_corner_uv_length(self, face_index: Index, face_vertex_index: Index) -> float:
         """
         Computes corner uv length.
         """
-        vn: Index = self.__F_uv[face_index, (face_vertex_index + 1) % 3]
-        vp: Index = self.__F_uv[face_index, (face_vertex_index + 2) % 3]
-        next_uv: PlanarPoint1d = self.__global_uv[vn, :]
-        prev_uv: PlanarPoint1d = self.__global_uv[vp, :]
+        vn: Index = self._F_uv[face_index, (face_vertex_index + 1) % 3]
+        vp: Index = self._F_uv[face_index, (face_vertex_index + 2) % 3]
+        next_uv: PlanarPoint1d = self._global_uv[vn, :]
+        prev_uv: PlanarPoint1d = self._global_uv[vp, :]
         assert next_uv.shape == (2, )
         assert prev_uv.shape == (2, )
         edge_vector = next_uv - prev_uv
@@ -1159,14 +1172,14 @@ class AffineManifold:
             return float_equal(np.linalg.norm(edge), length, length_threshold)
 
         # Check that the sizes of the member variables are consistent
-        if self.__F.shape[ROWS] != len(self.__l):
+        if self._F.shape[ROWS] != len(self._l):
             return False
 
         # Check that the global metric is consistent
         for fi in range(self.num_faces):
             for j in range(3):
                 # Check the length of the edge is the same as the uv length
-                edge_length: float = self.__l[fi][j]
+                edge_length: float = self._l[fi][j]
                 edge_uv_length: float = self._compute_corner_uv_length(fi, j)
 
                 if not float_equal(edge_length, edge_uv_length, length_threshold):
@@ -1178,12 +1191,12 @@ class AffineManifold:
                     return False
 
                 # Get opposite halfedge and corner if it exists
-                he: Index = self.__corner_to_he[fi][j]
-                if self.__halfedge.is_boundary_halfedge(he):
+                he: Index = self._corner_to_he[fi][j]
+                if self._halfedge.is_boundary_halfedge(he):
                     continue
-                he_opp: Index = self.__halfedge.opposite_halfedge(he)
-                fi_opp: Index = self.__he_to_corner[he_opp][0]
-                j_opp: Index = self.__he_to_corner[he_opp][1]
+                he_opp: Index = self._halfedge.opposite_halfedge(he)
+                fi_opp: Index = self._he_to_corner[he_opp][0]
+                j_opp: Index = self._he_to_corner[he_opp][1]
 
                 # Check uvs are the same for the opposite corners
                 opposite_edge_uv_length: float = self._compute_corner_uv_length(fi_opp, j_opp)
@@ -1197,7 +1210,7 @@ class AffineManifold:
 
         # Check that each vertex chart is valid
         for vertex_index in range(self.num_vertices):
-            chart: VertexManifoldChart = self.__vertex_charts[vertex_index]
+            chart: VertexManifoldChart = self._vertex_charts[vertex_index]
 
             # Check basic chart indexing and size validity
             if chart.vertex_index != vertex_index:
@@ -1210,64 +1223,65 @@ class AffineManifold:
             # Check that each one ring face contains the central vertex, the vertex with
             # the same index in the vertex one ring, and the vertex with one larger index
             for i, face_index in enumerate(chart.face_one_ring):
-                face_vertex_index: Index = find_face_vertex_index(self.__F[face_index, :],
+                face_vertex_index: Index = find_face_vertex_index(self._F[face_index, :],
                                                                   vertex_index)
                 vi: Index = chart.vertex_one_ring[i]
                 vj: Index = chart.vertex_one_ring[i + 1]
 
                 # Check that the one ring indexing is valid
-                if face_index > self.__F.shape[0]:
+                if face_index > self._F.shape[0]:
                     return False
-                if not contains_vertex(self.__F[face_index, :], vertex_index):
+                if not contains_vertex(self._F[face_index, :], vertex_index):
                     return False
-                if not contains_vertex(self.__F[face_index, :], vi):
+                if not contains_vertex(self._F[face_index, :], vi):
                     return False
-                if not contains_vertex(self.__F[face_index, :], vj):
+                if not contains_vertex(self._F[face_index, :], vj):
                     return False
 
                 # Check that each local uv length is compatible with the given metric
-                logger.debug("Face lengths: %s", self.__l[face_index])
+                if __debug__:
+                    logger.debug("Face lengths: %s", self._l[face_index])
 
                 if not edge_has_length(zero,
                                        chart.one_ring_uv_positions[i, :],
-                                       self.__l[face_index][(face_vertex_index + 2) % 3]):
+                                       self._l[face_index][(face_vertex_index + 2) % 3]):
                     logger.error("uv position %s in chart %s does not expect norm %s",
                                  chart.one_ring_uv_positions[i, :],
                                  vertex_index,
-                                 self.__l[face_index][(face_vertex_index + 2) % 3])
+                                 self._l[face_index][(face_vertex_index + 2) % 3])
                     raise ValueError("uv position %s in chart %s does not expect norm %s",
                                      chart.one_ring_uv_positions[i, :],
                                      vertex_index,
-                                     self.__l[face_index][(face_vertex_index + 2) % 3])
+                                     self._l[face_index][(face_vertex_index + 2) % 3])
                     return False
 
                 if not edge_has_length(chart.one_ring_uv_positions[i + 1, :],
                                        chart.one_ring_uv_positions[i, :],
-                                       self.__l[face_index][(face_vertex_index + 0) % 3]):
+                                       self._l[face_index][(face_vertex_index + 0) % 3]):
                     logger.error(
                         "uv positions %s and %s in chart %s do not have expected length %s",
                         chart.one_ring_uv_positions[i + 1, :],
                         chart.one_ring_uv_positions[i, :],
-                        vertex_index, self.__l[face_index][(face_vertex_index + 0) % 3])
+                        vertex_index, self._l[face_index][(face_vertex_index + 0) % 3])
                     raise ValueError(
                         "uv positions %s and %s in chart %s do not have expected length %s",
                         chart.one_ring_uv_positions[i + 1, :],
                         chart.one_ring_uv_positions[i, :],
-                        vertex_index, self.__l[face_index]
+                        vertex_index, self._l[face_index]
                         [(face_vertex_index + 0) % 3])
                     return False
 
                 if not edge_has_length(zero,
                                        chart.one_ring_uv_positions[i + 1, :],
-                                       self.__l[face_index][(face_vertex_index + 1) % 3]):
+                                       self._l[face_index][(face_vertex_index + 1) % 3]):
                     logger.error("uv position %s in chart %s does not have the expected norm %s",
                                  chart.one_ring_uv_positions[i + 1, :],
                                  vertex_index,
-                                 self.__l[face_index][(face_vertex_index + 1) % 3])
+                                 self._l[face_index][(face_vertex_index + 1) % 3])
                     raise ValueError(
                         "uv position %s in chart %s does not have the expected norm %s",
                         chart.one_ring_uv_positions[i + 1, :],
-                        vertex_index, self.__l[face_index]
+                        vertex_index, self._l[face_index]
                         [(face_vertex_index + 1) % 3])
                     return False
 
@@ -1291,8 +1305,8 @@ class ParametricAffineManifold(AffineManifold):
         Constructor for a parametric affine manifold from a global
         parametrization.
 
-        @param[in] F: faces of the affine manifold
-        @param[in] global_uv: affine global layout of the manifold
+        :param F: faces of the affine manifold
+        :param global_uv: affine global layout of the manifold
         """
         super().__init__(F, global_uv, F)
         assert self.__is_valid_parametric_affine_manifold()
@@ -1305,8 +1319,8 @@ class ParametricAffineManifold(AffineManifold):
         """
         Get global uv coordinates for a given vertex.
 
-        param[in] vertex_index: index of the vertex for the uv position
-        param[out] uv_coords: global uv position for the given vertex
+        :param vertex_index: index of the vertex for the uv position
+        :return uv_coords: global uv position for the given vertex
         """
         # TODO: adjust shape or something
         uv_coords: PlanarPoint1d = self.global_uv[vertex_index, :]
