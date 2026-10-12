@@ -556,28 +556,25 @@ def vector_contains(vec: list, item: Any) -> bool:
     return item in vec
 
 
-def convert_index_vector_to_boolean_array(index_vector: list[int], num_indices: int) -> list[bool]:
-    # TODO: fix summary/explanation inside docstring
+def convert_index_vector_to_boolean_array(index_vector: Vector1D, num_indices: int) -> Vector1D:
     """ 
     From a vector of indices, build a boolean array settings elements at index_vector 
     indices to true
 
     :param index_vector: indices where the array is true
-    :type index_vector: list[int]
+    :type index_vector: Vector1D
     :param num_indices: length of boolean array to construct
     :type num_indices: int
     :return: array of boolean values
-    :rtype: list[bool]
+    :rtype: Vector1D
     """
-    boolean_array: list[bool] = [False for _ in range(num_indices)]
-
-    for index in index_vector:
-        boolean_array[index] = True
+    boolean_array: Vector1D = np.zeros(num_indices, dtype=bool)
+    boolean_array[index_vector] = True
 
     return boolean_array
 
 
-def index_vector_complement(index_vector: list[int], num_indices: int) -> list[int]:
+def index_vector_complement(index_vector: Vector1D | list[int], num_indices: int) -> Vector1D:
     """
     Returns the complement of the index_vector as a list of int.
 
@@ -587,18 +584,18 @@ def index_vector_complement(index_vector: list[int], num_indices: int) -> list[i
     :param num_indices: determines the size of the complement_vector
     :type num_indices: int
 
-    :return: complement_vector
+    :return: complement_vector of length num_vertices
     :rtype: list[int]
     """
+    if type(index_vector) is list:
+        index_vector = np.array(index_vector, dtype=int)
+
     # Build index boolean array
-    boolean_array: list[bool] = convert_index_vector_to_boolean_array(
+    boolean_array: Vector1D = convert_index_vector_to_boolean_array(
         index_vector, num_indices)
 
     # Build complement
-    complement_vector: list[int] = []
-    for i in range(num_indices):
-        if not boolean_array[i]:
-            complement_vector.append(i)
+    complement_vector: Vector1D = np.flatnonzero(~boolean_array)
 
     return complement_vector
 
