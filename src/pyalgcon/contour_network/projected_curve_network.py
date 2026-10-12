@@ -39,10 +39,12 @@ logger: logging.Logger = logging.getLogger(__name__)
 # Helper Methods
 # ***********************
 
-class SegmentChainIterator():
+class SegmentChainIterator:
     """
     Iterator over contour segment chains until FIXME is found.
     """
+    __slots__ = ("_parent", "_current_segment_index",
+                 "_is_end_of_chain", "_is_reverse_end_of_chain")
 
     def __init__(self,
                  parent: "ProjectedCurveNetwork",
@@ -50,11 +52,13 @@ class SegmentChainIterator():
         """
         Constructor for SegmentChainIterator class.
         """
-        self.__parent: ProjectedCurveNetwork = parent
-        self.__current_segment_index: SegmentIndex = segment_index
-        self.__is_end_of_chain: bool = False
-        self.__is_reverse_end_of_chain: bool = False
-        logger.debug("Iterator initialized to segment %s", self.__current_segment_index)
+        self._parent: ProjectedCurveNetwork = parent
+        self._current_segment_index: SegmentIndex = segment_index
+        self._is_end_of_chain: bool = False
+        self._is_reverse_end_of_chain: bool = False
+
+        if __debug__:
+            logger.debug("Iterator initialized to segment %s", self._current_segment_index)
 
     def increment(self) -> None:
         """
@@ -64,18 +68,18 @@ class SegmentChainIterator():
         # TODO: could reimplemnt as an iterator
 
         # Check if off end of chain
-        if self.__is_end_of_chain or self.__is_reverse_end_of_chain:
+        if self._is_end_of_chain or self._is_reverse_end_of_chain:
             return
 
         # Check if next is end of chain (i.e. the next node is not a knot node)
-        to_node: NodeIndex = self.__parent.to(self.__current_segment_index)
-        if not self.__parent.is_knot_node(to_node):
-            self.__current_segment_index = -1
-            self.__is_end_of_chain = True
+        to_node: NodeIndex = self._parent.to(self._current_segment_index)
+        if not self._parent.is_knot_node(to_node):
+            self._current_segment_index = -1
+            self._is_end_of_chain = True
         else:
-            self.__current_segment_index = self.__parent.next(self.__current_segment_index)
-
-        logger.debug("Iterator moved to segment %s", self.__current_segment_index)
+            self._current_segment_index = self._parent.next(self._current_segment_index)
+        if __debug__:
+            logger.debug("Iterator moved to segment %s", self._current_segment_index)
 
     def decrement(self) -> None:
         """
@@ -83,33 +87,33 @@ class SegmentChainIterator():
         Updates current_segment_index and is_reverse_end_of_chain.
         """
         # Check if off end of chain
-        if self.__is_end_of_chain or self.__is_reverse_end_of_chain:
+        if self._is_end_of_chain or self._is_reverse_end_of_chain:
             return
 
         # Check if prev is reverse end of chain (i.e. the prev node is not a knot node)
-        from_node: NodeIndex = self.__parent.from_(self.__current_segment_index)
+        from_node: NodeIndex = self._parent.from_(self._current_segment_index)
 
-        if not self.__parent.is_knot_node(from_node):
-            self.__current_segment_index = -1
-            self.__is_reverse_end_of_chain = True
+        if not self._parent.is_knot_node(from_node):
+            self._current_segment_index = -1
+            self._is_reverse_end_of_chain = True
         else:
-            self.__current_segment_index = self.__parent.prev(self.__current_segment_index)
-
-        logger.debug("Iterator moved to segment %s", self.__current_segment_index)
+            self._current_segment_index = self._parent.prev(self._current_segment_index)
+        if __debug__:
+            logger.debug("Iterator moved to segment %s", self._current_segment_index)
 
     @property
     def at_end_of_chain(self) -> bool:
         """
         :returns: is_end_of_chain
         """
-        return self.__is_end_of_chain
+        return self._is_end_of_chain
 
     @property
     def at_reverse_end_of_chain(self) -> bool:
         """
         :returns: is_reverse_end_of_chain
         """
-        return self.__is_reverse_end_of_chain
+        return self._is_reverse_end_of_chain
 
     @property
     def current_segment_index(self) -> SegmentIndex:
@@ -118,7 +122,7 @@ class SegmentChainIterator():
 
         :returns: current_segment_index
         """
-        return self.__current_segment_index
+        return self._current_segment_index
 
 
 # ***********************
@@ -133,6 +137,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
     :ivar nodes: list[NodeGeometry]
     :ivar chain_start_nodes: list[NodeIndex]
     """
+    __slots__ = ("_segments", "_nodes", "_chain_start_nodes")
 
     def __init__(self,
                  parameter_segments: list[Conic],
@@ -165,9 +170,9 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
                                           intersection points per segment
         """
         # Member variables:
-        self.__segments: list[SegmentGeometry]
-        self.__nodes: list[NodeGeometry]
-        self.__chain_start_nodes: list[NodeIndex]
+        self._segments: list[SegmentGeometry]
+        self._nodes: list[NodeGeometry]
+        self._chain_start_nodes: list[NodeIndex]
 
         # Rebuild topology with intersection and cusp splits
         #
@@ -195,8 +200,8 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
             for node_index in range(self.num_nodes):
                 if (self.is_intersection_node(node_index) and
                         not self._is_valid_node_index(self.intersection(node_index))):
-                    logger.error(f"Intersection node {node_index} does not \
-                                    have a valid intersection")
+                    logger.error("Intersection node %s does not \
+                                    have a valid intersection", node_index)
 
             # Check the validity of the geometric graph structure
             if not self._is_valid_projected_curve_network():
@@ -216,7 +221,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
     @property
     def nodes(self) -> list[NodeGeometry]:
         """Retrieves nodes of projected curve network"""
-        return self.__nodes
+        return self._nodes
 
     # @nodes.setter
     # def nodes(self, nodes: list[NodeGeometry]) -> None:
@@ -225,7 +230,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
     @property
     def segments(self) -> list[SegmentGeometry]:
         """Retrieves segments of projected curve network"""
-        return self.__segments
+        return self._segments
 
     # @segments.setter
     # def segments(self, segments: list[SegmentGeometry]) -> None:
@@ -238,7 +243,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
 
         :return: list of all chain start nodes
         """
-        return self.__chain_start_nodes
+        return self._chain_start_nodes
 
     # ****************
     # Segment geometry
@@ -300,10 +305,10 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         """
         spatial_curves_ref: list[RationalFunction] = []
         for i in range(self.num_segments):
-            assert (self.__segments[i].spatial_curve.degree,
-                    self.__segments[i].spatial_curve.dimension) == (4, 3)
+            assert (self._segments[i].spatial_curve.degree,
+                    self._segments[i].spatial_curve.dimension) == (4, 3)
 
-            spatial_curves_ref.append(self.__segments[i].spatial_curve)
+            spatial_curves_ref.append(self._segments[i].spatial_curve)
 
         return spatial_curves_ref
 
@@ -405,8 +410,9 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
             elif self.is_path_end_node(ni):
                 spatial_path_end_nodes.append(spatial_point)
 
-        logger.debug("Enumerated %s spatial intersection nodes",
-                     len(spatial_intersection_nodes))
+        if __debug__:
+            logger.debug("Enumerated %s spatial intersection nodes",
+                         len(spatial_intersection_nodes))
 
         return (spatial_knot_nodes,
                 spatial_marked_knot_nodes,
@@ -497,7 +503,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         if not self._is_valid_node_index(node_index):
             logger.error("Invalid node query")
             return False
-        return self.__nodes[node_index].is_intersection()
+        return self._nodes[node_index].is_intersection()
 
     def is_interior_cusp_node(self, node_index: NodeIndex) -> bool:
         """
@@ -507,7 +513,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         if not self._is_valid_node_index(node_index):
             logger.error("Invalid node query")
             return False
-        return self.__nodes[node_index].is_interior_cusp()
+        return self._nodes[node_index].is_interior_cusp()
 
     def is_boundary_cusp_node(self, node_index: NodeIndex) -> bool:
         """
@@ -517,7 +523,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         if not self._is_valid_node_index(node_index):
             logger.error("Invalid node query")
             return False
-        return self.__nodes[node_index].is_boundary_cusp()
+        return self._nodes[node_index].is_boundary_cusp()
 
     def is_path_start_node(self, node_index: NodeIndex) -> bool:
         """
@@ -527,7 +533,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         if not self._is_valid_node_index(node_index):
             logger.error("Invalid node query")
             return False
-        return self.__nodes[node_index].is_path_start_node()
+        return self._nodes[node_index].is_path_start_node()
 
     def is_path_end_node(self, node_index: NodeIndex) -> bool:
         """
@@ -537,7 +543,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         if not self._is_valid_node_index(node_index):
             logger.error("Invalid node query")
             return False
-        return self.__nodes[node_index].is_path_end_node()
+        return self._nodes[node_index].is_path_end_node()
 
     def node_planar_point(self, node_index: NodeIndex) -> PlanarPoint1d:
         """
@@ -675,13 +681,13 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         """
         Checks if quantitative invisibilty is set at node index
         """
-        return self.__nodes[node_index].quantitative_invisibility_is_set()
+        return self._nodes[node_index].quantitative_invisibility_is_set()
 
     def mark_node_quantitative_invisibility_as_set(self, node_index: NodeIndex) -> None:
         """
         Marks quantitative invisibility as set at node index
         """
-        self.__nodes[node_index].mark_quantitative_invisibility_as_set()
+        self._nodes[node_index].mark_quantitative_invisibility_as_set()
 
     # *************
     # *************
@@ -698,7 +704,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
 
     def write(self,
               output_path: str | pathlib.Path,
-              color_mode: SVGOutputMode,
+              color_mode: SVGOutputMode = SVGOutputMode.CONTRAST_INVISIBLE_SEGMENTS,
               show_nodes: bool = False) -> None:
         """
         Output visible planar curves as an SVG file, with visibility determined by
@@ -1036,8 +1042,8 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
 
         (to_array,
          out_array,
-         self.__segments,
-         self.__nodes) = build_projected_curve_network_without_intersections(
+         self._segments,
+         self._nodes) = build_projected_curve_network_without_intersections(
             parameter_segments,
             spatial_segments,
             planar_segments,
@@ -1045,7 +1051,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
             chains,
             has_cusp_at_base)
         assert self._is_valid_curve_data(to_array, out_array)
-        self.__mark_open_chain_endpoints(to_array, out_array, chains, self.__nodes)
+        self.__mark_open_chain_endpoints(to_array, out_array, chains, self._nodes)
 
         # Remove intersections that are redundant
         remove_redundant_intersections(to_array,
@@ -1069,17 +1075,18 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
             num_intersections,
             to_array,
             out_array,
-            self.__segments,
-            self.__nodes)
+            self._segments,
+            self._nodes)
 
         assert self._is_valid_curve_data(to_array, out_array)
 
-        for i, _ in enumerate(intersection_nodes):
-            logger.info("Intersection %s: %s", i, intersection_nodes[i])
-            if (len(intersection_nodes[i]) != 2) and (len(intersection_nodes[i]) != 0):
-                logger.warning("Intersection %s does not have two nodes: %s",
-                               i,
-                               intersection_nodes[i])
+        if __debug__:
+            for i, _ in enumerate(intersection_nodes):
+                logger.info("Intersection %s: %s", i, intersection_nodes[i])
+                if (len(intersection_nodes[i]) != 2) and (len(intersection_nodes[i]) != 0):
+                    logger.warning("Intersection %s does not have two nodes: %s",
+                                   i,
+                                   intersection_nodes[i])
 
         # Link intersection nodes
         # Initialize all intersection indices to -1
@@ -1095,7 +1102,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
             #   out_array,
             #   split_segment_indices,
             intersection_array,
-            self.__nodes)
+            self._nodes)
 
         assert self._is_valid_minimal_curve_network_data(to_array, out_array, intersection_array)
 
@@ -1106,8 +1113,8 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
                                 to_array,
                                 out_array,
                                 intersection_array,
-                                self.__segments,
-                                self.__nodes)
+                                self._segments,
+                                self._nodes)
 
         return to_array, out_array, intersection_array
 
@@ -1119,7 +1126,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         is_covered_node: list[bool] = [False] * self.num_nodes
         is_covered_segment: list[bool] = [False] * self.num_segments
 
-        for ni in self.__chain_start_nodes:
+        for ni in self._chain_start_nodes:
             is_covered_node[ni] = True
             start_si: SegmentIndex = self.out(ni)
             if not self._is_valid_segment_index(start_si):
@@ -1164,23 +1171,23 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         WARNING: This method is a little dangerous; it modifies the segments as it
         iterates over them
         """
-        num_nodes: NodeIndex = len(self.__nodes)
+        num_nodes: NodeIndex = len(self._nodes)
 
         # Get all nodes that are special (and not path end nodes)
-        self.__chain_start_nodes = []
+        self._chain_start_nodes = []
 
         for ni in range(num_nodes):
-            if (not self.__nodes[ni].is_knot()) and (not self.__nodes[ni].is_path_end_node()):
+            if (not self._nodes[ni].is_knot()) and (not self._nodes[ni].is_path_end_node()):
                 if self.out(ni) < 0:
                     continue  # Hack to skip intersection path end nodes
-                self.__chain_start_nodes.append(ni)
+                self._chain_start_nodes.append(ni)
 
         # Mark any missed chains
         all_nodes_covered = False
         while not all_nodes_covered:
             # Get list of all covered nodes
             is_covered_node: list[bool] = [False] * num_nodes
-            for ni in self.__chain_start_nodes:
+            for ni in self._chain_start_nodes:
                 is_covered_node[ni] = True
                 start_si: SegmentIndex = self.out(ni)
                 if not self._is_valid_segment_index(start_si):
@@ -1200,8 +1207,8 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
             for ni in range(num_nodes):
                 if not is_covered_node[ni]:
                     logger.debug("Marking node %s on closed featureless contour", ni)
-                    self.__nodes[ni].mark_as_marked_knot()
-                    self.__chain_start_nodes.append(ni)
+                    self._nodes[ni].mark_as_marked_knot()
+                    self._chain_start_nodes.append(ni)
                     all_nodes_covered = False
                     break
 
@@ -1430,7 +1437,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         """
         curve_disc_params: CurveDiscretizationParameters = CurveDiscretizationParameters()
         for i in range(self.num_segments):
-            planar_curve: RationalFunction = self.__segments[i].planar_curve
+            planar_curve: RationalFunction = self._segments[i].planar_curve
             write_planar_curve_segment(planar_curve, curve_disc_params, svg_elements, 800, 400)
 
     def __write_uniform_visible_segments(self,  svg_elements: list[svg.Element]) -> None:
@@ -1438,9 +1445,9 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         """
         curve_disc_params: CurveDiscretizationParameters = CurveDiscretizationParameters()
         for i in range(self.num_segments):
-            if self.__segments[i].quantitative_invisibility > 0:
+            if self._segments[i].quantitative_invisibility > 0:
                 continue
-            planar_curve: RationalFunction = self.__segments[i].planar_curve
+            planar_curve: RationalFunction = self._segments[i].planar_curve
             write_planar_curve_segment(planar_curve, curve_disc_params, svg_elements, 800, 400)
 
     def __write_contrast_invisible_segments(self,  svg_elements_ref: list[svg.Element]) -> None:
@@ -1450,8 +1457,8 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         curve_disc_params: CurveDiscretizationParameters = CurveDiscretizationParameters()
         invisible_color: Color = (255, 0, 0, 1)
         for i in range(self.num_segments):
-            planar_curve: RationalFunction = self.__segments[i].planar_curve
-            if self.__segments[i].quantitative_invisibility > 0:
+            planar_curve: RationalFunction = self._segments[i].planar_curve
+            if self._segments[i].quantitative_invisibility > 0:
                 write_planar_curve_segment(
                     planar_curve, curve_disc_params, svg_elements_ref, 800, 400, invisible_color)
             else:
@@ -1497,7 +1504,7 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
 
         for start_node_index in self.chain_start_nodes:
             start_segment_index: SegmentIndex = self.out(start_node_index)
-            if self.__segments[start_segment_index].quantitative_invisibility > 0:
+            if self._segments[start_segment_index].quantitative_invisibility > 0:
                 continue
             iteration: SegmentChainIterator = self.get_segment_chain_iterator(start_segment_index)
             points: list[PlanarPoint1d]
@@ -1748,9 +1755,9 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
     def __clear_geometry(self) -> None:
         """
         """
-        self.__segments.clear()
-        self.__nodes.clear()
-        self.__chain_start_nodes.clear()
+        self._segments.clear()
+        self._nodes.clear()
+        self._chain_start_nodes.clear()
 
     @staticmethod
     def __mark_open_chain_endpoints(to_array: list[NodeIndex],

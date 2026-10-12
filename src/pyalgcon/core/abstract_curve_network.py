@@ -18,6 +18,8 @@ class AbstractCurveNetwork():
     intersections are either transversal or T-nodes so that at most two curves
     intersect at a node.
     """
+    __slots__ = ("_to_array", "_out_array", "_intersection_array",
+                 "_next_array", "_prev_array", "_from_array", "_in_array")
 
     def __init__(self,
                  to_array: list[NodeIndex],
@@ -29,9 +31,9 @@ class AbstractCurveNetwork():
         :param out_array:          [in] array mapping nodes to their outgoing segment
         :param intersection_array: [in] list of intersection nodes
         """
-        self.__to_array: list[NodeIndex] = to_array
-        self.__out_array: list[SegmentIndex] = out_array
-        self.__intersection_array: list[NodeIndex] = intersection_array
+        self._to_array: list[NodeIndex] = to_array
+        self._out_array: list[SegmentIndex] = out_array
+        self._intersection_array: list[NodeIndex] = intersection_array
 
         if logger.getEffectiveLevel() == logging.DEBUG:
             if not self._is_valid_minimal_curve_network_data(to_array,
@@ -44,14 +46,14 @@ class AbstractCurveNetwork():
                 # TODO: clear topology?
 
         # Build curve network
-        self.__next_array: list[SegmentIndex]
-        self.__prev_array: list[SegmentIndex]
-        self.__from_array: list[NodeIndex]
-        self.__in_array: list[SegmentIndex]
-        (self.__next_array,
-         self.__prev_array,
-         self.__from_array,
-         self.__in_array) = self._init_abstract_curve_network()
+        self._next_array: list[SegmentIndex]
+        self._prev_array: list[SegmentIndex]
+        self._from_array: list[NodeIndex]
+        self._in_array: list[SegmentIndex]
+        (self._next_array,
+         self._prev_array,
+         self._from_array,
+         self._in_array) = self._init_abstract_curve_network()
 
         # Check validity
         if logger.getEffectiveLevel() == logging.DEBUG:
@@ -178,13 +180,13 @@ class AbstractCurveNetwork():
                 raise ValueError("Could not build abstract curve network")
 
         # Set input arrays
-        self.__to_array = to_array
-        self.__out_array = out_array
-        self.__intersection_array = intersection_array
+        self._to_array = to_array
+        self._out_array = out_array
+        self._intersection_array = intersection_array
 
         # Build curve network
-        (self.__next_array, self.__prev_array,
-         self.__from_array, self.__in_array) = self._init_abstract_curve_network()
+        (self._next_array, self._prev_array,
+         self._from_array, self._in_array) = self._init_abstract_curve_network()
 
         if CHECK_VALIDITY:
             if not self._is_valid_abstract_curve_network():
@@ -260,37 +262,37 @@ class AbstractCurveNetwork():
     @property
     def next_array(self) -> list[SegmentIndex]:
         """Retrieves next_array"""
-        return self.__next_array
+        return self._next_array
 
     @property
     def prev_array(self) -> list[SegmentIndex]:
         """Retrieves prev_array"""
-        return self.__prev_array
+        return self._prev_array
 
     @property
-    def to_array(self) -> list[int]:
+    def to_array(self) -> list[NodeIndex]:
         """Retrieves to_array"""
-        return self.__to_array
+        return self._to_array
 
     @property
     def from_array(self) -> list[NodeIndex]:
         """Retrieves from_array"""
-        return self.__from_array
+        return self._from_array
 
     @property
     def intersection_array(self) -> list[NodeIndex]:
         """Retrieves intersection_array"""
-        return self.__intersection_array
+        return self._intersection_array
 
     @property
     def out_array(self) -> list[SegmentIndex]:
         """Retrieves out_array"""
-        return self.__out_array
+        return self._out_array
 
     @property
     def in_array(self) -> list[SegmentIndex]:
         """Retrieves in_array"""
-        return self.__in_array
+        return self._in_array
 
     # **********************
     #  Public/Helper methods
@@ -428,6 +430,8 @@ class AbstractCurveNetwork():
         num_segments: int = len(to_array)
         num_nodes: int = len(out_array)
 
+        # FIXME: this is just comparing to_array length to itself, not doing any
+        # comparison of significance
         if len(to_array) != num_segments:
             logger.error("to domain not in bijection with number of segments")
             return False
@@ -471,13 +475,13 @@ class AbstractCurveNetwork():
         """
         Clear all member data
         """
-        self.__next_array.clear()
-        self.__prev_array.clear()
-        self.__to_array.clear()
-        self.__from_array.clear()
-        self.__intersection_array.clear()
-        self.__out_array.clear()
-        self.__in_array.clear()
+        self._next_array.clear()
+        self._prev_array.clear()
+        self._to_array.clear()
+        self._from_array.clear()
+        self._intersection_array.clear()
+        self._out_array.clear()
+        self._in_array.clear()
 
     # ********************************
     #  Formerly Private methods
