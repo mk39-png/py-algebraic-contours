@@ -99,7 +99,7 @@ class RationalFunction:
 
         assert self._numerator_coeffs.shape == (degree + 1, dimension)
         assert self._denominator_coeffs.shape == (degree + 1, )
-        assert self.__is_valid()
+        assert self._is_valid()
 
     # *******************
     # Getters and setters
@@ -498,7 +498,7 @@ class RationalFunction:
     # TODO: then have the domain accessible.
     # TODO: do equivalent to "friend class Conic;"
 
-    def __is_valid(self) -> bool:
+    def _is_valid(self) -> bool:
         # Making sure that numerator is shape (n,) array
         # NOTE: m_numerator_coeffs can have multiple dimensions...
         # It's just the denominator that must be 1 dimensional....
