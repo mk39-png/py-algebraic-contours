@@ -811,6 +811,16 @@ def angle_from_length(edge_length_opposite_corner: float,
     return math.acos(min(max(ijk / (2.0 * l1 * l2), -1.0), 1.0))
 
 
+def length_from_points(point_0: Vector2f, point_1: Vector2f) -> float:
+    """
+    Calculates distance between two points using the Euclidean norm.
+    """
+    # TODO: can optimize this further by subtracting the points to each other
+    #       and then calculating the 2-norm, aka the Euclidean norm
+    return math.sqrt(math.pow(point_0[0] - point_1[0], 2) +
+                     math.pow(point_0[1] - point_1[1], 2))
+
+
 def angle_from_positions(angle_corner_position: Vector2f,
                          second_corner_position: Vector2f,
                          third_corner_position: Vector2f) -> float:
@@ -820,17 +830,16 @@ def angle_from_positions(angle_corner_position: Vector2f,
     :param angle_corner_position:  [in] position of the corner to compute the angle for
     :param second_corner_position: [in] position of one of the other two corners of the triangle
     :param third_corner_position:  [in] position of the final corner of the triangle
-    :return angle of the corner
+    :return: angle of the corner
     """
     assert angle_corner_position.shape == (2, )
     assert second_corner_position.shape == (2, )
     assert third_corner_position.shape == (2, )
 
-    # TODO: double check that the below are going to be floats...
-    # FIXME: really silly error was here
-    l0: float = LA.norm(third_corner_position - second_corner_position)
-    l1: float = LA.norm(second_corner_position - angle_corner_position)
-    l2: float = LA.norm(third_corner_position - angle_corner_position)
+    # Gets the length between points (i.e. Euclidean norm)
+    l0: float = length_from_points(third_corner_position, second_corner_position)
+    l1: float = length_from_points(second_corner_position, angle_corner_position)
+    l2: float = length_from_points(third_corner_position, angle_corner_position)
 
     return angle_from_length(l0, l1, l2)
 
