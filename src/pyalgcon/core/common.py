@@ -730,15 +730,10 @@ def find_face_vertex_index(face: Vector1D, vertex_index: int) -> int:
     :return:  face vertex index
     :rtype: int
     """
-    # TODO: test this numpy-esque implementation with the ASOC version...
     # NOTE: we want to check that face is a vector rather than a matrix
     assert face.ndim == 1
-
-    vertex_indices = np.argwhere(face == vertex_index)
-    if vertex_indices.size > 0:
-        return vertex_indices[0][0]
-
-    return -1
+    face_list = face.tolist()
+    return face_list.index(vertex_index) if vertex_index in face_list else -1
 
 
 def is_manifold(F: MatrixXi) -> bool:
