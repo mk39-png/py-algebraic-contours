@@ -112,8 +112,11 @@ def compute_polynomial_mapping_product(first_degree: int,
 
     # Compute the new polynomial coefficients by convolution.
     product_polynomial_coeffs: Vector1D = np.zeros(shape=(first_degree + second_degree + 1, ))
-    product_polynomial_coeffs = np.convolve(first_polynomial_coeffs,
-                                            second_polynomial_coeffs)
+    for i in range(first_degree+1):
+        for j in range(second_degree+1):
+            product_polynomial_coeffs[i + j] += first_polynomial_coeffs[i] * \
+                second_polynomial_coeffs[j]
+
     assert product_polynomial_coeffs.shape == (first_degree + second_degree + 1, )
 
     return product_polynomial_coeffs
