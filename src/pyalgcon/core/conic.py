@@ -41,7 +41,7 @@ class Conic(RationalFunction):
     # Constructors
     # ************
     def __init__(self,
-                 __type=ConicType.UNKNOWN,
+                 _type=ConicType.UNKNOWN,
                  numerator_coeffs: Matrix3x2f | None = None,
                  denominator_coeffs: Vector3f | None = None,
                  domain: Interval | None = None) -> None:
@@ -52,9 +52,15 @@ class Conic(RationalFunction):
         :param numerator_coeffs: shape (3, 2)
         :param denominator_coeffs: shape (3, ) 
         """
-        self.__type: ConicType = __type
+        self._type: ConicType = _type
         super().__init__(2, 2, numerator_coeffs, denominator_coeffs, domain)
-        assert self.__is_valid()
+        assert self._is_valid()
+
+    def copy(self) -> "Conic":
+        """
+        Creates Conic object copy without the need for copy.deepcopy.
+        """
+        return Conic(self._type, self._numerator_coeffs, self._denominator_coeffs, self._domain)
 
     # ******
     # PUBLIC
@@ -66,7 +72,7 @@ class Conic(RationalFunction):
 
         :return: type identifier
         """
-        return self.__type
+        return self._type
 
     def split_at_knot_conic(self, knot: float) -> tuple["Conic", "Conic"]:
         """
@@ -111,10 +117,11 @@ class Conic(RationalFunction):
         # assert translation.shape == (1, 2)
 
         # (3, 2) @ (2, 2) + (3, 1) @ (1, 2)
-        P_rot_coeffs: Matrix3x2f = (self.numerators @ rotation +
-                                    (self.denominator.reshape(3, 1) @ translation.reshape(1, 2)))
+        P_rot_coeffs: Matrix3x2f = (self._numerator_coeffs @ rotation +
+                                    (self._denominator_coeffs.reshape(3, 1) @
+                                     translation.reshape(1, 2)))
         assert P_rot_coeffs.shape == (3, 2)
-        self.numerators = P_rot_coeffs
+        self._numerator_coeffs = P_rot_coeffs
 
     def pullback_quadratic_function(self, dimension: int,
                                     F_coeffs_ref: Vector1D | Matrix6xNi) -> RationalFunction:
@@ -131,10 +138,10 @@ class Conic(RationalFunction):
                          formatted_bivariate_quadratic_mapping(dimension, F_coeffs))
 
         # Separate the individual polynomial coefficients from the rational function
-        P_coeffs: Matrix3x2f = self.numerators
+        P_coeffs: Matrix3x2f = self._numerator_coeffs
         u_coeffs: Vector3f = P_coeffs[:, 0]
         v_coeffs: Vector3f = P_coeffs[:, 1]
-        Q_coeffs: Vector3f = self.denominator
+        Q_coeffs: Vector3f = self._denominator_coeffs
 
         # Asserting to make sure we are getting the shape we want.
         assert u_coeffs.shape == (3, )
@@ -209,7 +216,7 @@ class Conic(RationalFunction):
         assert pullback_function.dimension == dimension
         return pullback_function
 
-    def __is_valid(self) -> bool:
+    def _is_valid(self) -> bool:
         """
         For internal use. Performs shape checking.
         """
@@ -225,17 +232,16 @@ class Conic(RationalFunction):
         Return the string representation of the Conic object.
         """
         conic_string: str = "1/("
-        conic_string += formatted_polynomial(2, 1, self.__denominator_coeffs)
+        conic_string += formatted_polynomial(2, 1, self._denominator_coeffs)
         conic_string += ") [\n  "
 
-        # Going through rows of m_numerator_coeffs
-        for i in range(self.__numerator_coeffs.shape[COLS]):
-            # conic_string += f"{self.m_numerator_coeffs[:, i]}"
-            conic_string += formatted_polynomial(2, 1, self.__numerator_coeffs[:, i])
+        # Going through rows of __numerator_coeffs
+        for i in range(self._numerator_coeffs.shape[COLS]):
+            conic_string += formatted_polynomial(2, 1, self._numerator_coeffs[:, i])
             conic_string += ",\n  "
 
         conic_string += "], t in "
-        conic_string += self.__domain.formatted_interval()
+        conic_string += self._domain.formatted_interval()
 
         return conic_string
 
