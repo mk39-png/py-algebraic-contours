@@ -37,13 +37,13 @@ def test_vertex_circulator_from_spot_control(testing_fileinfo,
 
     # Compare results
     compare_eigen_numpy_matrix(filepath / "F.csv",
-                               vertex_circulator.m_F)
+                               vertex_circulator._F)
     compare_list_list_varying_lengths(filepath / "all_adjacent_faces.csv",
-                                      vertex_circulator.m_all_adjacent_faces)
+                                      vertex_circulator._all_adjacent_faces)
     compare_list_list_varying_lengths(filepath / "all_face_one_rings.csv",
-                                      vertex_circulator.m_all_face_one_rings)
+                                      vertex_circulator._all_face_one_rings)
     compare_list_list_varying_lengths(filepath / "all_vertex_one_rings.csv",
-                                      vertex_circulator.m_all_vertex_one_rings)
+                                      vertex_circulator._all_vertex_one_rings)
 
 
 def test_tetrahedron() -> None:
