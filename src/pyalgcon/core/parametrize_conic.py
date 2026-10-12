@@ -78,6 +78,14 @@ def identify_standard_form_conic(conic_standard_form: Vector6f) -> ConicType:
         return ConicType.HYPERBOLA
 
 
+_ELLIPTIC_Q_COEFFS: Vector3f = np.array([1.0, 0.0, 1.0], dtype=np.float64)
+_ELLIPTIC_Q_COEFFS.setflags(write=False)
+_ELLIPTIC_BASIS_1: Vector3f = np.array([1, 0, -1], dtype=np.float64)
+_ELLIPTIC_BASIS_1.setflags(write=False)
+_ELLIPTIC_BASIS_2: Vector3f = np.array([0, 2, 0], dtype=np.float64)
+_ELLIPTIC_BASIS_2.setflags(write=False)
+
+
 def parametrize_ellipse(conic_standard_form: Vector6f, conics_ref: list[Conic]) -> None:
     """
     Parametrize ellipse conics for parametrize_standard_form_conic()
@@ -96,9 +104,9 @@ def parametrize_ellipse(conic_standard_form: Vector6f, conics_ref: list[Conic]) 
 
     # Parametrize ellipse as (1/(1 + t^2)) * [2 k1 t, k2 (1 - t^2)]
     P_coeffs: Matrix3x2f = np.zeros(shape=(3, 2), dtype=np.float64)
-    Q_coeffs: Vector3f = np.array([1.0, 0.0, 1.0], dtype=np.float64)
-    elliptic_basis_1: Vector3f = np.array([1, 0, -1], dtype=np.float64)
-    elliptic_basis_2: Vector3f = np.array([0, 2, 0], dtype=np.float64)
+    Q_coeffs: Vector3f = _ELLIPTIC_Q_COEFFS
+    elliptic_basis_1: Vector3f = _ELLIPTIC_BASIS_1
+    elliptic_basis_2: Vector3f = _ELLIPTIC_BASIS_2
 
     if sign < 0:
         P_coeffs[:, 0] = k1 * elliptic_basis_1
@@ -120,6 +128,15 @@ def parametrize_ellipse(conic_standard_form: Vector6f, conics_ref: list[Conic]) 
     conics_ref.append(semi_ellipse_lower)
 
 
+# Constants for use in parametrize_hyperbola so that we do not keep on making array copies.
+_HYPERBOLIC_Q_COEFFS: Vector3f = np.array([-1.0, 0.0, 1.0], dtype=np.float64)
+_HYPERBOLIC_Q_COEFFS.setflags(write=False)
+_HYPERBOLIC_BASIS_1: Vector3f = np.array([1, 0, 1], dtype=np.float64)
+_HYPERBOLIC_BASIS_1.setflags(write=False)
+_HYPERBOLIC_BASIS_2: Vector3f = np.array([0, 2, 0], dtype=np.float64)
+_HYPERBOLIC_BASIS_2.setflags(write=False)
+
+
 def parametrize_hyperbola(conic_standard_form: Vector6f, conics_ref: list[Conic]) -> None:
     """
     Parametrize hyperbola conics for parametrize_standard_form_conic()
@@ -136,9 +153,9 @@ def parametrize_hyperbola(conic_standard_form: Vector6f, conics_ref: list[Conic]
     # FIXME (ASOC): Clean up
     # Parametrize ellipse as (1/(1 - t^2)) * [k1 (1 + t^2), 2 k2 t]
     P_coeffs: Matrix3x2f = np.zeros(shape=(3, 2), dtype=np.float64)
-    Q_coeffs: Vector3f = np.array([-1.0, 0.0, 1.0], dtype=np.float64)
-    hyperbolic_basis_1: Vector3f = np.array([1, 0, 1], dtype=np.float64)
-    hyperbolic_basis_2: Vector3f = np.array([0, 2, 0], dtype=np.float64)
+    Q_coeffs: Vector3f = _HYPERBOLIC_Q_COEFFS
+    hyperbolic_basis_1: Vector3f = _HYPERBOLIC_BASIS_1
+    hyperbolic_basis_2: Vector3f = _HYPERBOLIC_BASIS_2
     sign: float = np.sign(c)
     if (sigma_1 < 0) and (sign < 0):
         P_coeffs[:, 0] = -k1 * hyperbolic_basis_2
