@@ -25,6 +25,7 @@ class TriangleCornerData:
     """
     Position and derivative data at the corner of a triangle.
     """
+    __slots__ = ("function_value", "first_edge_derivative", "second_edge_derivative")
 
     def __init__(self,
                  input_function_value: SpatialVector1d,
@@ -50,6 +51,7 @@ class TriangleMidpointData:
     """
     Derivative data at the midpoint of a triangle
     """
+    __slots__ = ("normal_derivative")
 
     def __init__(self, input_normal_derivative: SpatialVector1d) -> None:
         """
@@ -122,20 +124,20 @@ def generate_affine_manifold_chart_corner_data(
         dik: SpatialVector1d = uk @ gradient
         assert dij.shape == (3, )
         assert dik.shape == (3, )
-
-        logger.info("Vertex position: %s", pi)
-        logger.info("Vertex gradient:\n%s", gradient)
-        logger.info("First edge layout: %s", uj)
-        logger.info("Second edge layout: %s", uk)
-        logger.info("First edge derivative: %s", dij)
-        logger.info("Second edge derivative: %s", dik)
+        if __debug__:
+            logger.info("Vertex position: %s", pi)
+            logger.info("Vertex gradient:\n%s", gradient)
+            logger.info("First edge layout: %s", uj)
+            logger.info("Second edge layout: %s", uk)
+            logger.info("First edge derivative: %s", dij)
+            logger.info("Second edge derivative: %s", dik)
 
         # Build position data
         corner_data_ref[f][face_vertex_index] = TriangleCornerData(pi, dij, dik)
 
-        # TESTING ----
-        if np.any(np.isnan(pi)) or np.any(np.isnan(dij)) or np.any(np.isnan(dik)):
-            unreachable("NaN values found in generate_affine_manifold_chart_corner_data()")
+        if __debug__:
+            if np.any(np.isnan(pi)) or np.any(np.isnan(dij)) or np.any(np.isnan(dik)):
+                unreachable("NaN values found in generate_affine_manifold_chart_corner_data()")
 
     # Quickly checking that the element list is of size 3.
     # TODO: check that the elements of dict[int, TriangleCornerData] has 3 entries.
@@ -234,10 +236,12 @@ def generate_affine_manifold_midpoint_data(
             midpoint_data_ref[f_top][j_top] = TriangleMidpointData(
                 uv_top @ edge_gradients[i][j])
             assert midpoint_data_ref[f_top][j_top].normal_derivative.shape == (3, )
-            logger.info("Midpoint data for corner (%s, %s) is %s = %s\n%s", f_top, j_top,
-                        midpoint_data_ref[f_top][j_top].normal_derivative.T,
-                        uv_top,
-                        edge_gradients[i][j])
+
+            if __debug__:
+                logger.info("Midpoint data for corner (%s, %s) is %s = %s\n%s", f_top, j_top,
+                            midpoint_data_ref[f_top][j_top].normal_derivative.T,
+                            uv_top,
+                            edge_gradients[i][j])
 
             # Only set the bottom vertex if the edge is not on the boundary
             if not chart.is_boundary:
@@ -253,10 +257,12 @@ def generate_affine_manifold_midpoint_data(
                 midpoint_data_ref[f_bottom][j_bottom] = TriangleMidpointData(
                     uv_bottom @ edge_gradients[i][j])
                 assert midpoint_data_ref[f_bottom][j_bottom].normal_derivative.shape == (3, )
-                logger.info("Midpoint data for corner (%s, %s) is %s",
-                            f_bottom,
-                            j_bottom,
-                            midpoint_data_ref[f_bottom][j_bottom].normal_derivative)
+
+                if __debug__:
+                    logger.info("Midpoint data for corner (%s, %s) is %s",
+                                f_bottom,
+                                j_bottom,
+                                midpoint_data_ref[f_bottom][j_bottom].normal_derivative)
 
 
 def compute_edge_midpoint_with_gradient(edge_origin_corner_data: TriangleCornerData,
