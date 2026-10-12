@@ -103,7 +103,6 @@ def generate_linear_monomials(domain_point: PlanarPoint1d) -> SpatialVector1d:
     assert domain_point.shape == (2, )
     u: float = domain_point[0]
     v: float = domain_point[1]
-
     w: Vector2D = np.array([1, u, v], dtype=np.float64)
     assert w.shape == (3, )
     return w
@@ -267,7 +266,7 @@ def generate_bezier_to_monomial_matrix() -> Matrix6x6r:
     Generate the matrix to go from Bezier control points to quadratic
     coefficients over the standard u + v <= 1 triangle in the positive quadrant.
 
-    @param[out] change_of_basis_matrix: matrix going from bezier points to
+    :return change_of_basis_matrix: matrix going from bezier points to
     monomial coefficients
     """
     change_of_basis_matrix: Matrix6x6r = np.array([
@@ -332,18 +331,13 @@ def formatted_bivariate_quadratic_mapping(dimension: int,
 
     quadratic_string: str = ""
     for i in range(dimension):
-        quadratic_string += f"{quadratic_coeffs[0, i]}:.{precision}f"
-        quadratic_string += formatted_term(
-            quadratic_coeffs[1, i], "u", precision)
-        quadratic_string += formatted_term(
-            quadratic_coeffs[2, i], "v", precision)
-        quadratic_string += formatted_term(
-            quadratic_coeffs[3, i], "uv", precision)
-        quadratic_string += formatted_term(
-            quadratic_coeffs[4, i], "u^2", precision)
-        quadratic_string += formatted_term(
-            quadratic_coeffs[5, i], "v^2", precision)
-        quadratic_string += "\n"
+        quadratic_string += f"{quadratic_coeffs[0, i]}:.{precision}f\
+            {formatted_term( quadratic_coeffs[1, i], 'u', precision)}\
+            {formatted_term(quadratic_coeffs[2, i], 'v', precision)}\
+            {formatted_term(quadratic_coeffs[3, i], 'uv', precision)}\
+            {formatted_term(quadratic_coeffs[4, i], 'u^2', precision)}\
+            {formatted_term(quadratic_coeffs[5, i], 'v^2', precision)}\
+            \n"
 
     return quadratic_string
 
