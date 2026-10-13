@@ -55,6 +55,18 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
     :ivar energy_hessian: hessian for the energy computation
     :ivar energy_hessian_inverse: inverse of the hessian for the energy computation
     """
+    __slots__ = (
+        "_affine_manifold",
+        "_corner_data",
+        "_midpoint_data",
+        "_face_to_patch_indices",
+        "_hash_table",
+        "_face_to_patch_indices",
+        "_patch_to_face_indices",
+        "fit_matrix",
+        "energy_hessian",
+        "energy_hessian_inverse",
+    )
 
     def __init__(self,
                  V: np.ndarray,
@@ -359,10 +371,7 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         for face_index in range(num_faces):
             # Get surface mappings
             # list of length 12 with matrices of shape (6, 3). dtype float
-            surface_mappings: list[Matrix6x3f]
-
-            # FIXME: surface mappings is wrong...
-            surface_mappings = generate_twelve_split_spline_patch_surface_mapping(
+            surface_mappings: list[Matrix6x3f] = generate_twelve_split_spline_patch_surface_mapping(
                 corner_data_ref[face_index], midpoint_data_ref[face_index])
             assert len(surface_mappings) == 12
 

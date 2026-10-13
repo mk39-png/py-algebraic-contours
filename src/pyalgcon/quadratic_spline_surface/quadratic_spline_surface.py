@@ -23,7 +23,7 @@ from pyalgcon.quadratic_spline_surface.quadratic_spline_surface_patch import \
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(slots=True)
 class SurfaceDiscretizationParameters:
     """
     Parameters for the discretization of a quadratic spline
@@ -47,6 +47,10 @@ class QuadraticSplineSurface:
     - (basic) rendering
     - (de)serialization
     """
+
+    __slots__ = ("_patches", "_patches_bbox_x_min", "_patches_bbox_y_min",
+                 "hash_x_interval", "hash_y_interval",
+                 "_hash_table")
 
     def __init__(self, patches: list[QuadraticSplineSurfacePatch]) -> None:
         """
