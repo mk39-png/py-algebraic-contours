@@ -79,6 +79,17 @@ class QuadraticSplineSurfacePatch:
     # **************
     # Public Methods
     # **************
+    __slots__ = (
+        "_surface_mapping_coeffs",
+        "_domain",
+        "_normal_mapping_coeffs",
+        "_normalized_surface_mapping_coeffs",
+        "_bezier_points",
+        "_min_point",
+        "_max_point",
+        "_cone_index"
+    )
+
     def __init__(self, surface_mapping_coeffs: Matrix6x3r, domain: ConvexPolygon,
                  normal_mapping_coeffs: Matrix6x3r | None = None,
                  normalized_surface_mapping_coeffs: Matrix6x3r | None = None,
