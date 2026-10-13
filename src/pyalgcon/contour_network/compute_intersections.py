@@ -25,14 +25,14 @@ from pyalgcon.core.rational_function import RationalFunction
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(slots=True)
 class IntersectionParameters():
     """
     Parameters for intersection computations.
     """
     # If true, use heuristics to check if there are no intersections
     use_heuristics: bool = True
-    # Amount to trim ends of contour segments by; intersections that are trimmed are clamped
+    # Amount to trim ends of contour segments by intersections that are trimmed are clamped
     # to the endpoint.
     trim_amount: float = 1e-5
 
@@ -90,7 +90,7 @@ def _compute_bezier_clipping_planar_curve_intersections(first_planar_curve: Rati
 
 def _prune_intersection_points(first_planar_curve: RationalFunction,
                                second_planar_curve: RationalFunction,
-                               intersection_points:  list[tuple[float, float]],
+                               intersection_points:  MatrixNx2f,
                                first_curve_intersections_ref: list[float],
                                second_curve_intersections_ref: list[float]) -> None:
     """
@@ -320,10 +320,11 @@ def compute_intersections(image_segments: list[RationalFunction],
                 visited[i] = True
 
                 # Iterate over image segments with lower indices
-                logger.debug("Computing segments %s, %s out of %s",
-                             image_segment_index,
-                             i,
-                             len(image_segments))
+                if __debug__:
+                    logger.debug("Computing segments %s, %s out of %s",
+                                 image_segment_index,
+                                 i,
+                                 len(image_segments))
 
                 # Compute intersections between the two image segments
                 current_segment_intersections: list[float] = []
@@ -378,10 +379,12 @@ def compute_intersections(image_segments: list[RationalFunction],
 
     # Record intersection information
     intersection_call: int = intersection_stats.intersection_call
-    logger.info("Number of intersection tests: %s",
-                intersection_stats.num_intersection_tests)
-    logger.info("Number of nonoverlapping Bezier boxes: %s",
-                intersection_stats.num_bezier_nonoverlaps)
+
+    if __debug__:
+        logger.info("Number of intersection tests: %s",
+                    intersection_stats.num_intersection_tests)
+        logger.info("Number of nonoverlapping Bezier boxes: %s",
+                    intersection_stats.num_bezier_nonoverlaps)
 
     return (intersections,
             intersection_indices,
