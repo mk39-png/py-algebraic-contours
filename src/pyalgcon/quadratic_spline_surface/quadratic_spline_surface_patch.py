@@ -90,8 +90,8 @@ class QuadraticSplineSurfacePatch:
         Constructor for QuadraticSplineSurfacePatch
         """
         # -- Core independent data --
-        self.__surface_mapping_coeffs: Matrix6x3r = surface_mapping_coeffs
-        self.m_domain: ConvexPolygon = domain
+        self._surface_mapping_coeffs: Matrix6x3r = surface_mapping_coeffs
+        self._domain: ConvexPolygon = domain
 
         # If any none, then do normal calculation
         # TODO: check if else statement is being entered
@@ -104,25 +104,25 @@ class QuadraticSplineSurfacePatch:
                 cone_index)):
 
             # -- Inferred dependent data --
-            self.__normal_mapping_coeffs: Matrix6x3r = np.zeros(shape=(6, 3), dtype=np.float64)
-            self.__normalized_surface_mapping_coeffs: Matrix6x3r = np.zeros(
+            self._normal_mapping_coeffs: Matrix6x3r = np.zeros(shape=(6, 3), dtype=np.float64)
+            self._normalized_surface_mapping_coeffs: Matrix6x3r = np.zeros(
                 shape=(6, 3), dtype=np.float64)
-            self.m_bezier_points: Matrix6x3r = np.zeros(shape=(6, 3), dtype=np.float64)
-            self.m_min_point: SpatialVector1d = np.zeros(shape=(3, ), dtype=np.float64)
-            self.m_max_point: SpatialVector1d = np.zeros(shape=(3, ), dtype=np.float64)
+            self._bezier_points: Matrix6x3r = np.zeros(shape=(6, 3), dtype=np.float64)
+            self._min_point: SpatialVector1d = np.zeros(shape=(3, ), dtype=np.float64)
+            self._max_point: SpatialVector1d = np.zeros(shape=(3, ), dtype=np.float64)
 
             # Compute derived mapping information from the surface mapping and domain
-            self.__normal_mapping_coeffs: Matrix6x3f = (
+            self._normal_mapping_coeffs: Matrix6x3f = (
                 generate_quadratic_surface_normal_coeffs(surface_mapping_coeffs))
-            self.__normalized_surface_mapping_coeffs = (
+            self._normalized_surface_mapping_coeffs = (
                 compute_normalized_surface_mapping(surface_mapping_coeffs, domain))
-            self.m_bezier_points = compute_bezier_points(surface_mapping_coeffs)
-            (self.m_min_point,
-             self.m_max_point) = compute_point_cloud_bounding_box(self.m_bezier_points)
+            self._bezier_points = compute_bezier_points(surface_mapping_coeffs)
+            (self._min_point,
+             self._max_point) = compute_point_cloud_bounding_box(self._bezier_points)
 
             # -- Additional cone marker to handle degenerate configurations --
             # NOTE: Do not mark a cone by default
-            self.__cone_index: int = -1
+            self._cone_index: int = -1
         else:
             # Else, assuming deserializing from file, assign parameters
             assert normal_mapping_coeffs.shape == (6, 3)
@@ -131,12 +131,12 @@ class QuadraticSplineSurfacePatch:
             assert min_point.shape == (3, )
             assert max_point.shape == (3, )
 
-            self.__normal_mapping_coeffs = normal_mapping_coeffs
-            self.__normalized_surface_mapping_coeffs = normalized_surface_mapping_coeffs
-            self.m_bezier_points = bezier_points
-            self.m_min_point = min_point
-            self.m_max_point = max_point
-            self.__cone_index = cone_index
+            self._normal_mapping_coeffs = normal_mapping_coeffs
+            self._normalized_surface_mapping_coeffs = normalized_surface_mapping_coeffs
+            self._bezier_points = bezier_points
+            self._min_point = min_point
+            self._max_point = max_point
+            self._cone_index = cone_index
 
     @classmethod
     def init_from_json_file(cls, filename: pathlib.Path):
@@ -183,14 +183,14 @@ class QuadraticSplineSurfacePatch:
 
         :return: dimension of the ambient space
         """
-        return self.__surface_mapping_coeffs.shape[1]
+        return self._surface_mapping_coeffs.shape[1]
 
     def mark_cone(self, cone_index: int) -> None:
         """Mark one of the vertices as a cone
 
         :param cone_index: index of the cone in the triangle
         """
-        self.__cone_index = cone_index
+        self._cone_index = cone_index
 
     def has_cone(self) -> bool:
         """ Determine if the patch has a cone
@@ -198,7 +198,7 @@ class QuadraticSplineSurfacePatch:
         :return: true iff the patch has a cone
         :rtype: bool
         """
-        return ((self.__cone_index >= 0) and (self.__cone_index < 3))
+        return ((self._cone_index >= 0) and (self._cone_index < 3))
 
     @property
     def cone_index(self) -> int:
@@ -208,7 +208,7 @@ class QuadraticSplineSurfacePatch:
         :return: true iff the patch has a cone
         :rtype: int
         """
-        return self.__cone_index
+        return self._cone_index
 
     @property
     def surface_mapping(self) -> Matrix6x3f:
@@ -218,7 +218,7 @@ class QuadraticSplineSurfacePatch:
         :return: reference to the surface mapping. shape == (6,3)
         :rtype: np.ndarray
         """
-        return self.__surface_mapping_coeffs
+        return self._surface_mapping_coeffs
 
     @property
     def normal_mapping(self) -> Matrix6x3f:
@@ -228,7 +228,7 @@ class QuadraticSplineSurfacePatch:
         :return: reference to the surface normal mapping. shape==(6,3)
         :rtype: np.ndarray
         """
-        return self.__normal_mapping_coeffs
+        return self._normal_mapping_coeffs
 
     @property
     def normalized_surface_mapping(self) -> Matrix6x3r:
@@ -245,7 +245,7 @@ class QuadraticSplineSurfacePatch:
         :return: reference to the normalized surface mapping. shape==(6,3)
         :rtype: np.ndarray
         """
-        return self.__normalized_surface_mapping_coeffs
+        return self._normalized_surface_mapping_coeffs
 
     def get_bezier_points(self) -> Matrix6x3r:
         """
@@ -256,7 +256,7 @@ class QuadraticSplineSurfacePatch:
         :return: reference to the bezier points. shape==(6,3)
         :rtype: np.ndarray
         """
-        return self.m_bezier_points
+        return self._bezier_points
 
     def get_bounding_box(self) -> tuple[SpatialVector, SpatialVector]:
         """
@@ -266,7 +266,7 @@ class QuadraticSplineSurfacePatch:
             bounding box point and max_point is the maximum coordinates bounding box point.
         :rtype: tuple[SpatialVector, SpatialVector]
         """
-        return self.m_min_point, self.m_max_point
+        return self._min_point, self._max_point
 
     def get_bounding_box_min_point(self) -> SpatialVector:
         """
@@ -275,8 +275,8 @@ class QuadraticSplineSurfacePatch:
         :return: min_point: minimum coordinates bounding box point
         :rtype: SpatialVector
         """
-        assert self.m_min_point.shape == (3,)
-        return self.m_min_point
+        assert self._min_point.shape == (3,)
+        return self._min_point
 
     def get_bbox_x_min(self) -> float:
         """
@@ -287,7 +287,7 @@ class QuadraticSplineSurfacePatch:
         :return: self.m_min_point[0]: x-coordinate of the minimum point of the bounding box
         :rtype: float
         """
-        return self.m_min_point[0]
+        return self._min_point[0]
 
     def get_bbox_y_min(self) -> float:
         """
@@ -297,7 +297,7 @@ class QuadraticSplineSurfacePatch:
         :return: self.m_min_point[1]: y-coordinate of the minimum point of the bounding box
         :rtype: float
         """
-        return self.m_min_point[1]
+        return self._min_point[1]
 
     def get_bounding_box_max_point(self) -> SpatialVector:
         """
@@ -306,8 +306,8 @@ class QuadraticSplineSurfacePatch:
         :return: max_point: maximum coordinates bounding box point
         :rtype: SpatialVector
         """
-        assert self.m_max_point.shape == (3,)
-        return self.m_max_point
+        assert self._max_point.shape == (3,)
+        return self._max_point
 
     def get_bbox_x_max(self) -> float:
         """
@@ -317,7 +317,7 @@ class QuadraticSplineSurfacePatch:
         :return: self.m_max_point[0]: x-coordinate of the maximum point of the bounding box
         :rtype: float
         """
-        return self.m_max_point[0]
+        return self._max_point[0]
 
     def get_bbox_y_max(self) -> float:
         """
@@ -326,7 +326,7 @@ class QuadraticSplineSurfacePatch:
         :return: self.m_max_point[1]: y-coordinate of the maximum point of the bounding box
         :rtype: float
         """
-        return self.m_max_point[1]
+        return self._max_point[1]
 
     @property
     def domain(self) -> ConvexPolygon:
@@ -336,7 +336,7 @@ class QuadraticSplineSurfacePatch:
         :return: reference to the convex domain
         :rtype: ConvexPolygon
         """
-        return self.m_domain
+        return self._domain
 
     def get_patch_boundaries(self) -> list[RationalFunction]:
         """
@@ -434,7 +434,7 @@ class QuadraticSplineSurfacePatch:
         :rtype: SpatialVector
         """
         assert domain_point.shape == (2, )
-        surface_point: SpatialVector1d = evaluate_quadratic_mapping(self.__surface_mapping_coeffs,
+        surface_point: SpatialVector1d = evaluate_quadratic_mapping(self._surface_mapping_coeffs,
                                                                     domain_point)
         assert surface_point.shape == (3, )
         return surface_point
@@ -450,7 +450,7 @@ class QuadraticSplineSurfacePatch:
         :rtype: SpatialVector
         """
         assert domain_point.shape == (2, )
-        surface_normal: SpatialVector1d = evaluate_quadratic_mapping(self.__normal_mapping_coeffs,
+        surface_normal: SpatialVector1d = evaluate_quadratic_mapping(self._normal_mapping_coeffs,
                                                                      domain_point)
         assert surface_normal.shape == (3, )
         return surface_normal
@@ -466,7 +466,7 @@ class QuadraticSplineSurfacePatch:
         :rtype: list[SpatialVector]
         """
         # Sample the convex domain
-        domain_points: list[PlanarPoint1d] = self.m_domain.sample(sampling_density)
+        domain_points: list[PlanarPoint1d] = self._domain.sample(sampling_density)
 
         # Lift the domain points to the surface
         num_points: int = len(domain_points)
@@ -498,7 +498,7 @@ class QuadraticSplineSurfacePatch:
         # NOTE: domain refers to UV coords, which is (N, 2) shape
         V_domain: MatrixNx2f
         F_triangulate: np.ndarray[tuple[int, int], np.dtype[np.int64]]
-        V_domain, F_triangulate = self.m_domain.triangulate(num_refinements)
+        V_domain, F_triangulate = self._domain.triangulate(num_refinements)
 
         # Lift the domain vertices to the surface and also compute the normals
         V_triangulate: np.ndarray[tuple[int, int], np.dtype[np.float64]]
@@ -552,37 +552,37 @@ class QuadraticSplineSurfacePatch:
 
         # Serialize x coordinate coefficients
         output_file.write("cx")
-        for i in range(self.__surface_mapping_coeffs.shape[ROWS]):
-            output_file.write(f" {self.__surface_mapping_coeffs[i, 0]:.{precision}f}")
+        for i in range(self._surface_mapping_coeffs.shape[ROWS]):
+            output_file.write(f" {self._surface_mapping_coeffs[i, 0]:.{precision}f}")
         output_file.write("\n")
 
         # Serialize y coordinate coefficients
         output_file.write("cy")
-        for i in range(self.__surface_mapping_coeffs.shape[ROWS]):
-            output_file.write(f" {self.__surface_mapping_coeffs[i, 1]:.{precision}f}")
+        for i in range(self._surface_mapping_coeffs.shape[ROWS]):
+            output_file.write(f" {self._surface_mapping_coeffs[i, 1]:.{precision}f}")
         output_file.write("\n")
 
         # Serialize z coordinate coefficients
         output_file.write("cz")
-        for i in range(self.__surface_mapping_coeffs.shape[ROWS]):
-            output_file.write(f" {self.__surface_mapping_coeffs[i, 2]:.{precision}f}")
+        for i in range(self._surface_mapping_coeffs.shape[ROWS]):
+            output_file.write(f" {self._surface_mapping_coeffs[i, 2]:.{precision}f}")
         output_file.write("\n")
 
         # Serialize domain boundary
-        vertices: Matrix3x2r = self.m_domain.vertices
-        if self.__cone_index == 0:
+        vertices: Matrix3x2r = self._domain.vertices
+        if self._cone_index == 0:
             output_file.write("cp1 ")
         else:
             output_file.write("p1 ")
         output_file.write(f"{vertices[0, 0]:.{precision}f} {vertices[0, 1]:.{precision}f}\n")
 
-        if self.__cone_index == 1:
+        if self._cone_index == 1:
             output_file.write("cp2 ")
         else:
             output_file.write("p2 ")
         output_file.write(f"{vertices[1, 0]:.{precision}f} {vertices[1, 1]:.{precision}f}\n")
 
-        if self.__cone_index == 2:
+        if self._cone_index == 2:
             output_file.write("cp3 ")
         else:
             output_file.write("p3 ")
