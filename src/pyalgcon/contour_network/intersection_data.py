@@ -6,11 +6,13 @@ from pyalgcon.core.common import float_equal
 from pyalgcon.core.interval import Interval
 
 
-class IntersectionData():
+class IntersectionData:
     """
     Data for intersections.
     Originally a struct in C++ code.
     """
+    __slots__ = ("knot", "intersection_index", "intersection_knot",
+                 "id", "is_base", "is_tip", "is_redundant")
 
     def __init__(self,
                  knot: float,
