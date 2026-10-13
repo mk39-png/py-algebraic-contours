@@ -51,7 +51,7 @@ class QuadraticSplineSurface:
     def __init__(self, patches: list[QuadraticSplineSurfacePatch]) -> None:
         """
         Constructor from patches
-        @param[in] patches: quadratic surface patches
+        :param patches: [in] quadratic surface patches
         """
 
         # NOTE: self._patches protected since it's accessed and used by
@@ -60,9 +60,9 @@ class QuadraticSplineSurface:
 
         # Hash table parameters
         # TODO: these have been commented because they are not used for anything.
-        self.__patches_bbox_x_min: float = 0.0
+        self._patches_bbox_x_min: float = 0.0
         # self.__patches_bbox_x_max: float = 0.0
-        self.__patches_bbox_y_min: float = 0.0
+        self._patches_bbox_y_min: float = 0.0
         # self.__patches_bbox_y_max: float = 0.0
         self.hash_x_interval: float = 0.0
         self.hash_y_interval: float = 0.0
@@ -597,9 +597,9 @@ class QuadraticSplineSurface:
         y_min: float
         y_max: float
         x_min, x_max, y_min, y_max = self.__compute_patches_bbox(patches_ref)
-        self.__patches_bbox_x_min = x_min
+        self._patches_bbox_x_min = x_min
         # self.__patches_bbox_x_max = x_max
-        self.__patches_bbox_y_min = y_min
+        self._patches_bbox_y_min = y_min
         # self.__patches_bbox_y_max = y_max
 
         for i in range(1, num_patch):
@@ -649,8 +649,8 @@ class QuadraticSplineSurface:
         assert point.shape == (2, )
 
         # TODO: might just want to do float division followed by int typecasting instead
-        hash_x = int((point[0] - self.__patches_bbox_x_min) // self.hash_x_interval)
-        hash_y = int((point[1] - self.__patches_bbox_y_min) // self.hash_y_interval)
+        hash_x = int((point[0] - self._patches_bbox_x_min) // self.hash_x_interval)
+        hash_y = int((point[1] - self._patches_bbox_y_min) // self.hash_y_interval)
 
         if (hash_x < 0) or (hash_x >= HASH_TABLE_SIZE):
             logger.error("x hash index out of bounds")

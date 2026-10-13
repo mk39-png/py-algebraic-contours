@@ -76,9 +76,9 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         :param affine_manifold: [in] affine manifold structure
         :param optimization_params: [in] parameters for the spline optimization
         """
-        self.__affine_manifold: AffineManifold = affine_manifold
-        self.__corner_data: dict[int, dict[int, TriangleCornerData]] = defaultdict(dict)
-        self.__midpoint_data: dict[int, dict[int, TriangleMidpointData]] = defaultdict(dict)
+        self._affine_manifold: AffineManifold = affine_manifold
+        self._corner_data: dict[int, dict[int, TriangleCornerData]] = defaultdict(dict)
+        self._midpoint_data: dict[int, dict[int, TriangleMidpointData]] = defaultdict(dict)
 
         # Generate normals
         N: MatrixNx3f = self.generate_face_normals(V, affine_manifold)
@@ -115,8 +115,8 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
                                                       affine_manifold,
                                                       fit_matrix,
                                                       energy_hessian_inverse,
-                                                      self.__corner_data,
-                                                      self.__midpoint_data)
+                                                      self._corner_data,
+                                                      self._midpoint_data)
 
         # Get cone corners
         # list[bool] of length 3
@@ -127,8 +127,8 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         patch_to_face_indices: list[int]
         patches: list[QuadraticSplineSurfacePatch]
         face_to_patch_indices, patch_to_face_indices, patches = self.build_twelve_split_patches(
-            self.__corner_data,
-            self.__midpoint_data,
+            self._corner_data,
+            self._midpoint_data,
             is_cone_corner)
 
         # This initializes the following:
@@ -137,8 +137,8 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         super().__init__(patches)
 
         # Saving everything into the class
-        self.__face_to_patch_indices: list[list[int]] = face_to_patch_indices
-        self.__patch_to_face_indices: list[int] = patch_to_face_indices
+        self._face_to_patch_indices: list[list[int]] = face_to_patch_indices
+        self._patch_to_face_indices: list[int] = patch_to_face_indices
         self.fit_matrix: csr_matrix = fit_matrix
         self.energy_hessian: csr_matrix = energy_hessian
         self.energy_hessian_inverse: CholeskySolverD = energy_hessian_inverse
@@ -153,15 +153,15 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         Get the underlying affine manifold for the spline
         :return: affine manifold for the spline
         """
-        return self.__affine_manifold
+        return self._affine_manifold
 
     @affine_manifold.setter
-    def affine_manifold(self, in_affine_manifold: AffineManifold) -> None:
+    def affine_manifold(self, affine_manifold: AffineManifold) -> None:
         """
         Sets the underlying affine_manifold for the spline.
         :return: None
         """
-        self.__affine_manifold = in_affine_manifold
+        self._affine_manifold = affine_manifold
 
     @property
     def face_to_patch_indices(self) -> list[list[int]]:
@@ -169,7 +169,7 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         Get face to patch indices
         :return: face to patch indices
         """
-        return self.__face_to_patch_indices
+        return self._face_to_patch_indices
 
     @property
     def patch_to_face_indices(self) -> list[int]:
@@ -177,7 +177,7 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         Get patch to face indices
         :return: patch to face indices
         """
-        return self.__patch_to_face_indices
+        return self._patch_to_face_indices
 
     @property
     def corner_data(self) -> dict[int, dict[int, TriangleCornerData]]:
@@ -185,7 +185,7 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         Get corner data for the spline
         :return: corner data
         """
-        return self.__corner_data
+        return self._corner_data
 
     @property
     def midpoint_data(self) -> dict[int, dict[int, TriangleMidpointData]]:
@@ -193,7 +193,7 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         Get midpoint data for the spline
         :return: midpoint data
         """
-        return self.__midpoint_data
+        return self._midpoint_data
 
     # *******************
     # Public Members
@@ -224,8 +224,8 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
             affine_manifold,
             fit_matrix,
             energy_hessian_inverse,
-            self.__corner_data,
-            self.__midpoint_data)
+            self._corner_data,
+            self._midpoint_data)
 
         # Get cone corners
         # list[bool] length 3
@@ -237,8 +237,8 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         patch_to_face_indices: list[int]
         patches: list[QuadraticSplineSurfacePatch]
         face_to_patch_indices, patch_to_face_indices, patches = self.build_twelve_split_patches(
-            self.__corner_data,
-            self.__midpoint_data,
+            self._corner_data,
+            self._midpoint_data,
             is_cone_corner)
 
         # Initialize hash tables
@@ -247,41 +247,41 @@ class TwelveSplitSplineSurface(QuadraticSplineSurface):
         # Store the values into the class
         self._patches = patches
         self._hash_table = hash_table
-        self.__face_to_patch_indices = face_to_patch_indices
-        self.__patch_to_face_indices = patch_to_face_indices
+        self._face_to_patch_indices = face_to_patch_indices
+        self._patch_to_face_indices = patch_to_face_indices
 
     def add_position_data_to_viewer(self) -> None:
         """
         Add the position data for the surface to the viewer.
         """
         # Add corner position data if it exists
-        if len(self.__corner_data) != 0:
+        if len(self._corner_data) != 0:
             position_matrix: MatrixXf
             first_derivative_matrix: MatrixXf
             second_derivative_matrix: MatrixXf
             position_matrix, first_derivative_matrix, second_derivative_matrix = (
-                generate_corner_data_matrices(self.__corner_data))
+                generate_corner_data_matrices(self._corner_data))
 
             corner_data: ps.PointCloud = ps.register_point_cloud("corner data", position_matrix)
             corner_data.add_vector_quantity("first derivatives", first_derivative_matrix)
             corner_data.add_vector_quantity("second derivatives", second_derivative_matrix)
 
         # Add midpoint position data if it (and the corner data) exists
-        if (not (len(self.__corner_data) == 0)) and (not (len(self.__midpoint_data) == 0)):
+        if (not (len(self._corner_data) == 0)) and (not (len(self._midpoint_data) == 0)):
             position_matrix: MatrixXf
             tangent_derivative_matrix: MatrixXf
             normal_derivative_matrix: MatrixXf
             position_matrix, tangent_derivative_matrix, normal_derivative_matrix = (
-                generate_midpoint_data_matrices(self.__corner_data, self.__midpoint_data))
+                generate_midpoint_data_matrices(self._corner_data, self._midpoint_data))
             midpoint_data: ps.PointCloud = ps.register_point_cloud("midpoint data", position_matrix)
             midpoint_data.add_vector_quantity("tangent derivatives", tangent_derivative_matrix)
             midpoint_data.add_vector_quantity("normal derivatives", normal_derivative_matrix)
 
     def clear(self) -> None:
         """Clear the surface data."""
-        self.__affine_manifold.clear()
-        self.__corner_data.clear()
-        self.__midpoint_data.clear()
+        self._affine_manifold.clear()
+        self._corner_data.clear()
+        self._midpoint_data.clear()
         self._patches.clear()
 
     def view(self,
