@@ -20,7 +20,7 @@ from pyalgcon.core.rational_function import RationalFunction
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@dataclass
+@dataclass(slots=True)
 class IntersectionStats():
     """
     Statistics regarding Intersections
@@ -155,7 +155,7 @@ def _compute_homogeneous_bezier_points_from_matrix(planar_curve: RationalFunctio
 
     x_coeffs: Vector5f = P_coeffs[:, 0]
     y_coeffs: Vector5f = P_coeffs[:, 1]
-    w_coeffs: Vector5f = np.copy(Q_coeffs)  # deep copy
+    w_coeffs: Vector5f = Q_coeffs.copy()  # deep copy
     assert x_coeffs.shape == (5, )
     assert y_coeffs.shape == (5, )
     assert w_coeffs.shape == (5, )
@@ -211,12 +211,12 @@ def compute_homogeneous_bezier_points_over_interval(planar_curve: RationalFuncti
     :return bezier_points: homogeneous control points of the curve
     """
     assert (planar_curve.degree, planar_curve.dimension) == (4, 2)
-
-    logger.debug("Computing Bezier coefficients for interval [%s, %s]", t_min, t_max)
+    if __debug__:
+        logger.debug("Computing Bezier coefficients for interval [%s, %s]", t_min, t_max)
     r: float = t_max - t_min
 
     # Compute matrix to go from monomial coefficients to Bezier coefficients
-    monomial_to_bezier_matrix: Matrix5x5f = np.ndarray(shape=(5, 5), dtype=np.float64)
+    monomial_to_bezier_matrix: Matrix5x5f = np.empty(shape=(5, 5), dtype=np.float64)
 
     # First row
     monomial_to_bezier_matrix[0, 0] = pow(r + t_min, 0)
