@@ -48,10 +48,10 @@ def compute_spline_surface_ray_intersections(spline_surface: QuadraticSplineSurf
     patch_indices: list[PatchIndex] = []
     surface_intersections: list[PlanarPoint1d] = []
     ray_intersections: list[float] = []
-
-    logger.info("Computing intersections for spline surface with %s patches and ray %s",
-                spline_surface.num_patches,
-                ray_mapping_coeffs)
+    if __debug__:
+        logger.info("Computing intersections for spline surface with %s patches and ray %s",
+                    spline_surface.num_patches,
+                    ray_mapping_coeffs)
 
     # NOTE: below line is a translation from Eigen's .block() function
     ray_plane_point: PlanarPoint1d = ray_mapping_coeffs[0, 0:2]
@@ -76,20 +76,23 @@ def compute_spline_surface_ray_intersections(spline_surface: QuadraticSplineSurf
             ray_bbox_call)
 
         # Add patch intersections to surface intersections arrays
-        if num_intersections > MAX_PATCH_RAY_INTERSECTIONS:
-            logger.error("More than four intersections found of a ray with a patch")
+        if __debug__:
+            if num_intersections > MAX_PATCH_RAY_INTERSECTIONS:
+                logger.error("More than four intersections found of a ray with a patch")
 
         for j in range(num_intersections):
             patch_indices.append(i)
             surface_intersections.append(patch_surface_intersections[j])
             ray_intersections.append(patch_ray_intersections[j])
-            logger.debug("Patch ray intersection at t=%s found, out of %s",
-                         patch_ray_intersections[j],
-                         num_intersections)
 
-    logger.debug("%s surface ray intersections found", len(surface_intersections))
-    logger.debug("Spline surface intersection points: %s", surface_intersections)
-    logger.debug("Ray intersection points: %s", ray_intersections)
+            if __debug__:
+                logger.debug("Patch ray intersection at t=%s found, out of %s",
+                             patch_ray_intersections[j],
+                             num_intersections)
+    if __debug__:
+        logger.debug("%s surface ray intersections found", len(surface_intersections))
+        logger.debug("Spline surface intersection points: %s", surface_intersections)
+        logger.debug("Ray intersection points: %s", ray_intersections)
 
     return (patch_indices,
             surface_intersections,
@@ -118,11 +121,12 @@ def partition_ray_intersections(ray_mapping_coeffs: Matrix2x3f,
 
     ray_intersections_above: list[float] = []
     ray_intersections_below: list[float] = []
-    num_intersections: PatchIndex = len(ray_intersections)
-    logger.debug("Partitioning intersections %s on ray %s around point %s",
-                 ray_intersections,
-                 ray_mapping_coeffs,
-                 comparison_point)
+
+    if __debug__:
+        logger.debug("Partitioning intersections %s on ray %s around point %s",
+                     ray_intersections,
+                     ray_mapping_coeffs,
+                     comparison_point)
 
     # Compute parameter for point
     point_0: SpatialVector1d = ray_mapping_coeffs[0, :]
@@ -132,18 +136,21 @@ def partition_ray_intersections(ray_mapping_coeffs: Matrix2x3f,
     assert direction.shape == (3, )
     assert difference.shape == (3, )
     point_parameter: float = np.linalg.norm(difference) / np.linalg.norm(direction)
-    logger.info("Point parameter: %s", point_parameter)
+
+    if __debug__:
+        logger.info("Point parameter: %s", point_parameter)
 
     # Partition intersections into points above and below the comparison point
-    for i in range(num_intersections):
-        ray_intersection: float = ray_intersections[i]
+    for ray_intersection in ray_intersections:
         if float_equal(ray_intersection, point_parameter, 1e-7):
             continue
         elif ray_intersection < point_parameter:
             ray_intersections_below.append(ray_intersection)
         else:
             ray_intersections_above.append(ray_intersection)
-    logger.debug("Intersections below: %s", ray_intersections_below)
-    logger.debug("Intersections above: %s", ray_intersections_above)
+
+    if __debug__:
+        logger.debug("Intersections below: %s", ray_intersections_below)
+        logger.debug("Intersections above: %s", ray_intersections_above)
 
     return ray_intersections_below, ray_intersections_above
