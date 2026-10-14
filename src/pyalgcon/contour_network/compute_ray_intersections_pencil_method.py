@@ -569,15 +569,18 @@ def compute_spline_surface_patch_ray_intersections_pencil_method(
     ray_intersections: list[float] = []
 
     domain: ConvexPolygon = spline_surface_patch.domain
-    logger.debug("Domain: %s", domain.vertices)
+    if __debug__:
+        logger.debug("Domain: %s", domain.vertices)
 
     ray_origin: SpatialVector1d = ray_mapping_coeffs[0, :]  # row 0
     ray_plane_point: PlanarPoint1d = ray_origin[:2]
     assert ray_origin.shape == (3, )
     assert ray_plane_point.shape == (2, )
-    logger.debug("Computing intersections for ray origin %s with planar projection %s",
-                 ray_origin,
-                 ray_plane_point)
+
+    if __debug__:
+        logger.debug("Computing intersections for ray origin %s with planar projection %s",
+                     ray_origin,
+                     ray_plane_point)
 
     min_point: SpatialVector1d = spline_surface_patch.get_bounding_box_min_point()
     max_point: SpatialVector1d = spline_surface_patch.get_bounding_box_max_point()
@@ -589,12 +592,14 @@ def compute_spline_surface_patch_ray_intersections_pencil_method(
     assert upper_right_point.shape == (2, )
     ray_bbox_call += 1
     if not is_in_bounding_box(ray_plane_point, lower_left_point, upper_right_point):
-        logger.info("Skipping intersection test for patch %s and ray %s with "
-                    "bounding box (%s, %s)",
-                    spline_surface_patch,
-                    ray_mapping_coeffs,
-                    lower_left_point,
-                    upper_right_point)
+
+        if __debug__:
+            logger.info("Skipping intersection test for patch %s and ray %s with "
+                        "bounding box (%s, %s)",
+                        spline_surface_patch,
+                        ray_mapping_coeffs,
+                        lower_left_point,
+                        upper_right_point)
         return (num_intersections,
                 surface_intersections,
                 ray_intersections,
@@ -603,15 +608,18 @@ def compute_spline_surface_patch_ray_intersections_pencil_method(
 
     ray_int_call += 1
 
-    logger.info("Computing intersections for patch %s and ray %s",
-                spline_surface_patch,
-                ray_mapping_coeffs)
+    if __debug__:
+        logger.info("Computing intersections for patch %s and ray %s",
+                    spline_surface_patch,
+                    ray_mapping_coeffs)
 
     # Normalize the spline surface patch to have domain triangle u + v <= 1 in [0, 1]^2
     normalized_surface_mapping_coeffs: Matrix6x3f = (
         spline_surface_patch.normalized_surface_mapping)
-    logger.info("Coefficients for the surface mapping with normalized domain: %s",
-                normalized_surface_mapping_coeffs)
+
+    if __debug__:
+        logger.info("Coefficients for the surface mapping with normalized domain: %s",
+                    normalized_surface_mapping_coeffs)
     assert normalized_surface_mapping_coeffs.shape == (6, 3)
 
     #  1 u v uv u2 v2
@@ -649,10 +657,12 @@ def compute_spline_surface_patch_ray_intersections_pencil_method(
     _, num_intersections_all, normalized_surface_intersections_all = pencil_first_part(
         coeff_F,
         coeff_G)
-    if num_intersections_all > MAX_PATCH_RAY_INTERSECTIONS:
-        logger.error("More than the maximum possible number of patch ray intersections found")
+
     assert num_intersections_all <= MAX_PATCH_RAY_INTERSECTIONS
-    logger.debug("%s intersections found before pruning", num_intersections_all)
+    if __debug__:
+        if num_intersections_all > MAX_PATCH_RAY_INTERSECTIONS:
+            logger.error("More than the maximum possible number of patch ray intersections found")
+        logger.debug("%s intersections found before pruning", num_intersections_all)
 
     # Get intersections that are in the domain
     num_intersections_normalized: int = 0
@@ -690,16 +700,19 @@ def compute_spline_surface_patch_ray_intersections_pencil_method(
             surface_intersections.append(surface_intersection)
             ray_intersections.append(normalized_ray_intersections[i])
             num_intersections += 1
-        logger.info("Normalized domain point: %s", normalized_domain_point)
-        logger.info("Domain point: %s", surface_intersection)
+
+        if __debug__:
+            logger.info("Normalized domain point: %s", normalized_domain_point)
+            logger.info("Domain point: %s", surface_intersection)
 
     # Log intersections
-    if num_intersections >= 0:
-        logger.info("Intersections for patch %s and ray %s",
-                    spline_surface_patch,
-                    ray_mapping_coeffs)
-        logger.info("Coefficients for the surface mapping with normalized domain: %s",
-                    normalized_surface_mapping_coeffs)
+    if __debug__:
+        if num_intersections >= 0:
+            logger.info("Intersections for patch %s and ray %s",
+                        spline_surface_patch,
+                        ray_mapping_coeffs)
+            logger.info("Coefficients for the surface mapping with normalized domain: %s",
+                        normalized_surface_mapping_coeffs)
 
     return (num_intersections,
             surface_intersections,
