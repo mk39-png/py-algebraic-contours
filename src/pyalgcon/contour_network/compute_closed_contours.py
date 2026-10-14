@@ -94,9 +94,9 @@ def _get_starting_contour_segment(used_segments: list[bool]) -> int:
 
 def _add_next_contour_segment(contour_segments: list[RationalFunction],
                               current_contour_ref: list[int],
-                              used_segments_ref: list[bool],
-                              contour_start_points: list[SpatialVector1d],
-                              contour_end_points: list[SpatialVector1d]) -> bool:
+                              used_segments_ref: Vector1D,
+                              contour_start_points: MatrixNx3f,
+                              contour_end_points: MatrixNx3f) -> bool:
     """
     Add next contour segment if possible and return false if not.
 
@@ -107,18 +107,19 @@ def _add_next_contour_segment(contour_segments: list[RationalFunction],
     :param contour_end_points: [in]
     :return: bool is valid segment is found
     """
-    min_distance_sq: float = 1e10  # FIXME
+    min_distance_sq: float = 1e10  # FIXME with negative infinity as the minimum
     next_candidate: int = -1
 
-    # Find the closest next segment
-    for i, _ in enumerate(contour_segments):
-        # Skip used segments
-        if used_segments_ref[i]:
-            continue
+    # Skip used segments
+    indices: Vector1D = np.arange(len(contour_segments))
+    unused_indices: Vector1D = indices[~used_segments_ref]
+    contour_end_point: SpatialVector1d = contour_end_points[current_contour_ref[-1]]
 
-        # Check if the current oriented contour is closer than the candidate
+    # Find the closest next segment
+    for i in unused_indices:
+      # Check if the current oriented contour is closer than the candidate
         cur_distance_sq: float = _point_distance_squared(
-            contour_end_points[current_contour_ref[-1]],
+            contour_end_point,
             contour_start_points[i])
 
         if cur_distance_sq < min_distance_sq:
@@ -142,9 +143,9 @@ def _add_next_contour_segment(contour_segments: list[RationalFunction],
 
 def _add_next_reverse_contour_segment(contour_segments: list[RationalFunction],
                                       current_contour_reverse_ref: list[int],
-                                      used_segments_ref: list[bool],
-                                      contour_start_points: list[SpatialVector1d],
-                                      contour_end_points: list[SpatialVector1d]) -> bool:
+                                      used_segments_ref: Vector1D,
+                                      contour_start_points: MatrixNx3f,
+                                      contour_end_points: MatrixNx3f) -> bool:
     """
     Add previous contour segment to reverse list if possible and return false if not
 
@@ -158,15 +159,16 @@ def _add_next_reverse_contour_segment(contour_segments: list[RationalFunction],
     min_distance_sq: float = 1e10  # FIXME
     prev_candidate: int = -1
 
-    # Find the closest prev segment
-    for i, _ in enumerate(contour_segments):
-        # Skip used segments
-        if used_segments_ref[i]:
-            continue
+    # For skipping used segments
+    indices: Vector1D = np.arange(len(contour_segments))
+    unused_indices: Vector1D = indices[~used_segments_ref]
+    contour_start_point: SpatialVector1d = contour_start_points[current_contour_reverse_ref[-1]]
 
+    # Find the closest prev segment
+    for i in unused_indices:
         # Check if the current oriented contour is closer than the candidate
         cur_distance_sq: float = _point_distance_squared(
-            contour_start_points[current_contour_reverse_ref[-1]],
+            contour_start_point,
             contour_end_points[i])
 
         if cur_distance_sq < min_distance_sq:
@@ -178,7 +180,7 @@ def _add_next_reverse_contour_segment(contour_segments: list[RationalFunction],
         return False
 
     # Determine if the candidate contour segment is adjacent to the growing chain
-    if _are_overlapping_points(contour_start_points[current_contour_reverse_ref[-1]],
+    if _are_overlapping_points(contour_start_point,
                                contour_end_points[prev_candidate]):
         current_contour_reverse_ref.append(prev_candidate)
         used_segments_ref[prev_candidate] = True
