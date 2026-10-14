@@ -68,7 +68,7 @@ class InvisibilityMethod(Enum):
     PROPAGATION = 3    # Ray test for connected components with local propagation
 
 
-@dataclass
+@dataclass(slots=True)
 class InvisibilityParameters():
     """
     Parameters for the invisibility computation
@@ -98,6 +98,20 @@ class ContourNetwork(ProjectedCurveNetwork):
     and represent them as a curve network. Also computes the quantitative
     invisibility for the contours.
     """
+    __slots__ = ("ray_intersection_call",
+                 "ray_bounding_box_call",
+                 "ray_number",
+                 "chain_number",
+                 "segment_number",
+                 "interior_cusp_number",
+                 "boundary_cusp_number",
+                 "intersection_call",
+                 "surface_update_position_time",
+                 "compute_contour_time",
+                 "compute_cusp_time",
+                 "compute_intersection_time",
+                 "compute_visibility_time",
+                 "compute_projected_time")
 
     def __init__(self,
                  spline_surface: QuadraticSplineSurface,
@@ -248,8 +262,10 @@ class ContourNetwork(ProjectedCurveNetwork):
                                                          contours)
 
         self.compute_cusp_time: float = time.perf_counter() - time_start
-        logger.debug("Found %s interior cusps", nested_vector_size(interior_cusps))
-        logger.debug("Found %s boundary cusps", nested_vector_size(boundary_cusps))
+
+        if __debug__:
+            logger.debug("Found %s interior cusps", nested_vector_size(interior_cusps))
+            logger.debug("Found %s boundary cusps", nested_vector_size(boundary_cusps))
 
         #
         # FIXME: compute_intersections has some problems. output is not 1-to-1 with the C++ code
@@ -268,7 +284,9 @@ class ContourNetwork(ProjectedCurveNetwork):
                                                     num_intersections)
 
         self.compute_intersection_time: float = time.perf_counter() - time_start
-        logger.debug("Found %s intersections", nested_vector_size(intersection_knots))
+
+        if __debug__:
+            logger.debug("Found %s intersections", nested_vector_size(intersection_knots))
 
         # Optionally write contours before any graph construction
         if invisibility_params.write_contour_soup:
@@ -282,9 +300,9 @@ class ContourNetwork(ProjectedCurveNetwork):
                                             CurveDiscretizationParameters(),
                                             svg_elements)
 
-            print(svg.SVG(x=0, y=0,
-                          width=viewport[0], height=viewport[0],
-                          elements=svg_elements))
+            # print(svg.SVG(x=0, y=0,
+            #               width=viewport[0], height=viewport[0],
+            #               elements=svg_elements))
 
         # Now, can return values used for initializing projected network.
         return (contour_domain_curve_segments,
@@ -365,7 +383,8 @@ class ContourNetwork(ProjectedCurveNetwork):
 
         # Take the screenshot
         polyscope.screenshot(str(filename))
-        logger.info("Screenshot saved to %s", filename)
+        if __debug__:
+            logger.info("Screenshot saved to %s", filename)
         polyscope.remove_all_structures()
 
     def write_rasterized_contours(self,
@@ -422,9 +441,13 @@ class ContourNetwork(ProjectedCurveNetwork):
         Compute the ray mapping coeffs for a given sample point
         """
         assert sample_point.shape == (3, )
-        view_direction: SpatialVector1d = np.array([0, 0, 1])
+        # TODO: associate view_direction with class attribute as to not make
+        # unnecessary copies of itself
+        # Which is to say to make view_direction as a class variable.
+        view_direction: SpatialVector1d = np.array([0, 0, 1], dtype=np.float64)
         ray_mapping_coeffs: Matrix2x3f = np.array([sample_point - 20 * view_direction,
-                                                  40 * view_direction])
+                                                  40 * view_direction],
+                                                  dtype=np.float64)
         assert ray_mapping_coeffs.shape == (2, 3)
 
         return ray_mapping_coeffs
@@ -464,8 +487,10 @@ class ContourNetwork(ProjectedCurveNetwork):
         """
         # Check segment validity
         if not self._is_valid_segment_index(segment_index):
-            logger.debug("Attempting to propagate QI at invalid segment %s",
-                         segment_index)
+
+            if __debug__:
+                logger.debug("Attempting to propagate QI at invalid segment %s",
+                             segment_index)
             return -1
 
         self.segment_number += 1
@@ -482,12 +507,16 @@ class ContourNetwork(ProjectedCurveNetwork):
             sample_point: SpatialVector1d = spatial_curve.evaluate_normalized_coordinate(
                 sample_parameter)
             assert sample_point.shape == (3, )
-            logger.info("Sample point: %s", sample_point)
+
+            if __debug__:
+                logger.info("Sample point: %s", sample_point)
 
             # Build ray mapping coefficients
             ray_mapping_coeffs: Matrix2x3f = ContourNetwork._generate_ray_mapping_coeffs(
                 sample_point)
-            logger.info("Ray mapping coefficients: %s", ray_mapping_coeffs)
+
+            if __debug__:
+                logger.info("Ray mapping coefficients: %s", ray_mapping_coeffs)
 
             # Compute intersections of the ray with the surface
             patch_indices: list[PatchIndex]
@@ -514,7 +543,9 @@ class ContourNetwork(ProjectedCurveNetwork):
             # If no polling, return after first computation
             if not invisibility_params.poll_segment_points:
                 return qi_poll[i]
-        logger.info("QI poll values: %s, %s, %s", qi_poll[0], qi_poll[1], qi_poll[2])
+
+        if __debug__:
+            logger.info("QI poll values: %s, %s, %s", qi_poll[0], qi_poll[1], qi_poll[2])
 
         self.ray_intersection_call += ray_intersections_call
         self.ray_bounding_box_call += ray_bounding_box_call
@@ -528,10 +559,11 @@ class ContourNetwork(ProjectedCurveNetwork):
             return qi_poll[2]
 
         # Arbitrarily choose the midpoint if no majority
-        logger.warning("Could not compute consistent segment qi amongst %s, %s, %s",
-                       qi_poll[0],
-                       qi_poll[1],
-                       qi_poll[2])
+        if __debug__:
+            logger.warning("Could not compute consistent segment qi amongst %s, %s, %s",
+                           qi_poll[0],
+                           qi_poll[1],
+                           qi_poll[2])
         return qi_poll[1]
 
     def __compute_chain_quantitative_invisibility(self,
@@ -544,8 +576,9 @@ class ContourNetwork(ProjectedCurveNetwork):
         """
         # Check segment validity
         if not self._is_valid_segment_index(start_segment_index):
-            logger.debug("Attempting to compute QI at invalid segment %s",
-                         start_segment_index)
+            if __debug__:
+                logger.debug("Attempting to compute QI at invalid segment %s",
+                             start_segment_index)
             return -1
 
         # Count number of segments
@@ -564,7 +597,7 @@ class ContourNetwork(ProjectedCurveNetwork):
             jump_size = num_segments // 5  # Warning: possibly slow
 
             # Skip forward one jump
-            for j in range(jump_size):
+            for _ in range(jump_size):
                 iteration.increment()
         # Small number of segment case
         elif num_segments >= 3:
@@ -585,7 +618,7 @@ class ContourNetwork(ProjectedCurveNetwork):
                 return qi_poll[i]
 
             # Jump to next query point otherwise
-            for j in range(jump_size):
+            for _ in range(jump_size):
                 iteration.increment()
 
         # Poll for majority
@@ -597,10 +630,8 @@ class ContourNetwork(ProjectedCurveNetwork):
             return qi_poll[2]
 
         # Choose the center segment if no majority found
-        logger.warning("Could not compute consistent chain qi amongst %s, %s, %s",
-                       qi_poll[0],
-                       qi_poll[1],
-                       qi_poll[2])
+        if __debug__:
+            logger.warning("Could not compute consistent chain qi amongst %s", qi_poll)
         return qi_poll[1]
 
     # ****************
@@ -622,15 +653,17 @@ class ContourNetwork(ProjectedCurveNetwork):
         """
         # Check segment validity
         if not self._is_valid_segment_index(start_segment_index):
-            logger.debug("Attempting to propagate QI at invalid segment %s",
-                         start_segment_index)
+            if __debug__:
+                logger.debug("Attempting to propagate QI at invalid segment %s",
+                             start_segment_index)
             return -1
 
         # Get QI of the start segment
         quantitative_invisibility: int = self.get_segment_quantitative_invisibility(
             start_segment_index)
         if quantitative_invisibility < 0:
-            logger.warning("Attempted to copy negative QI forward")
+            if __debug__:
+                logger.warning("Attempted to copy negative QI forward")
             return -1
 
         # Propigate the QI along the chain
@@ -649,7 +682,8 @@ class ContourNetwork(ProjectedCurveNetwork):
 
             # Check against direct computation
             if invisibility_params.check_chaining:
-                logger.debug("Checking QI chaining at knot node")
+                if __debug__:
+                    logger.debug("Checking QI chaining at knot node")
                 self.__check_quantitative_invisibility_propagation(spline_surface,
                                                                    segment_index,
                                                                    invisibility_params)
@@ -669,15 +703,17 @@ class ContourNetwork(ProjectedCurveNetwork):
         """
         # Check segment validity
         if not self._is_valid_segment_index(start_segment_index):
-            logger.debug("Attempting to propagate QI at invalid segment %s",
-                         start_segment_index)
+            if __debug__:
+                logger.debug("Attempting to propagate QI at invalid segment %s",
+                             start_segment_index)
             return -1
 
         # Get QI of the start segment
         quantitative_invisibility: int = self.get_segment_quantitative_invisibility(
             start_segment_index)
         if quantitative_invisibility < 0:
-            logger.warning("Attempted to copy negative QI forward")
+            if __debug__:
+                logger.warning("Attempted to copy negative QI forward")
             return -1
 
         # Propagate the QI along the chain
@@ -696,7 +732,8 @@ class ContourNetwork(ProjectedCurveNetwork):
 
             # Check against direct computation
             if invisibility_params.check_chaining:
-                logger.debug("Checking QI chaining at knot node")
+                if __debug__:
+                    logger.debug("Checking QI chaining at knot node")
                 self.__check_quantitative_invisibility_propagation(spline_surface,
                                                                    segment_index,
                                                                    invisibility_params)
@@ -719,8 +756,9 @@ class ContourNetwork(ProjectedCurveNetwork):
         """
         # Check segment validity
         if not self._is_valid_segment_index(start_segment_index):
-            logger.debug("Attempting to propagate QI at invalid segment %s",
-                         start_segment_index)
+            if __debug__:
+                logger.debug("Attempting to propagate QI at invalid segment %s",
+                             start_segment_index)
             return
 
         chain_end_node_index: NodeIndex = self.__chain_quantitative_invisibility_forward(
@@ -739,8 +777,9 @@ class ContourNetwork(ProjectedCurveNetwork):
         """
         # Check segment validity
         if not self._is_valid_segment_index(start_segment_index):
-            logger.debug("Attempting to propagate QI at invalid segment %s",
-                         start_segment_index)
+            if __debug__:
+                logger.debug("Attempting to propagate QI at invalid segment %s",
+                             start_segment_index)
             return
 
         chain_start_node_index: NodeIndex = self.__chain_quantitative_invisibility_backward(
@@ -752,15 +791,17 @@ class ContourNetwork(ProjectedCurveNetwork):
                                                       spline_surface: QuadraticSplineSurface,
                                                       node_index: NodeIndex,
                                                       invisibility_params: InvisibilityParameters
-                                                      ):
+                                                      ) -> None:
         """
         Propagate QI at a node with case work for different node types
         """
-        logger.debug("Propagating QI at node %s", node_index)
+        if __debug__:
+            logger.debug("Propagating QI at node %s", node_index)
 
         # Check node validity
         if not self._is_valid_node_index(node_index):
-            logger.debug("Attempting to propagate QI at invalid node %s", node_index)
+            if __debug__:
+                logger.debug("Attempting to propagate QI at invalid node %s", node_index)
             return
 
         # Stop processing the node if node QI already set, and mark the node as
@@ -772,19 +813,23 @@ class ContourNetwork(ProjectedCurveNetwork):
         # Attempt to propagate QI at the node
         success: bool = True
         if self.is_intersection_node(node_index):
-            logger.info("Propagating QI at intersection node")
+            if __debug__:
+                logger.info("Propagating QI at intersection node")
             success = self.__propagate_quantitative_invisibility_at_intersection_node(
                 spline_surface, node_index, invisibility_params)
         elif self.is_interior_cusp_node(node_index):
-            logger.info("Propagating QI at interior cusp node")
+            if __debug__:
+                logger.info("Propagating QI at interior cusp node")
             success = self.__propagate_quantitative_invisibility_at_cusp_node(
                 spline_surface, node_index, invisibility_params)
         elif self.is_boundary_cusp_node(node_index):
-            logger.info("Propagating QI at boundary cusp node")
+            if __debug__:
+                logger.info("Propagating QI at boundary cusp node")
             self.__propagate_quantitative_invisibility_at_boundary_cusp_node(
                 spline_surface, node_index, invisibility_params)
         elif self.is_marked_knot_node(node_index):
-            logger.info("Propagating QI at marked node")
+            if __debug__:
+                logger.info("Propagating QI at marked node")
             self.__propagate_quantitative_invisibility_at_marked_knot_node(
                 spline_surface, node_index, invisibility_params)
 
@@ -812,7 +857,8 @@ class ContourNetwork(ProjectedCurveNetwork):
         """
         # Check node validity
         if not self._is_valid_node_index(node_index):
-            logger.debug("Attempting to propagate QI at invalid node %s", node_index)
+            if __debug__:
+                logger.debug("Attempting to propagate QI at invalid node %s", node_index)
             return -1
 
         # Check if boundary node (no work can be done)
@@ -820,7 +866,8 @@ class ContourNetwork(ProjectedCurveNetwork):
         out_segment: SegmentIndex = self.out(node_index)
         if (not self._is_valid_segment_index(in_segment) or
                 not self._is_valid_segment_index(out_segment)):
-            logger.debug("Cannot propagate QI across terminal boundary node")
+            if __debug__:
+                logger.debug("Cannot propagate QI across terminal boundary node")
             return -1
         qi_in: int = self.get_segment_quantitative_invisibility(in_segment)
         qi_out: int = self.get_segment_quantitative_invisibility(out_segment)
@@ -829,18 +876,20 @@ class ContourNetwork(ProjectedCurveNetwork):
         if (qi_in >= 0) and (qi_out >= 0):
             new_qi: int = qi_in + change_in_quantitative_invisibility
             if qi_out != new_qi:
-                logger.warning("Inconsistent QI propagation of %s = %s + %s to known value %s",
-                               new_qi,
-                               qi_in,
-                               change_in_quantitative_invisibility,
-                               qi_out)
+                if __debug__:
+                    logger.warning("Inconsistent QI propagation of %s = %s + %s to known value %s",
+                                   new_qi,
+                                   qi_in,
+                                   change_in_quantitative_invisibility,
+                                   qi_out)
                 return -1
             return qi_out
         # Propagate to the out segment if the in segment has known QI
         elif qi_in >= 0:
             new_qi: int = qi_in + change_in_quantitative_invisibility
             if new_qi < 0:
-                logger.warning("Attempted to propagate negative QI across node")
+                if __debug__:
+                    logger.warning("Attempted to propagate negative QI across node")
                 return -1
             self.set_segment_quantitative_invisibility(out_segment, new_qi)
             self.set_node_quantitative_invisibility(node_index, new_qi)
@@ -849,14 +898,16 @@ class ContourNetwork(ProjectedCurveNetwork):
         elif qi_out >= 0:
             new_qi: int = qi_out - change_in_quantitative_invisibility
             if new_qi < 0:
-                logger.warning("Attempted to propagate negative QI across node")
+                if __debug__:
+                    logger.warning("Attempted to propagate negative QI across node")
                 return -1
             self.set_segment_quantitative_invisibility(in_segment, new_qi)
             self.set_node_quantitative_invisibility(node_index, qi_out)
             return qi_out
         # Cannot propagate if both are unassigned
         else:
-            logger.warning("Cannot propagate QI across node if both segments are unassigned")
+            if __debug__:
+                logger.warning("Cannot propagate QI across node if both segments are unassigned")
             return -1
 
     def __propagate_quantitative_invisibility_at_intersection_node(
@@ -867,20 +918,23 @@ class ContourNetwork(ProjectedCurveNetwork):
         """
         Propagate the QI at an intersection node
         """
-        logger.debug("Propagating QI at intersection node %s", node_index)
+        if __debug__:
+            logger.debug("Propagating QI at intersection node %s", node_index)
         tau: Vector3f = np.array([0, 0, 1], dtype=np.float64)
 
         # Check node validity
         if not self._is_valid_node_index(node_index):
-            logger.debug("Attempting to propagate QI at invalid node %s", node_index)
+            if __debug__:
+                logger.debug("Attempting to propagate QI at invalid node %s", node_index)
             return False
 
         # Get the intersecting node and check it is valid
         intersecting_node_index: NodeIndex = self.intersection(node_index)
         if not self._is_valid_node_index(intersecting_node_index):
-            logger.error(
-                "Attempting to propagate QI with intersection rule at invalid node %s",
-                intersecting_node_index)
+            if __debug__:
+                logger.error(
+                    "Attempting to propagate QI with intersection rule at invalid node %s",
+                    intersecting_node_index)
             return False
 
         # Handle boundary case separately
@@ -896,9 +950,10 @@ class ContourNetwork(ProjectedCurveNetwork):
         intersecting_node_tau_projection: float = intersecting_node_point @ tau
         is_above: bool = (node_tau_projection < intersecting_node_tau_projection)
 
-        logger.debug("Node has view direction projection %s", node_tau_projection)
-        logger.debug("Intersecting node has view direction projection %s",
-                     intersecting_node_tau_projection)
+        if __debug__:
+            logger.debug("Node has view direction projection %s", node_tau_projection)
+            logger.debug("Intersecting node has view direction projection %s",
+                         intersecting_node_tau_projection)
 
         # Determine if the contour crosses the intersection with positive
         # orientation, meaning the intersecting tangent is ccw from the node tangent.
@@ -909,21 +964,25 @@ class ContourNetwork(ProjectedCurveNetwork):
         node_tangent_normal: PlanarPoint1d = np.array([-node_tangent[1], node_tangent[0]])
         orientation_ind: float = dot_product(node_tangent_normal, intersecting_node_tangent)
         is_positively_oriented: bool = orientation_ind > 0
-        logger.debug("Node tangent %s with planar projection %s",
-                     self.node_spatial_tangent(node_index),
-                     node_tangent)
-        logger.debug("Intersecting node tangent %s with planar projection %s",
-                     self.node_spatial_tangent(intersecting_node_index),
-                     intersecting_node_tangent)
+
+        if __debug__:
+            logger.debug("Node tangent %s with planar projection %s",
+                         self.node_spatial_tangent(node_index),
+                         node_tangent)
+            logger.debug("Intersecting node tangent %s with planar projection %s",
+                         self.node_spatial_tangent(intersecting_node_index),
+                         intersecting_node_tangent)
 
         # Propagate QI at the intersecting according to casework
         new_qi: int
         # Above with positive orientation
         if is_above and is_positively_oriented:
-            logger.debug("Input node is above, and the intersection is positively oriented")
+            if __debug__:
+                logger.debug("Input node is above, and the intersection is positively oriented")
             new_qi = self.__propagate_quantitative_invisibility_across_node(node_index, 0)
             if new_qi < 0:
-                logger.error("Failed to propagate QI across intersection node")
+                if __debug__:
+                    logger.error("Failed to propagate QI across intersection node")
                 return False
             self.set_segment_quantitative_invisibility(self.out(intersecting_node_index),
                                                        new_qi)
@@ -933,10 +992,12 @@ class ContourNetwork(ProjectedCurveNetwork):
                                                     new_qi)
         # Above with negative orientation
         elif is_above and not is_positively_oriented:
-            logger.debug("Input node is above, and the intersection is negatively oriented")
+            if __debug__:
+                logger.debug("Input node is above, and the intersection is negatively oriented")
             new_qi = self.__propagate_quantitative_invisibility_across_node(node_index, 0)
             if new_qi < 0:
-                logger.error("Failed to propagate QI across intersection node")
+                if __debug__:
+                    logger.error("Failed to propagate QI across intersection node")
                 return False
             self.set_segment_quantitative_invisibility(self.out(intersecting_node_index),
                                                        new_qi + 2)
@@ -946,10 +1007,12 @@ class ContourNetwork(ProjectedCurveNetwork):
                                                     new_qi + 2)
         # Below with positive orientation
         elif (not is_above) and is_positively_oriented:
-            logger.debug("Input node is below, and the intersection is positively oriented")
+            if __debug__:
+                logger.debug("Input node is below, and the intersection is positively oriented")
             new_qi = self.__propagate_quantitative_invisibility_across_node(node_index, 2)
             if new_qi < 0:
-                logger.error("Failed to propagate QI across intersection node")
+                if __debug__:
+                    logger.error("Failed to propagate QI across intersection node")
                 return False
             self.set_segment_quantitative_invisibility(self.out(intersecting_node_index),
                                                        new_qi - 2)
@@ -958,10 +1021,12 @@ class ContourNetwork(ProjectedCurveNetwork):
             self.set_node_quantitative_invisibility(intersecting_node_index, new_qi - 2)
         #  Below with negative orientation
         elif (not is_above) and (not is_positively_oriented):
-            logger.debug("Input node is below, and the intersection is negatively oriented")
+            if __debug__:
+                logger.debug("Input node is below, and the intersection is negatively oriented")
             new_qi = self.__propagate_quantitative_invisibility_across_node(node_index, -2)
             if new_qi < 0:
-                logger.error("Failed to propagate QI across intersection node")
+                if __debug__:
+                    logger.error("Failed to propagate QI across intersection node")
                 return False
             self.set_segment_quantitative_invisibility(self.out(intersecting_node_index), new_qi)
             self.set_segment_quantitative_invisibility(self.in_(intersecting_node_index), new_qi)
@@ -975,12 +1040,13 @@ class ContourNetwork(ProjectedCurveNetwork):
         qi_intersecting_out: int = self. get_segment_quantitative_invisibility(
             self.out(intersecting_node_index))
 
-        logger.debug("Propagated QI across intersection node %s -> %s with "
-                     "intersecting node %s -> %s",
-                     qi_in,
-                     qi_out,
-                     qi_intersecting_in,
-                     qi_intersecting_out)
+        if __debug__:
+            logger.debug("Propagated QI across intersection node %s -> %s with "
+                         "intersecting node %s -> %s",
+                         qi_in,
+                         qi_out,
+                         qi_intersecting_in,
+                         qi_intersecting_out)
 
         # Check the QI against direct computation
         if invisibility_params.check_propagation:
@@ -1018,19 +1084,22 @@ class ContourNetwork(ProjectedCurveNetwork):
         """
         Propagate the QI at a boundary intersection node
         """
-        logger.debug("Propagating QI at boundary intersection node %s", node_index)
+        if __debug__:
+            logger.debug("Propagating QI at boundary intersection node %s", node_index)
 
         # Check node validity
         if not self._is_valid_node_index(node_index):
-            logger.debug("Attempting to propagate QI at invalid node %s", node_index)
+            if __debug__:
+                logger.debug("Attempting to propagate QI at invalid node %s", node_index)
             return False
 
         # Get the intersecting node and check it is valid
         intersecting_node_index: NodeIndex = self.intersection(node_index)
         if not self._is_valid_node_index(intersecting_node_index):
-            logger.error(
-                "Attempting to propagate QI with intersection rule at invalid node %s",
-                intersecting_node_index)
+            if __debug__:
+                logger.error(
+                    "Attempting to propagate QI with intersection rule at invalid node %s",
+                    intersecting_node_index)
             return False
 
         # Node out segment QI
@@ -1070,12 +1139,13 @@ class ContourNetwork(ProjectedCurveNetwork):
 
         # Propagate QI directly at the boundary intersection. For the segment that
         # does not exist, nothing is done in these function calls
-        logger.debug("Propagated QI across boundary intersection node %s -> %s with "
-                     "intersecting node %s -> %s",
-                     qi_in,
-                     qi_out,
-                     qi_intersection_in,
-                     qi_intersection_out)
+        if __debug__:
+            logger.debug("Propagated QI across boundary intersection node %s -> %s with "
+                         "intersecting node %s -> %s",
+                         qi_in,
+                         qi_out,
+                         qi_intersection_in,
+                         qi_intersection_out)
 
         self.__propagate_quantitative_invisibility_forward(
             spline_surface, self.out(node_index), invisibility_params)
@@ -1098,20 +1168,25 @@ class ContourNetwork(ProjectedCurveNetwork):
         """
         # Check node validity
         if not self._is_valid_node_index(node_index):
-            logger.debug("Attempting to propagate QI at invalid node %s", node_index)
+            if __debug__:
+                logger.debug("Attempting to propagate QI at invalid node %s", node_index)
             return False
 
         # Determine if the tangent is pointing toward or away from the camera
         # HACK: getting NumPy's matrix multiply to match that of Eigen to get (1, 3) x (3, 1)
         # matrices to return a float value
-        tau: Matrix3x1r = np.array([0, 0, 1], dtype=np.float64).reshape((3, 1))
+        # TODO: move tau outside the function, perhaps associate it with the class
+        # since it'll be the same value for every call of propagate QI anyways.
+        tau: Matrix3x1r = np.array(object=[0, 0, 1], dtype=np.float64).reshape((3, 1))
         node_tangent: SpatialVector1d = self.node_spatial_tangent(node_index).reshape((1, 3))
         node_tangent_tau_projection: float = (node_tangent @ tau).item()
         is_reversed: bool = node_tangent_tau_projection < 0
-        logger.debug("Tangent at cusp node: %s", node_tangent)
-        logger.debug("In segment midpoint is %s and out midpoint segment is %s",
-                     self.segment_spatial_curve(self.in_(node_index)).mid_point(),
-                     self.segment_spatial_curve(self.out(node_index)).mid_point())
+
+        if __debug__:
+            logger.debug("Tangent at cusp node: %s", node_tangent)
+            logger.debug("In segment midpoint is %s and out midpoint segment is %s",
+                         self.segment_spatial_curve(self.in_(node_index)).mid_point(),
+                         self.segment_spatial_curve(self.out(node_index)).mid_point())
 
         # Propagate the QI
         new_qi: int
@@ -1121,16 +1196,20 @@ class ContourNetwork(ProjectedCurveNetwork):
             new_qi = self.__propagate_quantitative_invisibility_across_node(node_index, 1)
 
         if new_qi < 0:
-            logger.error("Failed to propagate QI across cusp node")
+            if __debug__:
+                logger.error("Failed to propagate QI across cusp node")
             return False
 
         qi_in: int = self.get_segment_quantitative_invisibility(self.in_(node_index))
         qi_out: int = self.get_segment_quantitative_invisibility(self.out(node_index))
-        logger.debug("Propagated QI across cusp node %s -> %s", qi_in, qi_out)
+
+        if __debug__:
+            logger.debug("Propagated QI across cusp node %s -> %s", qi_in, qi_out)
 
         # Check the QI against direct computation
         if invisibility_params.check_propagation:
-            logger.debug("Checking QI propagation at cusp node")
+            if __debug__:
+                logger.debug("Checking QI propagation at cusp node")
             self.__check_quantitative_invisibility_propagation(
                 spline_surface, self.in_(node_index), invisibility_params)
             self.__check_quantitative_invisibility_propagation(
@@ -1158,7 +1237,8 @@ class ContourNetwork(ProjectedCurveNetwork):
         """
         # Check node validity
         if not self._is_valid_node_index(node_index):
-            logger.debug("Attempting to propagate QI at invalid node %s", node_index)
+            if __debug__:
+                logger.debug("Attempting to propagate QI at invalid node %s", node_index)
             return
 
         qi_out: int = self.__compute_chain_quantitative_invisibility(
@@ -1244,7 +1324,7 @@ class ContourNetwork(ProjectedCurveNetwork):
         """
 
         # Compute QI for all segment chains independently
-        for i, start_node_index in enumerate(self.chain_start_nodes):
+        for start_node_index in self.chain_start_nodes:
             # Compute QI for the first segment
             start_segment_index: SegmentIndex = self.out(start_node_index)
 
@@ -1267,8 +1347,9 @@ class ContourNetwork(ProjectedCurveNetwork):
         # Compute QI for all segment chains independently
         for start_node_index in self.chain_start_nodes:
             start_segment_index: SegmentIndex = self.out(start_node_index)
-            logger.info("Attempting to continue QI propagation start node %s",
-                        start_node_index)
+            if __debug__:
+                logger.info("Attempting to continue QI propagation start node %s",
+                            start_node_index)
 
             # Compute QI for the first segment and propagate it if it doesn't already exist
             if not self.node_quantitative_invisibility_is_set(start_node_index):
@@ -1276,9 +1357,11 @@ class ContourNetwork(ProjectedCurveNetwork):
                     spline_surface, start_segment_index, invisibility_params)
                 self.set_node_quantitative_invisibility(start_node_index, qi_start)
                 self.set_segment_quantitative_invisibility(start_segment_index, qi_start)
-                logger.info("Propagating QI of %s from start node %s",
-                            self.get_segment_quantitative_invisibility(start_segment_index),
-                            start_segment_index)
+
+                if __debug__:
+                    logger.info("Propagating QI of %s from start node %s",
+                                self.get_segment_quantitative_invisibility(start_segment_index),
+                                start_segment_index)
                 self.__propagate_quantitative_invisibility_forward(
                     spline_surface, start_segment_index, invisibility_params)
 
@@ -1296,30 +1379,36 @@ class ContourNetwork(ProjectedCurveNetwork):
             self.__compute_default_quantitative_invisibility()
         # Compute QI per segment
         elif invisibility_params.invisibility_method == InvisibilityMethod.DIRECT:
-            logger.info("Start compute direct QI")
+            if __debug__:
+                logger.info("Start compute direct QI")
             start: float = time.time()
             self.__compute_direct_quantitative_invisibility(spline_surface, invisibility_params)
-            logger.info("Direct QI compute Time cost: %ss", time.time() - start)
+            if __debug__:
+                logger.info("Direct QI compute Time cost: %ss", time.time() - start)
         # Compute QI per chain
         elif invisibility_params.invisibility_method == InvisibilityMethod.CHAINING:
-            logger.info("Start compute chaining QI")
+            if __debug__:
+                logger.info("Start compute chaining QI")
             start: float = time.time()
             self.__compute_chained_quantitative_invisibility(spline_surface, invisibility_params)
-            logger.info("Chaining QI compute Time cost: %ss", time.time() - start)
+            if __debug__:
+                logger.info("Chaining QI compute Time cost: %ss", time.time() - start)
         elif invisibility_params.invisibility_method == InvisibilityMethod.PROPAGATION:
-            logger.info("start compute propagation QI")
+            if __debug__:
+                logger.info("Start compute propagation QI")
             start: float = time.time()
             self.__compute_propagated_quantitative_invisibility(spline_surface,
                                                                 invisibility_params)
-            logger.info("Propagation QI compute Time cost: %ss",
-                        time.time() - start)
+            if __debug__:
+                logger.info("Propagation QI compute Time cost: %ss",
+                            time.time() - start)
 
         # Check for errors in the QI
-        quantitative_invisibility: list[int] = self.enumerate_quantitative_invisibility()
-
-        logger.debug(quantitative_invisibility)
-        if vector_contains(quantitative_invisibility, -1):
-            logger.error("Negative QI present in final values")
+        if __debug__:
+            quantitative_invisibility: list[int] = self.enumerate_quantitative_invisibility()
+            logger.debug(quantitative_invisibility)
+            if vector_contains(quantitative_invisibility, -1):
+                logger.error("Negative QI present in final values")
 
     # *******
     # Viewers
@@ -1420,7 +1509,7 @@ class ContourNetwork(ProjectedCurveNetwork):
 
         # Get cusp segments
         in_segment: SegmentIndex = self.in_(node_index)
-        out_segment: SegmentIndex = self. out(node_index)
+        out_segment: SegmentIndex = self.out(node_index)
         segment_indices: list[SegmentIndex] = [in_segment, out_segment]
 
         # Get cusp patches
