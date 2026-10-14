@@ -8,9 +8,10 @@ import numpy as np
 
 from pyalgcon.contour_network.compute_ray_intersections_pencil_method import \
     solve_quadratic_quadratic_equation_pencil_method
-from pyalgcon.core.common import (Matrix3x2f, Matrix6x3f, PatchIndex,
-                                  PlanarPoint1d, Vector1D, Vector3f, Vector6f,
-                                  float_equal, float_equal_zero)
+from pyalgcon.core.common import (Matrix3x2f, Matrix6x3f, MatrixNx2f,
+                                  PatchIndex, PlanarPoint1d, Vector1D,
+                                  Vector3f, Vector6f, float_equal,
+                                  float_equal_zero)
 from pyalgcon.core.conic import Conic
 from pyalgcon.core.polynomial_function import polynomial_real_roots
 from pyalgcon.core.rational_function import RationalFunction
@@ -29,7 +30,7 @@ def tangent_x(px: Vector6f, py: Vector6f) -> Vector6f:
     assert px.shape == (6, )
     assert py.shape == (6, )
 
-    tx: Vector6f = np.zeros(shape=(6, ))
+    tx: Vector6f = np.zeros(shape=(6, ), dtype=np.float64)
     t10: float
     t11: float
     t13: float
@@ -80,7 +81,7 @@ def _tangent_y(px: Vector6f, py: Vector6f) -> Vector6f:
     assert px.shape == (6, )
     assert py.shape == (6, )
 
-    ty: Vector6f = np.zeros(shape=(6,))
+    ty: Vector6f = np.zeros(shape=(6,), dtype=np.float64)
     t10: float
     t11: float
     t13: float
@@ -131,7 +132,7 @@ def _normal_x(py: Vector6f, pz: Vector6f) -> Vector6f:
     assert py.shape == (6, )
     assert pz.shape == (6, )
 
-    nx: Vector6f = np.zeros(shape=(6,))
+    nx: Vector6f = np.zeros(shape=(6,), dtype=np.float64)
     t10: float
     t12: float
     t15: float
@@ -170,7 +171,7 @@ def _normal_y(px: Vector6f, pz: Vector6f) -> Vector6f:
     assert px.shape == (6, )
     assert pz.shape == (6, )
 
-    ny: Vector6f = np.zeros(shape=(6,))
+    ny: Vector6f = np.zeros(shape=(6,), dtype=np.float64)
     t10: float
     t12: float
     t15: float
@@ -238,7 +239,7 @@ def _compute_cusp_by_one_patch(spline_surface_patch: QuadraticSplineSurfacePatch
 
     # Normalized solution
     num_solutions: int
-    solutions: list[PlanarPoint1d]  # length 4
+    solutions: MatrixNx2f  # length 4???
     num_solutions, solutions = solve_quadratic_quadratic_equation_pencil_method(tx, ty)
 
     solutions_in_domain: list[PlanarPoint1d] = []
