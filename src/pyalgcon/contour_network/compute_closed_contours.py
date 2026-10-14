@@ -79,14 +79,17 @@ def _is_valid_contours(contours: list[list[int]],
     return True
 
 
-def _get_starting_contour_segment(used_segments: list[bool]) -> int:
+def _get_starting_contour_segment(used_segments: Vector1D) -> int:
     """
-    Get unused contour segment
+    Get next unused contour segment
+
+    :param used_segments: boolean array 
+    :return: index of an unused segment, return -1 if no free segment
     """
     # Find free segment
-    for i, used_seg in enumerate(used_segments):
-        if not used_seg:
-            return i
+    idx: int = np.argmin(used_segments)
+    if not used_segments[idx]:
+        return idx
 
     # Return -1 if no free segment
     return -1
