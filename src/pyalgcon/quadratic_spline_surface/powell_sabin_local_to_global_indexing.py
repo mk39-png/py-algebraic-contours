@@ -669,7 +669,8 @@ def update_edge_gradient_variables(variable_values: Vector1D,
                 start_index)
 
 
-def build_variable_vertex_indices_map(num_vertices: int, variable_vertices: list[int]) -> list[int]:
+def build_variable_vertex_indices_map(num_vertices: int,
+                                      variable_vertices: Vector1D | list[int]) -> Vector1D:
     """
     Used in optimize_spline_surface.py
 
@@ -680,10 +681,14 @@ def build_variable_vertex_indices_map(num_vertices: int, variable_vertices: list
     :param variable_vertices: list of variable vertex indices
     :return: map from vertex indices to variable vertices
     """
+
+    # Convert for NumPy indexing quality of life
+    if isinstance(variable_vertices, list):
+        variable_vertices = np.array(variable_vertices)
+
     # Get variable vertex indices
-    global_vertex_indices: list[int] = [PLACEHOLDER_VALUE for _ in range(num_vertices)]
-    for i, _ in enumerate(variable_vertices):
-        global_vertex_indices[variable_vertices[i]] = i
+    global_vertex_indices: Vector1D = np.full(num_vertices, -1, dtype=int)
+    global_vertex_indices[variable_vertices] = np.arange(variable_vertices.size)
 
     return global_vertex_indices
 
