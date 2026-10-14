@@ -15,12 +15,11 @@ try:
     from pyalgcon.contour_network.compute_closed_contours_c import \
         point_distance_squared as _point_distance_squared
 except ImportError:
-
     def _point_distance_squared(point_1: SpatialVector1d, point_2: SpatialVector1d) -> float:
         """
         Distance helper function
+        Computes the Euclidean norm of two points
         """
-        # TODO: cythonize and call dot3_c internally
         assert point_1.shape == (3, )
         assert point_2.shape == (3, )
         displacement: SpatialVector1d = point_1 - point_2
@@ -44,8 +43,8 @@ def _are_overlapping_points(point_1: SpatialVector1d, point_2: SpatialVector1d) 
 
 
 def _is_closed_contour(contour: list[int],
-                       contour_start_points: list[SpatialVector1d],
-                       contour_end_points: list[SpatialVector1d]) -> bool:
+                       contour_start_points: MatrixNx3f,
+                       contour_end_points: MatrixNx3f) -> bool:
     """
     Return true iff the contour chain is closed.
     """
@@ -63,8 +62,8 @@ def _is_closed_contour(contour: list[int],
 
 
 def _is_valid_contours(contours: list[list[int]],
-                       contour_start_points: list[SpatialVector1d],
-                       contour_end_points: list[SpatialVector1d]) -> bool:
+                       contour_start_points: MatrixNx3f,
+                       contour_end_points: MatrixNx3f) -> bool:
     """
     Return true iff contours defines valid contour chains
     """
