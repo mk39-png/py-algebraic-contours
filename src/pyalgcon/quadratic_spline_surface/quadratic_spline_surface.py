@@ -657,11 +657,13 @@ class QuadraticSplineSurface:
         hash_y = int((point[1] - self._patches_bbox_y_min) // self.hash_y_interval)
 
         if (hash_x < 0) or (hash_x >= HASH_TABLE_SIZE):
-            logger.error("x hash index out of bounds")
+            if __debug__:
+                logger.error("x hash index out of bounds")
             hash_x: int = max(min(hash_x, HASH_TABLE_SIZE - 1), 0)
 
         if (hash_y < 0) or (hash_y >= HASH_TABLE_SIZE):
-            logger.error("y hash index out of bounds")
+            if __debug__:
+                logger.error("y hash index out of bounds")
             hash_y: int = max(min(hash_y, HASH_TABLE_SIZE - 1), 0)
 
         return (hash_x, hash_y)

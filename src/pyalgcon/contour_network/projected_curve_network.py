@@ -291,7 +291,8 @@ class ProjectedCurveNetwork(AbstractCurveNetwork):
         Sets quantitative invisibility of segment
         """
         if new_quantitative_invisibility < 0:
-            logger.error("Cannot set negative segment QI")
+            if __debug__:
+                logger.error("Cannot set negative segment QI")
             return
         self.segments[segment_index].quantitative_invisibility = new_quantitative_invisibility
 
