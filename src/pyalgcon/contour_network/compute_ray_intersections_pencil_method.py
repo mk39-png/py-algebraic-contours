@@ -524,12 +524,7 @@ def solve_quadratic_quadratic_equation_pencil_method(a: Vector6f,
     assert b.shape == (6, )
 
     # Divide by max coefficient to get better precision
-    max_: float = abs(a[0])
-    for i in range(6):
-        if max_ < abs(a[i]):
-            max_ = abs(a[i])
-        if max_ < abs(b[i]):
-            max_ = abs(b[i])
+    max_: float = max(a.min(), b.min())
 
     F: Vector6f = np.array([
         a[4] / max_, a[5] / max_, a[0] / max_,
@@ -624,7 +619,7 @@ def compute_spline_surface_patch_ray_intersections_pencil_method(
 
     #  1 u v uv u2 v2
     #  to
-    #   a uu + b vv + c + d uv + e u + f v
+    #  a uu + b vv + c + d uv + e u + f v
     coeff_F: Vector6f = np.array([normalized_surface_mapping_coeffs[4, 0],
                                   normalized_surface_mapping_coeffs[5, 0],
                                   normalized_surface_mapping_coeffs[0, 0] - ray_origin[0],
@@ -639,12 +634,7 @@ def compute_spline_surface_patch_ray_intersections_pencil_method(
                                   normalized_surface_mapping_coeffs[2, 1]])
 
     # Renormalize coeffs
-    max_c: float = abs(coeff_F[0])
-    for i in range(6):
-        if max_c < abs(coeff_F[i]):
-            max_c = abs(coeff_F[i])
-        if max_c < abs(coeff_G[i]):
-            max_c = abs(coeff_G[i])
+    max_c: float = min(coeff_F.min(), coeff_G.min())
     coeff_F = coeff_F / max_c
     coeff_G = coeff_G / max_c
 
