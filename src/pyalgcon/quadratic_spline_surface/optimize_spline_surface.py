@@ -249,7 +249,9 @@ class LocalDOFData:
         r_alpha[9, :] = edge_gradients_T[0]
         r_alpha[10, :] = edge_gradients_T[1]
         r_alpha[11, :] = edge_gradients_T[2]
-        logger.info("Input values:\n%s", r_alpha)
+
+        if __debug__:
+            logger.info("Input values:\n%s", r_alpha)
 
         #  Also flatten r_alpha for the normal constraint term
         r_alpha_flat: Vector36f = r_alpha.flatten()
@@ -308,9 +310,12 @@ def compute_local_twelve_split_energy_quadratic(local_hessian_data: LocalHessian
     # Build per coordinate gradients for smoothness and fit terms
     g_alpha: Matrix12x3f = 2 * (w_s * H_s) @ r_alpha
     assert g_alpha.shape == (12, 3)
-    logger.info("Block gradient after adding smoothness term:\n%s", g_alpha)
+    if __debug__:
+        logger.info("Block gradient after adding smoothness term:\n%s", g_alpha)
     g_alpha += 2 * (w_f * H_f) @ (r_alpha - r_alpha_0)
-    logger.info("Block gradient after adding fit term:\n%s", g_alpha)
+
+    if __debug__:
+        logger.info("Block gradient after adding fit term:\n%s", g_alpha)
 
     # Combine per coordinate gradients into the local
     # TODO: use some NumPy indexing magic?
@@ -331,7 +336,9 @@ def compute_local_twelve_split_energy_quadratic(local_hessian_data: LocalHessian
         # r_alpha shape sliced = (12, )
         smoothness_term += (r_alpha[:, i] @ (w_s * H_s) @ r_alpha[:, i])
     assert isinstance(smoothness_term, float)
-    logger.info("Smoothness term is %s", smoothness_term)
+
+    if __debug__:
+        logger.info("Smoothness term is %s", smoothness_term)
 
     # Add fit term
     fit_term: float = 0.0
@@ -342,14 +349,17 @@ def compute_local_twelve_split_energy_quadratic(local_hessian_data: LocalHessian
         fit_term += (r_alpha_diff @ (w_f * H_f) @ r_alpha_diff)
 
     assert isinstance(fit_term, float)
-    logger.info("Fit term is %s", fit_term)
+
+    if __debug__:
+        logger.info("Fit term is %s", fit_term)
 
     # Add planar fitting term
     planar_term: float = 0.0
     planar_term += (r_alpha_flat @ (w_p * H_p) @ r_alpha_flat)
     assert isinstance(planar_term, float)
 
-    logger.info("Planar orthogonality term is %s", planar_term)
+    if __debug__:
+        logger.info("Planar orthogonality term is %s", planar_term)
 
     # Compute final energy
     local_energy: float = smoothness_term + fit_term + planar_term
@@ -539,7 +549,9 @@ def compute_twelve_split_energy_quadratic(
         # Get normal for the face
         normal: SpatialVector1d = np.zeros(
             shape=(3, )) if is_cone_adjacent_face else initial_face_normals[face_index, :]
-        logger.info("Weighting by normal %s", normal)
+
+        if __debug__:
+            logger.info("Weighting by normal %s", normal)
 
         # Get local to global map
         local_to_global_map: Vector36f = generate_twelve_split_local_to_global_map(
@@ -640,13 +652,15 @@ def build_local_fit_hessian(is_cone: list[bool],
         # Weight for cone vertices
         if is_cone[i]:
             # Add increased weight to the cone position fit
-            logger.info("Weighting cone vertices by %s",
-                        optimization_params.cone_position_difference_factor)
+            if __debug__:
+                logger.info("Weighting cone vertices by %s",
+                            optimization_params.cone_position_difference_factor)
             H_f[vi, vi] = optimization_params.cone_position_difference_factor
 
             # Add cone gradient fitting term
-            logger.info("Weighting cone gradients by %s",
-                        optimization_params.cone_vertex_gradient_difference_factor)
+            if __debug__:
+                logger.info("Weighting cone gradients by %s",
+                            optimization_params.cone_vertex_gradient_difference_factor)
             g1i: int = generate_local_vertex_gradient_variable_index(
                 i, 0, 0, 1)  # local first gradient index
             g2i: int = generate_local_vertex_gradient_variable_index(
@@ -656,14 +670,16 @@ def build_local_fit_hessian(is_cone: list[bool],
         # Weights for cone adjacent vertices (which can be collapsed to the cone)
         elif is_cone_adjacent[i]:
             # Add increased weight to the cone adjacent position fit
-            logger.info(
-                "Weighting cone adjacent vertices by %s",
-                optimization_params.cone_adjacent_position_difference_factor)
+            if __debug__:
+                logger.info(
+                    "Weighting cone adjacent vertices by %s",
+                    optimization_params.cone_adjacent_position_difference_factor)
             H_f[vi, vi] = optimization_params.cone_adjacent_position_difference_factor
 
             # Add cone adjacent vertex gradient fitting term
-            logger.info("Weighting cone adjacent gradients by %s",
-                        optimization_params.cone_adjacent_vertex_gradient_difference_factor)
+            if __debug__:
+                logger.info("Weighting cone adjacent gradients by %s",
+                            optimization_params.cone_adjacent_vertex_gradient_difference_factor)
             g1i = generate_local_vertex_gradient_variable_index(
                 i, 0, 0, 1)  # local first gradient index
             g2i = generate_local_vertex_gradient_variable_index(
@@ -681,9 +697,10 @@ def build_local_fit_hessian(is_cone: list[bool],
 
         if ((is_cone_adjacent[vj]) and (is_cone_adjacent[vk])):
             # Add cone adjacent adjacent edge gradient fit
-            logger.info(
-                "Weighting cone edge gradients by %s",
-                optimization_params.cone_adjacent_edge_gradient_difference_factor)
+            if __debug__:
+                logger.info(
+                    "Weighing cone edge gradients by %s",
+                    optimization_params.cone_adjacent_edge_gradient_difference_factor)
             gjk: int = generate_local_edge_gradient_variable_index(
                 i, 0, 1)  # local first gradient index
             H_f[gjk, gjk] = optimization_params.cone_adjacent_edge_gradient_difference_factor
@@ -936,7 +953,9 @@ def optimize_twelve_split_spline_surface(
                                                     halfedge,
                                                     he_to_corner))
     assert initial_variable_values.ndim == 1
-    logger.info("Initial variable value vector:\n%s", initial_variable_values)
+
+    if __debug__:
+        logger.info("Initial variable value vector:\n%s", initial_variable_values)
 
     # Solve hessian system to get optimized values
     right_hand_side: Vector1D = np.array(fit_matrix * initial_variable_values, dtype=np.float64)
