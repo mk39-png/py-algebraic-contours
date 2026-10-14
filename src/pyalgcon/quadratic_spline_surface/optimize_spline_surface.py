@@ -582,13 +582,14 @@ def compute_twelve_split_energy_quadratic(
         # Update the energy quadratic with the new face energy
         # NOTE: update_energy_quadratic is only used here.
         # NOTE: derivatives and hessian_entries and are in the method below.
-        energy = update_energy_quadratic(local_energy,
-                                         local_derivatives,
-                                         local_hessian,
-                                         local_to_global_map,
-                                         energy,
-                                         derivatives,
-                                         hessian_entries)
+        if __debug__:
+            logger.info("Adding local face energy %s", local_energy)
+        energy += local_energy
+        update_energy_quadratic(local_derivatives,
+                                local_hessian,
+                                local_to_global_map,
+                                derivatives,
+                                hessian_entries)
 
     # Set hessian from the triplets
     # https://stackoverflow.com/questions/65126682/create-sparse-matrix-from-list-of-tuples

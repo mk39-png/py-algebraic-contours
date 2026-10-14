@@ -17,10 +17,11 @@ from typing import Literal
 import numpy as np
 
 from pyalgcon.core.common import (COLS, PLACEHOLDER_VALUE, ROWS, Index,
-                                  Matrix2x3r, Matrix36x36f, MatrixNx3f,
-                                  MatrixNx3i, SpatialVector1d,
+                                  Matrix2x3r, Matrix36x36f, Matrix36x36i,
+                                  MatrixNx3f, MatrixNx3i, SpatialVector1d,
                                   TwelveSplitGradient, TwelveSplitHessian,
-                                  Vector1D, Vector3f, Vector27f, Vector36f)
+                                  Vector1D, Vector3f, Vector27f, Vector36f,
+                                  Vector36i)
 from pyalgcon.core.differentiable_variable import \
     generate_local_variable_matrix_index
 from pyalgcon.core.halfedge import Halfedge
@@ -407,7 +408,7 @@ def generate_twelve_split_variable_value_vector(
     return variable_values
 
 
-def generate_six_split_local_to_global_map(global_vertex_indices: list[int],
+def generate_six_split_local_to_global_map(global_vertex_indices: Vector3f,
                                            num_variable_vertices: int) -> Vector27f:
     """
     Given the global vertex indices of a triangle, compute the map from the
@@ -465,8 +466,8 @@ def generate_six_split_local_to_global_map(global_vertex_indices: list[int],
     return local_to_global_map
 
 
-def generate_twelve_split_local_to_global_map(global_vertex_indices: list[int],
-                                              global_edge_indices: list[int],
+def generate_twelve_split_local_to_global_map(global_vertex_indices: Vector3f,
+                                              global_edge_indices: Vector3f,
                                               num_variable_vertices: int) -> Vector36f:
     """
     Used in optimize_spline_surface.py
@@ -717,8 +718,7 @@ def build_variable_edge_indices_map(num_faces: int,
     global_edge_indices: MatrixNx3i = np.full(
         shape=(num_faces, 3), fill_value=PLACEHOLDER_INT, dtype=int)
 
-    for i, _ in enumerate(variable_edges):
-        edge_index: Index = variable_edges[i]
+    for i, edge_index in enumerate(variable_edges):
         h0: Index = halfedge.edge_to_first_halfedge(edge_index)
         f0: Index = he_to_corner[h0][0]
         f0_vertex_index: Index = he_to_corner[h0][1]
@@ -733,69 +733,58 @@ def build_variable_edge_indices_map(num_faces: int,
     return global_edge_indices
 
 
-def update_energy_quadratic(local_energy: float,
-                            local_derivatives: TwelveSplitGradient,  # shape (36,)
+def update_energy_quadratic(local_derivatives: TwelveSplitGradient,  # shape (36,)
                             local_hessian: TwelveSplitHessian,  # shape (36, 36)
                             local_to_global_map: Vector36f,
-                            energy: float,
                             derivatives_ref: Vector1D,
                             hessian_entries_ref: list[tuple[int, int, float]]
-                            ) -> float:
+                            ) -> None:
     """
     Update global energy, derivatives, and hessian with local per face values
 
     NOTE: since update_energy_quadratic() is called in a loop to update the energy variable, 
     we cannot simply just reassign energy to local_energy.
-    TODO: is it right to pass in parameters that are then modified and then pass those same 
-    parameters back as return values?
+    NOTE: this fails when two or more local DOFs map to the same global index. At least
+      during testing this was the case.
 
     :param local_energy:        [in] local energy value
     :param local_derivatives:   [in] local energy gradient
     :param local_hessian:       [in] local energy Hessian
     :param local_to_global_map: [in] map from local to global DOF indices
-    :return energy:           global energy value
-    :param  derivatives_ref: [out] global energy gradient
-    :param  hessian_ref:     [out] global energy Hessian
+
+    :param derivatives_ref:     [out] global energy gradient
+    :param hessian_entries_ref: [out] 
+        list of tuple of global energy Hessian index i, global energy Hessian index j, 
+        and global energy Hessian
     """
-    logger.info("Adding local face energy %s", local_energy)
-    logger.info("Local to global map: %s", local_to_global_map)
+    if __debug__:
+        logger.info("Local to global map: %s", local_to_global_map)
+
     assert derivatives_ref.ndim == 1  # shape (36, )
     assert local_derivatives.ndim == 1
     assert local_hessian.ndim == 2
     assert local_to_global_map.shape == (36, )
 
-    # Update energy
-    energy += local_energy
+    # Skip fixed variables with no global index
+    valid_local_indices:  Vector36i = (local_to_global_map >= 0)
+    valid_global_indices: Vector36i = local_to_global_map[valid_local_indices]
 
-    # TODO: get valid local and globally indices to vectorize the below operation
     # Update derivatives
-    num_local_indices: int = len(local_to_global_map)
-    for local_index in range(num_local_indices):
-        global_index: int = local_to_global_map[local_index]
-        if global_index < 0:
-            continue  # Skip fixed variables with no global index
-        derivatives_ref[global_index] += local_derivatives[local_index]
+    derivatives_ref[valid_global_indices] += local_derivatives[valid_local_indices]
+
+    # Get Hessian entry values
+    # https://stackoverflow.com/questions/62505046/what-does-numpy-ix-function-do-and-what-is-the-output-used-for
+    hessian_values: Matrix36x36f = local_hessian[np.ix_(valid_local_indices, valid_local_indices)]
+
+    # Get global row and column indices, skipping fixed variables with no global index
+    global_indices_i: Matrix36x36i
+    global_indices_j: Matrix36x36i
+    global_indices_i, global_indices_j = np.meshgrid(
+        valid_global_indices, valid_global_indices, indexing='ij')
 
     # Update hessian entries
-    for local_index_i in range(num_local_indices):
-        # Get global row index, skipping fixed variables with no global index
-        global_index_i: int = local_to_global_map[local_index_i]
-        if global_index_i < 0:
-            continue
-
-        for local_index_j in range(num_local_indices):
-            # Get global column index, skipping fixed variables with no global index
-            global_index_j: int = local_to_global_map[local_index_j]
-            if global_index_j < 0:
-                continue
-
-            # Get Hessian entry value
-            hessian_value: float = local_hessian[local_index_i, local_index_j]
-
-            # Assemble global Hessian entry
-            hessian_entries_ref.append((global_index_i, global_index_j, hessian_value))
-
-    return energy
+    hessian_entries_ref.extend(
+        zip(global_indices_i.ravel(), global_indices_j.ravel(), hessian_values.ravel()))
 
 
 def build_face_variable_vector(variables: list,

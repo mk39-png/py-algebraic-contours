@@ -107,6 +107,7 @@ Matrix13x3f = np.ndarray
 
 Matrix36x12f = np.ndarray
 Matrix36x36f = np.ndarray
+Matrix36x36i = np.ndarray
 Matrix12x6x12f = np.ndarray
 Matrix12x3x3f = np.ndarray
 Matrix3x2x2f = np.ndarray
