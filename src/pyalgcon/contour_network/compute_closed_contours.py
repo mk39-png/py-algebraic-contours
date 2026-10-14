@@ -285,9 +285,8 @@ def compute_closed_contours(contour_segments: list[RationalFunction]) -> tuple[l
                 break
 
         if closed_contour:
-
-            logger.debug("Closed contour of size %s found", len(current_contour))
-            # TODO: check to see if function below modifies by reference properly.
+            if __debug__:
+                logger.debug("Closed contour of size %s found", len(current_contour))
             _add_contour(current_contour, contours, contour_labels)
         else:
             # Traverse an open contour in reverse to get the full chain
