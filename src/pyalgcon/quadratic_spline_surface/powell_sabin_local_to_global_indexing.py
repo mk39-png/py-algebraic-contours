@@ -17,9 +17,10 @@ from typing import Literal
 import numpy as np
 
 from pyalgcon.core.common import (COLS, PLACEHOLDER_VALUE, ROWS, Index,
-                                  Matrix2x3r, SpatialVector1d,
+                                  Matrix2x3r, Matrix36x36f, MatrixNx3f,
+                                  MatrixNx3i, SpatialVector1d,
                                   TwelveSplitGradient, TwelveSplitHessian,
-                                  Vector1D, Vector27f, Vector36f)
+                                  Vector1D, Vector3f, Vector27f, Vector36f)
 from pyalgcon.core.differentiable_variable import \
     generate_local_variable_matrix_index
 from pyalgcon.core.halfedge import Halfedge
@@ -694,9 +695,9 @@ def build_variable_vertex_indices_map(num_vertices: int,
 
 
 def build_variable_edge_indices_map(num_faces: int,
-                                    variable_edges: list[int],
+                                    variable_edges: Vector1D,
                                     halfedge: Halfedge,
-                                    he_to_corner: list[tuple[Index, Index]]) -> list[list[int]]:
+                                    he_to_corner: list[tuple[Index, Index]]) -> MatrixNx3f:
     """
     Used in optimize_spline_surface.py
 
@@ -713,8 +714,8 @@ def build_variable_edge_indices_map(num_faces: int,
     :return global_edge_indices: map from edge indices to variable edges
     """
     PLACEHOLDER_INT = -1
-    global_edge_indices: list[list[Index]] = [[PLACEHOLDER_INT, PLACEHOLDER_INT, PLACEHOLDER_INT]
-                                              for _ in range(num_faces)]
+    global_edge_indices: MatrixNx3i = np.full(
+        shape=(num_faces, 3), fill_value=PLACEHOLDER_INT, dtype=int)
 
     for i, _ in enumerate(variable_edges):
         edge_index: Index = variable_edges[i]
