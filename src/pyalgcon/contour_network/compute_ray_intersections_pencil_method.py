@@ -12,9 +12,9 @@ import numpy as np
 
 from pyalgcon.contour_network.intersection_heuristics import is_in_bounding_box
 from pyalgcon.core.common import (MAX_PATCH_RAY_INTERSECTIONS, Matrix2x2f,
-                                  Matrix2x3f, Matrix6x3f, PlanarPoint1d,
-                                  SpatialVector1d, Vector2f, Vector2r,
-                                  Vector3f, Vector6f)
+                                  Matrix2x3f, Matrix6x3f, MatrixNx2f,
+                                  PlanarPoint1d, SpatialVector1d, Vector2f,
+                                  Vector2r, Vector3f, Vector6f)
 from pyalgcon.core.convex_polygon import ConvexPolygon
 from pyalgcon.core.solve_cubic import _solve_cubic
 from pyalgcon.quadratic_spline_surface.quadratic_spline_surface_patch import \
@@ -58,8 +58,11 @@ def _solve_quadratic(q: Vector3f | list[float] | tuple[float, float, float],
     """
     assert len(q) == 3
 
+    # TODO: optimize below, perhaps with a simpler function depending on its runtime.
+
     discriminant: float
     num_solution: int = 0
+    # TODO: change to also include complex dtype?
     solution: Vector2f = np.zeros((2, ), dtype=np.float64)
 
     # FIXME: change orrder of operations to make Eigen/NumPy Polynomial degree order
@@ -82,13 +85,13 @@ def _solve_quadratic(q: Vector3f | list[float] | tuple[float, float, float],
         elif 0.0e0 <= discriminant:
             solution[0] = -q[1] / q[0] / 0.2e1
             num_solution = 1
-        else:
-            num_solution = 0
+        # else:
+            # num_solution = 0
     elif threshold <= abs(q[1]):
         solution[0] = -q[2] / q[1]
         num_solution = 1
-    else:
-        num_solution = 0
+    # else:
+    #     num_solution = 0
 
     return num_solution, solution
 
@@ -164,34 +167,34 @@ def _solve_linear_quadratic(a_in: Vector6f, b_in: Vector6f, threshold: float) ->
         elif num_solution == 1:
             solution[0, 0] = u_solution[0]
             solution[0, 1] = -(u_solution[0] * b[4] + b[3]) / b[5]
-    else:
-        num_solution = 0
+    # else:
+        # num_solution = 0
 
     return num_solution, solution
 
 
 def pencil_first_part(coeff_F: Vector6f,
-                      coeff_G: Vector6f) -> tuple[bool, int, list[PlanarPoint1d]]:
+                      coeff_G: Vector6f) -> tuple[bool, int, MatrixNx2f]:
     """
 
     :return: intersection_points
     """
     assert coeff_F.shape == (6, )
     assert coeff_G.shape == (6, )
-    intersection_points: list[PlanarPoint1d] = [np.zeros((2, ), dtype=np.float64)
-                                                for _ in range(MAX_PATCH_RAY_INTERSECTIONS)]
-
-    assert len(intersection_points) == MAX_PATCH_RAY_INTERSECTIONS
+    intersection_points: MatrixNx2f = np.zeros(shape=(MAX_PATCH_RAY_INTERSECTIONS, 2),
+                                               dtype=np.float64)
 
     num_intersections: int = 0
     coeff_threshold: float = 1e-10
 
     F_linear: bool = False
     G_linear: bool = False
-    if (abs(coeff_F[0]) < coeff_threshold and abs(coeff_F[1]) < coeff_threshold and
+    if (abs(coeff_F[0]) < coeff_threshold and
+        abs(coeff_F[1]) < coeff_threshold and
             abs(coeff_F[3]) < coeff_threshold):
         F_linear = True
-    if (abs(coeff_G[0]) < coeff_threshold and abs(coeff_G[1]) < coeff_threshold and
+    if (abs(coeff_G[0]) < coeff_threshold and
+        abs(coeff_G[1]) < coeff_threshold and
             abs(coeff_G[3]) < coeff_threshold):
         G_linear = True
 
@@ -204,9 +207,7 @@ def pencil_first_part(coeff_F: Vector6f,
             v: float = (coeff_F[2] * coeff_G[4] - coeff_F[4] * coeff_G[2]) / d
 
             if 0.0 <= u and 0.0 <= v and u + v <= 1.0:
-                intersection_points[num_intersections][0] = u
-                intersection_points[num_intersections][1] = v
-
+                intersection_points[num_intersections] = u, v
                 num_intersections += 1
                 return True, num_intersections, intersection_points
             else:
@@ -235,8 +236,7 @@ def pencil_first_part(coeff_F: Vector6f,
                     solution[i, 0] + solution[i, 1] <= 1.0):
                 # NOTE: need the below np.array() to make copies of solution[i] rather than
                 # directly setting intersection_points[num_intersection]
-                intersection_points[num_intersections] = np.array([solution[i, 0], solution[i, 1]],
-                                                                  dtype=np.float64)
+                intersection_points[num_intersections] = solution[i]
                 num_intersections += 1
         if num_intersections > 0:
             return True, num_intersections, intersection_points
@@ -260,8 +260,7 @@ def pencil_first_part(coeff_F: Vector6f,
                 0.0 <= solution[i, 1] and
                     solution[i, 0] + solution[i, 1] <= 1.0):
                 # NOTE: same as the above where we need np.array() to make copies of solution[i]
-                intersection_points[num_intersections] = np.array([solution[i][0], solution[i][1]],
-                                                                  dtype=np.float64)
+                intersection_points[num_intersections] = solution[i]
                 num_intersections += 1
         if num_intersections > 0:
             return True, num_intersections, intersection_points
@@ -307,6 +306,7 @@ def pencil_first_part(coeff_F: Vector6f,
     num_cubic_real_roots: int = 0
     cubic_real_roots: Vector3f = np.zeros((3, ), dtype=np.float64)
 
+    # If 4th term is less than our threshold, assume we are dealing with quadratic
     if abs(a3) < coeff_threshold:
         # Quadratic equation
         # NOTE: this is in "ASOC" order, meaning coefficients in decreasing degree
@@ -385,9 +385,7 @@ def pencil_first_part(coeff_F: Vector6f,
             for i in range(2):
                 g: float = -la1 if (i == 0) else -la2
                 h: float = -lc1 if (i == 0) else -lc2
-                # c0: float = ctypes.c_double(a + (2.0 * d + b * g) * g)
                 c0: float = (a + (2.0 * d + b * g) * g)
-
                 c1: float = 2.0 * ((d + b * g) * h + e + f * g)
                 c2: float = (b * h + 2.0 * f) * h + c
 
@@ -405,8 +403,7 @@ def pencil_first_part(coeff_F: Vector6f,
                         w: float = 1.0 - (u + v)
 
                         if (0.0 <= u and 0.0 <= v and 0.0 <= w):
-                            intersection_points[num_intersections][0] = u
-                            intersection_points[num_intersections][1] = v
+                            intersection_points[num_intersections] = u, v
                             num_intersections += 1
                             intersection_flag = True
                 else:
@@ -425,8 +422,7 @@ def pencil_first_part(coeff_F: Vector6f,
                             w = 1.0 - (u + v)
 
                             if 0.0 <= u and 0.0 <= v and 0.0 <= w:
-                                intersection_points[num_intersections][0] = u
-                                intersection_points[num_intersections][1] = v
+                                intersection_points[num_intersections] = u, v
                                 num_intersections += 1
                                 intersection_flag = True
         else:
@@ -455,11 +451,8 @@ def pencil_first_part(coeff_F: Vector6f,
                 g = -lb1 if (i == 0) else -lb2
                 h = -lc1 if (i == 0) else -lc2
                 c0 = b + (2.0 * d + a * g) * g
-                c0 = float(c0)
                 c1 = 2.0 * ((d + a * g) * h + f + e * g)
-                c1 = float(c1)
                 c2 = (a * h + 2.0 * e) * h + c
-                c2 = float(c2)
 
                 if ((0.0 < c0) and (((0.0 < c1) and (0.0 < c2)) or
                                     ((0.0 > c2) and (0.0 > c0 + c1 + c2)))):
@@ -474,8 +467,7 @@ def pencil_first_part(coeff_F: Vector6f,
                         u: float = g * v + h
                         w: float = 1.0 - (u + v)
                         if (0.0 <= u and 0.0 <= v and 0.0 <= w):
-                            intersection_points[num_intersections][0] = u
-                            intersection_points[num_intersections][1] = v
+                            intersection_points[num_intersections] = u, v
                             num_intersections += 1
                             intersection_flag = True
                 else:
@@ -501,8 +493,7 @@ def pencil_first_part(coeff_F: Vector6f,
                             w = 1.0 - (u + v)
 
                             if (0.0 <= u and 0.0 <= v and 0.0 <= w):
-                                intersection_points[num_intersections][0] = u
-                                intersection_points[num_intersections][1] = v
+                                intersection_points[num_intersections] = u, v
                                 num_intersections += 1
                                 intersection_flag = True
 
@@ -515,7 +506,7 @@ def pencil_first_part(coeff_F: Vector6f,
 
 def solve_quadratic_quadratic_equation_pencil_method(a: Vector6f,
                                                      b: Vector6f
-                                                     ) -> tuple[int, list[PlanarPoint1d]]:
+                                                     ) -> tuple[int, MatrixNx2f]:
     """
     Solves quadratic equation pencil method.
     1 u v uv uu uv call
@@ -534,7 +525,7 @@ def solve_quadratic_quadratic_equation_pencil_method(a: Vector6f,
                             b[3] / max_, b[1] / max_, b[2] / max_], dtype=np.float64)
     intersection_flag: bool
     num_intersections: int
-    intersection_points: list[PlanarPoint1d]
+    intersection_points: MatrixNx2f
     intersection_flag, num_intersections, intersection_points = pencil_first_part(F, G)
     assert len(intersection_points) == MAX_PATCH_RAY_INTERSECTIONS
 
