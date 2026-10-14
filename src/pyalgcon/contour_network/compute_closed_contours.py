@@ -5,8 +5,10 @@ Methods to chain contour segments into closed contours.
 
 import logging
 
-from pyalgcon.core.common import (PLACEHOLDER_VALUE, SpatialVector1d,
-                                  float_equal_zero)
+import numpy as np
+
+from pyalgcon.core.common import (PLACEHOLDER_VALUE, MatrixNx3f,
+                                  SpatialVector1d, Vector1D, float_equal_zero)
 from pyalgcon.core.rational_function import RationalFunction
 
 try:
@@ -238,18 +240,18 @@ def compute_closed_contours(contour_segments: list[RationalFunction]) -> tuple[l
     """
     # lazy check
     assert (contour_segments[0].degree, contour_segments[0].dimension) == (4, 3)
+    num_contour_segments: int = len(contour_segments)
     contours: list[list[int]] = []
-    contour_labels: list[int] = [PLACEHOLDER_VALUE for _ in enumerate(contour_segments)]
+    contour_labels: list[int] = [PLACEHOLDER_VALUE for _ in range(num_contour_segments)]
 
-    used_segments: list[bool] = [False] * len(contour_segments)
-    contour_start_points: list[SpatialVector1d] = []
-    contour_end_points: list[SpatialVector1d] = []
+    # Vector of False bools, denoting that all segments are unused
+    used_segments: Vector1D = np.zeros(num_contour_segments, dtype=bool)
+    contour_start_points: MatrixNx3f = np.empty(shape=(num_contour_segments, 3), dtype=np.float64)
+    contour_end_points: MatrixNx3f = np.empty(shape=(num_contour_segments, 3), dtype=np.float64)
 
-    for contour_segment in contour_segments:
-        contour_start_points.append(contour_segment.start_point())
-        contour_end_points  .append(contour_segment.end_point())
-        assert contour_start_points[-1].shape == (3, )
-        assert contour_end_points[-1].shape == (3, )
+    for i, contour_segment in enumerate(contour_segments):
+        contour_start_points[i] = contour_segment.start_point()
+        contour_end_points[i] = contour_segment.end_point()
 
     while True:
         # Get next starting contour segment to process or return if none left
