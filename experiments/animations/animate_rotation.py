@@ -82,6 +82,10 @@ def main(args: argparse.Namespace) -> int:
     dx: float = 1
     output_path: pathlib.Path
 
+    intersect_params: IntersectionParameters = IntersectionParameters()
+    invisibility_params: InvisibilityParameters = InvisibilityParameters()
+
+    # TODO: utilize multiprocessing to speed up rendering of these.
     for i in range(360):
         # Rotate the mesh
         theta = dx * i + pert
@@ -103,8 +107,6 @@ def main(args: argparse.Namespace) -> int:
             spline_surface.screenshot(output_path, np.array([0, 0, -1]), np.array([0, 0, 0]), True)
 
         # Build the contours
-        intersect_params: IntersectionParameters = IntersectionParameters()
-        invisibility_params: InvisibilityParameters = InvisibilityParameters()
         contour_network: ContourNetwork = ContourNetwork(spline_surface,
                                                          intersect_params,
                                                          invisibility_params,
